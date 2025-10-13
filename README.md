@@ -1,6 +1,6 @@
 # AIMangaStudio
 
-![og image](./og.webp)
+<img src="./og.webp" alt="og image" width="360" />
 
 AI-assisted manga creation studio — generate scripts, design characters, compose storyboards, and export pages with ease.
 
