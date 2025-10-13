@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { MenuIcon, XIcon, BookOpenIcon, GlobeIcon, VideoIcon, ArrowLeftIcon, KeyIcon } from './icons';
 import { useLocalization } from '../hooks/useLocalization';
 import { Language } from '../i18n/locales';
@@ -21,11 +21,11 @@ export function Header({ isSidebarOpen, onToggleSidebar, language, setLanguage, 
   const { t } = useLocalization();
   const [isLangOpen, setIsLangOpen] = useState(false);
 
-  const languages: { key: Language, name: string }[] = [
-      { key: 'zh', name: t('chinese') },
-      { key: 'en', name: t('english') },
-      { key: 'ja', name: t('japanese') },
-  ];
+  const languages = useMemo(() => ([
+      { key: 'zh' as Language, name: t('chinese') },
+      { key: 'en' as Language, name: t('english') },
+      { key: 'ja' as Language, name: t('japanese') },
+  ]), [t]);
 
   return (
     <header className="bg-white border-b border-gray-200 w-full z-20 relative">
@@ -67,10 +67,12 @@ export function Header({ isSidebarOpen, onToggleSidebar, language, setLanguage, 
                 </>
             )}
 
-            {/* {<div className="relative">
+            <div className="relative">
                  <button
                     onClick={() => setIsLangOpen(prev => !prev)}
                     className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-indigo-600 p-2 rounded-md hover:bg-gray-100"
+                    title={t('language')}
+                    aria-label={t('language')}
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7 2a1 1 0 011.707-.707l3.586 3.586a1 1 0 010 1.414l-3.586 3.586A1 1 0 017 9V5a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h2a1 1 0 001-1v-4a1 1 0 011-1h2.586l3.707 3.707a1 1 0 01-1.414 1.414L10 14.414V18a1 1 0 01-1 1H7a1 1 0 01-1-1v-2a1 1 0 00-1-1H4a1 1 0 00-1 1v2a3 3 0 003 3h4a1 1 0 00.707-1.707L10 18.586V14.5a1 1 0 011-1h1.293l4.293 4.293a1 1 0 001.414-1.414L14.414 13H16a3 3 0 003-3V7a3 3 0 00-3-3h-4a1 1 0 00-1 1v2.586L9.707 2.293A1 1 0 009 2H7z" clipRule="evenodd" /></svg>
                     <span>{languages.find(l => l.key === language)?.name}</span>
@@ -78,13 +80,17 @@ export function Header({ isSidebarOpen, onToggleSidebar, language, setLanguage, 
                 {isLangOpen && (
                     <div className="absolute top-full right-0 mt-2 w-36 bg-white border border-gray-200 rounded-md shadow-lg z-30">
                         {languages.map(({ key, name }) => (
-                            <div key={key} onClick={() => { setLanguage(key); setIsLangOpen(false); }} className={`px-4 py-2 text-sm hover:bg-indigo-50 cursor-pointer ${language === key ? 'font-bold text-indigo-600' : 'text-gray-700'}`}>
+                            <button
+                                key={key}
+                                onClick={() => { setLanguage(key); setIsLangOpen(false); }}
+                                className={`w-full text-left px-4 py-2 text-sm hover:bg-indigo-50 ${language === key ? 'font-bold text-indigo-600' : 'text-gray-700'}`}
+                            >
                                 {name}
-                            </div>
+                            </button>
                         ))}
                     </div>
                 )}
-            </div> } */}
+            </div>
 
             {/* API Key settings button (visible when callback provided) */}
             {typeof onOpenApiKeyModal === 'function' && (

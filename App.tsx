@@ -611,7 +611,7 @@ export default function App(): React.ReactElement {
         isSidebarOpen={isSidebarOpen} 
         onToggleSidebar={() => setIsSidebarOpen(p => !p)}
         language={language}
-        setLanguage={(lang) => setLanguage(lang as Language)}
+        setLanguage={setLanguage}
   onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)}
   hasApiKey={hasApiKey}
         onShowMangaViewer={() => setShowMangaViewer(true)}
