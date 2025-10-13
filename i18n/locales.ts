@@ -241,6 +241,7 @@ export const locales = {
     downloadFrame: "下载帧",
 
     // API Key
+    apiKeySettings: "API密钥设置",
     apiKeyRequired: "需要API密钥",
     apiKeyDescription: "请输入您的Google Gemini API密钥以使用AI功能。",
     apiKeyStorageWarning: "注意：API密钥将保存在浏览器本地存储中，不会上传到服务器。",
@@ -489,6 +490,7 @@ export const locales = {
     downloadFrame: "Download Frame",
 
     // API Key
+    apiKeySettings: "API Key Settings",
     apiKeyRequired: "API Key Required",
     apiKeyDescription: "Please enter your Google Gemini API key to use AI features.",
     apiKeyStorageWarning: "Note: API key will be saved in browser local storage and won't be uploaded to server.",
@@ -735,6 +737,14 @@ export const locales = {
     copied: "コピーしました！",
     initialPrompt: "初期生成プロンプト",
     downloadFrame: "フレームをダウンロード",
+
+    // API Key
+    apiKeySettings: "APIキー設定",
+    apiKeyRequired: "APIキーが必要です",
+    apiKeyDescription: "Google Gemini APIキーを入力してください。",
+    apiKeyStorageWarning: "注意：APIキーはブラウザのローカルストレージに保存され、サーバーには送信されません。",
+    apiKeyPlaceholder: "Gemini APIキーを入力してください...",
+    saving: "保存中...",
     setApiKey: "APIキーを設定"
   },
 };
