@@ -65,8 +65,7 @@ export function CharacterGenerationModal({ onClose, onSave, characters }: Charac
     if (!activeUploaderId) return;
     const files = event.target.files;
     if (files) {
-      const fileArray = Array.from(files);
-      fileArray.forEach(file => {
+      for (const file of files) {
         const reader = new FileReader();
         reader.onloadend = () => {
           setDrafts(prev => prev.map(d => 
@@ -76,7 +75,7 @@ export function CharacterGenerationModal({ onClose, onSave, characters }: Charac
           ));
         };
         reader.readAsDataURL(file);
-      });
+      }
     }
   }, [activeUploaderId]);
   
