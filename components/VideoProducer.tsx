@@ -32,13 +32,13 @@ const ImportSourceModal = ({
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (files) {
-            Array.from(files).forEach(file => {
+            for (const file of files) {
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     setUploadedPages(prev => [...prev, {data: reader.result as string, mimeType: file.type}]);
                 };
                 reader.readAsDataURL(file);
-            });
+            }
         }
     };
 
