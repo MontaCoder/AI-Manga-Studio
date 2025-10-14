@@ -92,19 +92,19 @@ export function ResultDisplay({
   const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      const fileArray = Array.from(files);
       const remainingSlots = 8 - editRefImages.length;
       if (remainingSlots <= 0) return;
 
-      const filesToProcess = fileArray.slice(0, remainingSlots);
-      
-      filesToProcess.forEach(file => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-              setEditRefImages(prev => [...prev, reader.result as string]);
-          };
-          reader.readAsDataURL(file);
-      });
+      let processed = 0;
+      for (const file of files) {
+        if (processed >= remainingSlots) break;
+        processed += 1;
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setEditRefImages(prev => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   }, [editRefImages]);
   
