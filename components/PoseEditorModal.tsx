@@ -213,7 +213,8 @@ export function PoseEditorModal({ character, onSave, onClose }: PoseEditorModalP
                                     if (!skeletonPose.data[start] || !skeletonPose.data[end]) return null;
                                     return <line key={`${start}-${end}`} x1={skeletonPose.data[start].x} y1={skeletonPose.data[start].y} x2={skeletonPose.data[end].x} y2={skeletonPose.data[end].y} stroke="#00BFFF" strokeWidth={4} strokeLinecap='round'/>
                                 })}
-                                {Object.entries(skeletonPose.data).filter(([key]) => visibleJoints.has(key)).map(([key, pos]) => {
+                                {Object.entries(skeletonPose.data).filter(([key]) => visibleJoints.has(key)).map(([key, value]) => {
+                                    const pos = value as { x: number; y: number } | undefined;
                                     if (!pos) return null;
                                     return <circle key={key} cx={pos.x} cy={pos.y} r={8} fill={key === 'head' ? '#FF4500' : '#FF00FF'} stroke="white" strokeWidth={2} onMouseDown={() => handleSkeletonMouseDown(key)} className="cursor-grab active:cursor-grabbing" />
                                 })}
