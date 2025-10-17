@@ -126,147 +126,150 @@ export function ResultDisplay({
 
   if (isLoading || isColoring || isAnalyzing) {
     return (
-        <div className="bg-white rounded-xl h-full flex flex-col items-center justify-center p-6 text-center">
-            <svg className="animate-spin h-10 w-10 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p className="text-lg font-semibold mt-4">{isAnalyzing ? t('analyzing') : (isLoading && !isColoring ? t('editing') : '')}</p>
-            {isColoring ? <p className="text-gray-500 mt-1">{t('coloringPage')}</p> : isAnalyzing ? null : <LoadingMessage />}
+        <div className="surface-card result-panel h-full items-center justify-center text-center">
+            <div className="loader-ring" aria-hidden />
+            <p className="heading-sm mt-4">{isAnalyzing ? t('analyzing') : (isColoring ? t('coloringPage') : t('processing'))}</p>
+            {!isAnalyzing && !isColoring && <LoadingMessage />}
         </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl h-full flex flex-col">
-      <div className="px-6 pt-6 pb-2 flex justify-between items-center">
-        <h2 className="text-xl font-bold text-gray-800">{t('result')}</h2>
+    <div className="surface-card result-panel">
+      <div className="result-panel__header">
+        <h2 className="heading-md">{t('result')}</h2>
         <button 
           onClick={onReturnToEditor}
-          className="flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
+          className="button-ghost"
+          type="button"
         >
           <ReturnIcon className="w-5 h-5" />
           {t('returnToEditor')}
         </button>
       </div>
 
-      <div className="flex-grow bg-gray-50 rounded-b-xl flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="result-panel__content">
         {error ? (
-            <div className="text-red-700 bg-red-100 p-4 rounded-lg border border-red-300 text-sm m-2">{error}</div>
+            <div className="status-card status-card--error">{error}</div>
         ) : generatedContent?.image ? (
             <>
-                <div className="relative group">
-                     <img src={generatedContent.image} alt="Generated manga page" className="w-full object-contain rounded-md shadow-lg border border-gray-200" />
+                <figure className="result-shell__media">
+                     <img src={generatedContent.image} alt="Generated manga page" className="w-full object-contain rounded-md shadow-sm border border-[rgba(148,163,184,0.24)]" />
                      {mask && (
-                        <div className="absolute inset-0 bg-indigo-500/30 backdrop-blur-sm flex items-center justify-center rounded-md pointer-events-none">
-                            <p className="text-white font-bold text-lg bg-black/50 px-4 py-2 rounded-lg">Mask Applied</p>
+                        <div className="floating-status">
+                            <BrushIcon className="w-4 h-4" />
+                            {t('maskActive')}
                         </div>
                      )}
-                </div>
+                </figure>
 
-                <div className="flex flex-col gap-4 p-2">
+                <div className="result-panel__actions">
+                    {isMonochromeResult && (
+                        <button onClick={onColorize} disabled={isColoring} className="button-primary is-full-width" type="button">
+                            {t('colorizePage')}
+                        </button>
+                    )}
                     <div className="grid grid-cols-2 gap-2">
-                        {isMonochromeResult && (
-                            <button onClick={onColorize} disabled={isColoring} className="col-span-2 w-full bg-teal-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-teal-600 transition-colors flex items-center justify-center text-sm">
-                                {t('colorizePage')}
-                            </button>
-                        )}
-                         <button onClick={onRegenerate} className="w-full bg-gray-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-500 transition-colors flex items-center justify-center gap-2 text-sm">
+                        <button onClick={onRegenerate} className="button-secondary" type="button">
                             <RedoAltIcon className="w-4 h-4" /> {t('regenerate')}
                         </button>
-                        <button onClick={onStartMasking} className="w-full bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-500 transition-colors flex items-center justify-center gap-2 text-sm">
+                        <button onClick={onStartMasking} className="button-secondary" type="button">
                            <BrushIcon className="w-4 h-4" /> {t('editWithMask')}
                         </button>
                     </div>
-                    
                     <button 
                         onClick={onAnalyze} 
-                        className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-500 transition-colors flex items-center justify-center gap-2 text-sm">
+                        className="button-primary"
+                        type="button"
+                    >
                         <WandIcon className="w-4 h-4" /> {t('analyzeResult')}
                     </button>
 
                     {analysisResult && (
-                        <div className="border-t border-gray-200 pt-4 animate-fade-in">
-                            <div className="flex justify-between items-center mb-2">
-                                <h3 className="text-md font-semibold text-gray-700">{t('analysisReport')}</h3>
-                                <button onClick={onClearAnalysis} className="p-1 rounded-full hover:bg-gray-200"><XIcon className="w-4 h-4 text-gray-500" /></button>
+                        <div className="surface-card">
+                            <div className="generation-panel__header">
+                                <h3 className="heading-sm">{t('analysisReport')}</h3>
+                                <button onClick={onClearAnalysis} className="icon-button" type="button"><XIcon className="w-4 h-4" /></button>
                             </div>
-                            <div className="bg-gray-100 p-3 rounded-md border border-gray-200 text-sm">
-                                <p className="text-gray-800">{analysisResult.analysis}</p>
-                                {analysisResult.has_discrepancies ? (
-                                    <button
-                                        onClick={onApplyCorrection}
-                                        className="w-full mt-3 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-500 transition-colors flex items-center justify-center gap-2 text-sm"
-                                    >
-                                        <SparklesIcon className="w-5 h-5" /> {t('applyCorrection')}
-                                    </button>
-                                ) : (
-                                    <div className="mt-3 flex items-center justify-center gap-2 text-green-600 font-semibold">
-                                        <CheckCircleIcon className="w-5 h-5" />
-                                        <span>{t('noCorrectionsNeeded')}</span>
-                                    </div>
-                                )}
-                            </div>
+                            <p className="text-body">{analysisResult.analysis}</p>
+                            {analysisResult.has_discrepancies ? (
+                                <button
+                                    onClick={onApplyCorrection}
+                                    className="button-primary is-full-width"
+                                    type="button"
+                                >
+                                    <SparklesIcon className="w-5 h-5" /> {t('applyCorrection')}
+                                </button>
+                            ) : (
+                                <div className="floating-status pill-success">
+                                    <CheckCircleIcon className="w-5 h-5" />
+                                    <span>{t('noCorrectionsNeeded')}</span>
+                                </div>
+                            )}
                         </div>
                     )}
 
-                    <div className="border-t border-gray-200 pt-4">
-                        <h3 className="text-md font-semibold text-gray-700 mb-2">{t('editResult')}</h3>
+                    <div className="surface-card">
+                        <h3 className="heading-sm">{t('editResult')}</h3>
                         {mask && (
-                            <div className="mb-2 flex justify-between items-center bg-indigo-50 p-2 rounded-md border border-indigo-200">
-                                <p className="text-xs font-semibold text-indigo-700">Mask is active for this edit.</p>
-                                <button onClick={onClearMask} className="text-xs text-indigo-500 hover:underline font-bold">{t('clearMask')}</button>
+                            <div className="floating-status pill-warning">
+                                <BrushIcon className="w-4 h-4" />
+                                <span>{t('maskActive')}</span>
+                                <button onClick={onClearMask} className="button-ghost" type="button">{t('clearMask')}</button>
                             </div>
                         )}
                         <textarea
                             value={editPrompt}
                             onChange={(e) => setEditPrompt(e.target.value)}
                             placeholder={t('editPromptPlaceholder')}
-                            className="w-full h-20 bg-white border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition resize-y"
+                            className="textarea-base"
                         />
-                         <div className="mt-2">
-                             <h4 className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">{t('uploadReference')}</h4>
+                         <div className="result-shell__media">
+                             <div className="generation-panel__header">
+                                <span className="text-caption">{t('uploadReference')}</span>
+                                <span className="text-subtle">{editRefImages.length}/8</span>
+                             </div>
                             <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" id="edit-ref-upload" multiple />
                             <div className="grid grid-cols-4 gap-2">
                                 {editRefImages.map((img, index) => (
                                     <div key={index} className="relative group aspect-square">
-                                        <img src={img} alt={`Ref ${index + 1}`} className="w-full h-full object-cover rounded-md border border-gray-200" />
-                                        <button onClick={() => handleRemoveRefImage(index)} className="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100"><XIcon className="w-3 h-3" /></button>
+                                        <img src={img} alt={`Ref ${index + 1}`} className="w-full h-full object-cover rounded-md border border-[rgba(148,163,184,0.24)]" />
+                                        <button onClick={() => handleRemoveRefImage(index)} className="icon-button" type="button"><XIcon className="w-3 h-3" /></button>
                                     </div>
                                 ))}
                                 {editRefImages.length < 8 && (
-                                    <label htmlFor="edit-ref-upload" className="flex flex-col items-center justify-center aspect-square border-2 border-dashed border-gray-300 text-gray-500 rounded-md cursor-pointer hover:border-indigo-500 hover:text-indigo-600">
+                                    <label htmlFor="edit-ref-upload" className="surface-card cursor-pointer aspect-square flex flex-col items-center justify-center text-subtle">
                                         <UploadIcon className="w-5 h-5" />
-                                        <span className="text-xs mt-1">{t('uploadReference')}</span>
-                                        <span className="text-xs text-gray-400">({editRefImages.length}/8)</span>
+                                        <span className="text-caption">{t('uploadReference')}</span>
                                     </label>
                                 )}
                             </div>
                          </div>
-                         <div className="mt-2">
-                            <h4 className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">{t('characters')}</h4>
+                         <div className="result-shell__media">
+                            <span className="text-caption">{t('characters')}</span>
                             {characters.length > 0 ? (
                                 <div className="grid grid-cols-4 gap-2">
                                     {characters.map(char => (
-                                        <div key={char.id} onClick={() => toggleRefChar(char.id)} className="relative group aspect-square cursor-pointer">
-                                            <img src={char.sheetImage} alt={char.name} className={`w-full h-full object-cover rounded-md border-2 ${editRefCharacterIds.has(char.id) ? 'border-indigo-500' : 'border-transparent'}`} />
+                                        <button key={char.id} onClick={() => toggleRefChar(char.id)} className="relative aspect-square surface-card" type="button">
+                                            <img src={char.sheetImage} alt={char.name} className={`w-full h-full object-cover rounded-md ${editRefCharacterIds.has(char.id) ? 'ring-2 ring-[var(--color-primary)]' : ''}`} />
                                              {editRefCharacterIds.has(char.id) && (
-                                                <div className="absolute inset-0 bg-indigo-600/60 rounded-sm flex items-center justify-center">
-                                                    <CheckCircleIcon className="w-6 h-6 text-white" />
+                                                <div className="floating-status pill-success absolute inset-0 flex items-center justify-center">
+                                                    <CheckCircleIcon className="w-6 h-6" />
                                                 </div>
                                             )}
-                                        </div>
+                                        </button>
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-xs text-gray-400 text-center bg-gray-100 p-2 rounded-md">{t('createCharacterPrompt')}</p>
+                                <p className="text-subtle text-center">{t('createCharacterPrompt')}</p>
                             )}
                          </div>
 
                         <button
                             onClick={handleApplyEdits}
                             disabled={!editPrompt}
-                            className="w-full mt-3 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 text-sm"
+                            className="button-primary is-full-width"
+                            type="button"
                         >
                             <SparklesIcon className="w-5 h-5" /> {t('applyEdits')}
                         </button>
