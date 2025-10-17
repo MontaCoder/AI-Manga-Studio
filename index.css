@@ -340,6 +340,31 @@ select:focus {
   transform: translateY(1px);
 }
 
+.button-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  transition: background var(--transition-snappy), color var(--transition-snappy), border var(--transition-snappy), box-shadow var(--transition-snappy);
+}
+
+.button-ghost:hover {
+  color: var(--color-primary-strong);
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.16);
+  box-shadow: var(--shadow-xs);
+}
+
+.button-ghost:active {
+  transform: translateY(1px);
+}
+
 .microinteraction-pop {
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
@@ -532,11 +557,12 @@ select:focus {
   display: flex;
   flex-direction: column;
   gap: clamp(0.65rem, 1vw, 0.9rem);
-  padding: clamp(0.85rem, 1vw, 1rem);
+  padding: clamp(0.9rem, 1vw, 1.15rem);
   border-radius: var(--radius-pill);
-  background: rgba(15, 23, 42, 0.04);
+  background: var(--surface-primary);
   border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(16px);
   align-self: flex-start;
   position: sticky;
   top: clamp(1rem, 2vh, 1.5rem);
@@ -553,7 +579,7 @@ select:focus {
 .tool-selector {
   padding: 0.35rem;
   border-radius: var(--radius-pill);
-  background: rgba(99, 102, 241, 0.08);
+  background: rgba(99, 102, 241, 0.12);
 }
 
 .tool-button {
@@ -563,14 +589,16 @@ select:focus {
   width: 2.75rem;
   height: 2.75rem;
   border-radius: 50%;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.92);
   color: var(--color-text-muted);
-  border: 1px solid var(--border-subtle);
-  transition: background var(--transition-snappy), color var(--transition-snappy), box-shadow var(--transition-snappy), transform var(--transition-quick);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  transition: background var(--transition-snappy), color var(--transition-snappy), box-shadow var(--transition-snappy), transform var(--transition-quick), border var(--transition-snappy);
 }
 
 .tool-button:hover:not(:disabled) {
   color: var(--color-primary-strong);
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.28);
   box-shadow: var(--shadow-xs);
   transform: translateY(-1px);
 }
@@ -581,10 +609,10 @@ select:focus {
 }
 
 .tool-button.is-active {
-  background: linear-gradient(140deg, rgba(99, 102, 241, 0.16), rgba(99, 102, 241, 0.24));
-  color: var(--color-primary-strong);
-  border-color: rgba(99, 102, 241, 0.28);
-  box-shadow: var(--shadow-xs);
+  background: linear-gradient(150deg, rgba(99, 102, 241, 0.2), rgba(129, 140, 248, 0.32));
+  color: #fff;
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.25);
 }
 
 .tool-button.is-danger {
@@ -693,7 +721,7 @@ select:focus {
   height: 100%;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-subtle);
-  background: rgba(248, 250, 252, 0.75);
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.9) 0%, rgba(237, 242, 255, 0.65) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
   overflow: hidden;
 }
@@ -743,9 +771,9 @@ select:focus {
   gap: 0.35rem;
   padding: 0.4rem 0.5rem;
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.95);
   border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--shadow-sm);
 }
 
 .zoom-cluster__label {
@@ -781,14 +809,15 @@ select:focus {
 
 .utility-pane {
   width: clamp(320px, 26vw, 384px);
-  border-left: 1px solid rgba(148, 163, 184, 0.14);
-  background: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(28px);
+  border-left: 1px solid var(--border-subtle);
+  background: var(--surface-secondary);
+  backdrop-filter: blur(22px);
   padding: clamp(1.5rem, 2vw, 2.25rem);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.4);
 }
 
 .utility-pane__group {
