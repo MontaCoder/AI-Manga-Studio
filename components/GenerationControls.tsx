@@ -91,32 +91,33 @@ export function GenerationControls({
                 <WandIcon className="w-5 h-5" />
                 {isSuggestingLayout ? t('layoutSuggesting') : t('suggestLayout')}
             </button>
-            <div className="segmented-control">
-            <button
-                onClick={() => setColorMode('monochrome')}
-                className={colorMode === 'monochrome' ? 'is-active' : ''}
-                type="button"
-            >
-                {t('monochrome')}
-            </button>
-            <button
-                onClick={() => setColorMode('color')}
-                className={colorMode === 'color' ? 'is-active' : ''}
-                type="button"
-            >
-                {t('color')}
-            </button>
+            <div className="generation-panel__meta">
+                <div className="segmented-control">
+                    <button
+                        onClick={() => setColorMode('monochrome')}
+                        className={colorMode === 'monochrome' ? 'is-active' : ''}
+                        type="button"
+                    >
+                        {t('monochrome')}
+                    </button>
+                    <button
+                        onClick={() => setColorMode('color')}
+                        className={colorMode === 'color' ? 'is-active' : ''}
+                        type="button"
+                    >
+                        {t('color')}
+                    </button>
+                </div>
+                <label htmlFor="empty-bubbles" className="checkbox-inline">
+                    <input
+                        id="empty-bubbles"
+                        type="checkbox"
+                        checked={generateEmptyBubbles}
+                        onChange={(e) => setGenerateEmptyBubbles(e.target.checked)}
+                    />
+                    {t('generateEmptyBubbles')}
+                </label>
             </div>
-            <label htmlFor="empty-bubbles" className="checkbox-inline">
-                <input
-                    id="empty-bubbles"
-                    type="checkbox"
-                    checked={generateEmptyBubbles}
-                    onChange={(e) => setGenerateEmptyBubbles(e.target.checked)}
-                />
-                {t('generateEmptyBubbles')}
-            </label>
-            
             <button
                 onClick={onGenerateImage}
                 disabled={isLoading || !isReadyToGenerate}
