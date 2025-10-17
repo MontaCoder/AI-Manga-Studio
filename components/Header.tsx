@@ -28,49 +28,51 @@ export function Header({ isSidebarOpen, onToggleSidebar, language, setLanguage, 
   ]), [t]);
 
   return (
-    <header className="bg-white border-b border-gray-200 w-full z-20 relative">
-      <div className="container mx-auto px-4 lg:px-6 py-3 flex justify-between items-center">
-        <div className="flex items-center gap-3">
+    <header className="header-bar">
+      <div className="header-bar__inner">
+        <div className="header-brand">
             {currentView === 'video-producer' ? (
-                <button onClick={() => onSetView('manga-editor')} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-indigo-600 p-2 rounded-md hover:bg-gray-100" title={t('backToEditor')}>
+                <button onClick={() => onSetView('manga-editor')} className="button-ghost" title={t('backToEditor')}>
                     <ArrowLeftIcon className="w-5 h-5" />
                     <span className="hidden md:inline">{t('backToEditor')}</span>
                 </button>
             ) : (
-                <button onClick={onToggleSidebar} className="p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    {isSidebarOpen ? <XIcon className="w-6 h-6 text-gray-700" /> : <MenuIcon className="w-6 h-6 text-gray-700" />}
+                <button onClick={onToggleSidebar} className="button-ghost" aria-label={t('toggleSidebar')}>
+                    {isSidebarOpen ? <XIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
                 </button>
             )}
 
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+            <div className="header-brand__logo">
                 {currentView === 'video-producer' 
-                    ? <VideoIcon className="w-10 h-10 text-white" /> 
-                    : <img src="/logo.svg" alt="Logo" className="w-10 h-10" />
+                    ? <VideoIcon className="w-8 h-8 text-indigo-500" /> 
+                    : <img src="/logo.svg" alt="Logo" className="w-9 h-9" />
                 }
             </div>
-            <h1 className="text-xl font-bold text-gray-800 tracking-tight">
-                {currentView === 'video-producer' ? t('aiVideoProducer') : t('AIMangaStudio')}
-            </h1>
+            <div className="header-title">
+                <span className="header-title__primary">
+                    {currentView === 'video-producer' ? t('aiVideoProducer') : t('AIMangaStudio')}
+                </span>
+            </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="header-actions">
             {currentView === 'manga-editor' && (
                 <>
-                    <button onClick={() => onSetView('video-producer')} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-indigo-600 p-2 rounded-md hover:bg-gray-100" title={t('aiVideoProducer')}>
+                    <button onClick={() => onSetView('video-producer')} className="button-ghost" title={t('aiVideoProducer')}>
                         <VideoIcon className="h-5 w-5" />
                     </button>
-                     <button onClick={onShowMangaViewer} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-indigo-600 p-2 rounded-md hover:bg-gray-100" title={t('viewCollection')}>
+                     <button onClick={onShowMangaViewer} className="button-ghost" title={t('viewCollection')}>
                         <BookOpenIcon className="h-5 w-5" />
                     </button>
-                    <button onClick={onShowWorldview} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-indigo-600 p-2 rounded-md hover:bg-gray-100" title={t('worldviewSettings')}>
+                    <button onClick={onShowWorldview} className="button-ghost" title={t('worldviewSettings')}>
                         <GlobeIcon className="h-5 w-5" />
                     </button>
                 </>
             )}
 
-            <div className="relative">
+            <div className="language-menu">
                  <button
                     onClick={() => setIsLangOpen(prev => !prev)}
-                    className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-indigo-600 p-2 rounded-md hover:bg-gray-100"
+                    className="button-ghost"
                     title={t('language')}
                     aria-label={t('language')}
                 >
@@ -78,12 +80,12 @@ export function Header({ isSidebarOpen, onToggleSidebar, language, setLanguage, 
                     <span>{languages.find(l => l.key === language)?.name}</span>
                 </button>
                 {isLangOpen && (
-                    <div className="absolute top-full right-0 mt-2 w-36 bg-white border border-gray-200 rounded-md shadow-lg z-30">
+                    <div className="language-menu__list">
                         {languages.map(({ key, name }) => (
                             <button
                                 key={key}
                                 onClick={() => { setLanguage(key); setIsLangOpen(false); }}
-                                className={`w-full text-left px-4 py-2 text-sm hover:bg-indigo-50 ${language === key ? 'font-bold text-indigo-600' : 'text-gray-700'}`}
+                                className={`language-menu__item ${language === key ? 'is-active' : ''}`}
                             >
                                 {name}
                             </button>
@@ -92,11 +94,10 @@ export function Header({ isSidebarOpen, onToggleSidebar, language, setLanguage, 
                 )}
             </div>
 
-            {/* API Key settings button (visible when callback provided) */}
             {typeof onOpenApiKeyModal === 'function' && (
                 <button
                     onClick={onOpenApiKeyModal}
-                    className="relative flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-indigo-600 p-2 rounded-md hover:bg-gray-100"
+                    className="button-ghost relative"
                     title={t('apiKeySettings')}
                     aria-label={t('apiKeySettings')}
                 >
@@ -107,7 +108,7 @@ export function Header({ isSidebarOpen, onToggleSidebar, language, setLanguage, 
                 </button>
             )}
 
-            <button className="bg-indigo-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-indigo-500 transition-colors text-sm">
+            <button className="button-primary">
               {t('export')}
             </button>
         </div>
