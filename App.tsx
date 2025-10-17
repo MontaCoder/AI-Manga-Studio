@@ -114,6 +114,8 @@ export default function App(): React.ReactElement {
   } | null>(null);
 
   const editorAreaRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
+  const sidebarCloseButtonRef = useRef<HTMLButtonElement>(null);
   const stopAutoGenerationRef = useRef(false);
 
   const [currentView, setCurrentView] = useState<'manga-editor' | 'video-producer'>('manga-editor');
@@ -135,6 +137,47 @@ export default function App(): React.ReactElement {
       document.addEventListener('fullscreenchange', onFullscreenChange);
       return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
   }, []);
+
+  useEffect(() => {
+    if (!isSidebarOpen) return;
+    const mediaQuery = window.matchMedia('(max-width: 1024px)');
+    if (mediaQuery.matches) {
+      sidebarCloseButtonRef.current?.focus({ preventScroll: true });
+    }
+  }, [isSidebarOpen]);
+
+  useEffect(() => {
+    if (!isSidebarOpen) return;
+    const mediaQuery = window.matchMedia('(max-width: 1024px)');
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsSidebarOpen(false);
+        return;
+      }
+
+      if (!mediaQuery.matches || event.key !== 'Tab' || !sidebarRef.current) return;
+
+      const focusable = sidebarRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+
+      const firstElement = focusable[0];
+      const lastElement = focusable[focusable.length - 1];
+
+      if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      } else if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isSidebarOpen]);
   const panelEditorRef = useRef<{ getLayoutAsImage: (includeCharacters: boolean, characters: Character[]) => Promise<string> }>(null);
 
   const currentPage = useMemo(() => pages.find(p => p.id === currentPageId) || pages[0], [pages, currentPageId]);
@@ -608,6 +651,7 @@ export default function App(): React.ReactElement {
 
   return (
     <div className="layout-shell">
+      <a className="skip-link" href="#main-content">{t('skipToContent') || 'Skip to main content'}</a>
       <Header 
         isSidebarOpen={isSidebarOpen} 
         onToggleSidebar={() => setIsSidebarOpen(p => !p)}
@@ -678,7 +722,7 @@ export default function App(): React.ReactElement {
             }}
         />
       )}
-      <div className="layout-main">
+      <div className="layout-main" id="main-content" tabIndex={-1}>
         {currentView === 'video-producer' ? (
           <div className="shell-scroll">
             <VideoProducer characters={characters} pages={pages} />
@@ -686,7 +730,11 @@ export default function App(): React.ReactElement {
         ) : (
           <>
           <div ref={editorAreaRef} className="workspace-pane">
-            <aside className={`sidebar-pane ${isSidebarOpen ? 'is-visible' : 'is-hidden'}`}>
+            <aside
+              ref={sidebarRef}
+              className={`sidebar-pane ${isSidebarOpen ? 'is-visible' : 'is-hidden'}`}
+              aria-label={t('pages')}
+            >
               <section className="sidebar-pane__section">
                 <div className="sidebar-pane__section-header">
                   <div className="sidebar-pane__section-meta">
@@ -697,6 +745,7 @@ export default function App(): React.ReactElement {
                     type="button"
                     className="icon-button sidebar-pane__close"
                     aria-label={t('toggleSidebar')}
+                    ref={sidebarCloseButtonRef}
                     onClick={() => setIsSidebarOpen(false)}
                   >
                     <XIcon className="w-4 h-4" />
@@ -745,11 +794,22 @@ export default function App(): React.ReactElement {
                               <span onClick={() => setCurrentPageId(page.id)} className="page-card__name cursor-pointer">{page.name}</span>
                               <div className="page-card__actions">
                                   {index > 0 && (
-                                    <button onClick={() => handleToggleReferencePrevious(page.id)} className={`icon-button ${page.shouldReferencePrevious ? 'is-active' : ''}`} title={t('referencePreviousPage')}>
+                                    <button
+                                      onClick={() => handleToggleReferencePrevious(page.id)}
+                                      className={`icon-button ${page.shouldReferencePrevious ? 'is-active' : ''}`}
+                                      title={t('referencePreviousPage')}
+                                      aria-label={t('referencePreviousPage')}
+                                    >
                                         <LinkIcon className="w-4 h-4" />
                                     </button>
                                   )}
-                                  <button onClick={() => handleDeletePage(page.id)} className="icon-button is-critical" title={t('delete')} disabled={pages.length <= 1}>
+                                  <button
+                                    onClick={() => handleDeletePage(page.id)}
+                                    className="icon-button is-critical"
+                                    title={t('delete')}
+                                    aria-label={t('delete')}
+                                    disabled={pages.length <= 1}
+                                  >
                                       <TrashIcon className="w-4 h-4" />
                                   </button>
                               </div>
@@ -777,7 +837,12 @@ export default function App(): React.ReactElement {
                                 <img src={char.sheetImage} alt={char.name} className="w-12 h-12 rounded-md object-cover" />
                                 <span>{char.name}</span>
                             </div>
-                            <button onClick={() => handleDeleteCharacter(char.id)} className="icon-button is-critical opacity-0 group-hover:opacity-100 transition-opacity" title={t('delete')}>
+                            <button
+                              onClick={() => handleDeleteCharacter(char.id)}
+                              className="icon-button is-critical opacity-0 group-hover:opacity-100 transition-opacity"
+                              title={t('delete')}
+                              aria-label={t('delete')}
+                            >
                                 <TrashIcon className="w-4 h-4" />
                             </button>
                         </div>
@@ -795,7 +860,11 @@ export default function App(): React.ReactElement {
                 <div className="workspace-pane__header">
                   <span className="floating-pill">{currentPage.name}</span>
                   {currentPage.generatedImage && (
-                    <button className="button-ghost" onClick={() => setViewMode(viewMode === 'result' ? 'editor' : 'result')}>
+                    <button
+                      className="button-ghost"
+                      onClick={() => setViewMode(viewMode === 'result' ? 'editor' : 'result')}
+                      aria-label={viewMode === 'result' ? t('backToEditor') : t('viewResult')}
+                    >
                       {viewMode === 'result' ? t('backToEditor') : t('viewResult')}
                     </button>
                   )}
