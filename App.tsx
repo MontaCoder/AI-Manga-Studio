@@ -13,7 +13,8 @@ import { StorySuggestionModal } from './components/StorySuggestionModal';
 import { VideoProducer } from './components/VideoProducer';
 import { generateMangaPage, generateCharacterSheet, editCharacterSheet, colorizeMangaPage, editMangaPage, generateDetailedStorySuggestion, generateLayoutProposal, analyzeAndSuggestCorrections } from './services/geminiService';
 import type { Character, Page, CanvasShape, ViewTransform, StorySuggestion, PanelShape, ImageShape, AnalysisResult } from './types';
-import { AddUserIcon, TrashIcon, LinkIcon } from './components/icons';
+import { AddUserIcon, TrashIcon, LinkIcon, XIcon } from './components/icons';
+
 import { useLocalization } from './hooks/useLocalization';
 import { Language } from './i18n/locales';
 import { useApiKey } from './hooks/useApiKey';
@@ -606,14 +607,14 @@ export default function App(): React.ReactElement {
   const anyLoading = isLoading || isColoring || isSuggestingLayout || isSuggestingStory || assistantModeState?.isActive || isAnalyzing;
 
   return (
-    <div className="flex flex-col h-screen font-sans bg-gray-50 text-gray-800">
+    <div className="layout-shell">
       <Header 
         isSidebarOpen={isSidebarOpen} 
         onToggleSidebar={() => setIsSidebarOpen(p => !p)}
         language={language}
         setLanguage={setLanguage}
-  onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)}
-  hasApiKey={hasApiKey}
+        onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)}
+        hasApiKey={hasApiKey}
         onShowMangaViewer={() => setShowMangaViewer(true)}
         onShowWorldview={() => setShowWorldviewModal(true)}
         currentView={currentView}
@@ -631,7 +632,7 @@ export default function App(): React.ReactElement {
           characters={characters}
         />
       )}
-       {showWorldviewModal && (
+      {showWorldviewModal && (
         <WorldviewModal
           initialWorldview={worldview}
           onSave={(newWorldview) => {
@@ -677,203 +678,226 @@ export default function App(): React.ReactElement {
             }}
         />
       )}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="layout-main">
         {currentView === 'video-producer' ? (
-          <VideoProducer characters={characters} pages={pages} />
+          <div className="shell-scroll">
+            <VideoProducer characters={characters} pages={pages} />
+          </div>
         ) : (
           <>
-            <div ref={editorAreaRef} className="flex flex-1 bg-gray-50">
-              <aside className={`w-64 bg-white p-4 border-r border-gray-200 flex-col gap-8 flex-shrink-0 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'flex' : 'hidden'}`}>
-                <div>
-                  <h3 className="font-bold text-sm mb-2 text-gray-500 tracking-wider uppercase">{t('pages')}</h3>
-                  <div className="mb-4 relative">
-                      <label htmlFor="aspect-ratio-select" className="block text-xs font-medium text-gray-500 mb-1">{t('aspectRatio')}</label>
-                      <button
-                          onClick={() => setIsAspectRatioOpen(prev => !prev)}
-                          className="w-full text-sm p-1.5 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 flex justify-between items-center bg-white"
-                      >
-                          <span>{t(aspectRatios[currentPage.aspectRatio].name)} ({aspectRatios[currentPage.aspectRatio].value})</span>
-                          <svg className={`w-4 h-4 text-gray-500 transition-transform ${isAspectRatioOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                      </button>
-                      {isAspectRatioOpen && (
-                          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-20">
-                              {Object.entries(aspectRatios).map(([key, {name, value, w, h}]) => (
-                                  <div key={key} onClick={() => { handleUpdateCurrentPage({ aspectRatio: key }); setIsAspectRatioOpen(false); }} className="px-3 py-2 text-sm hover:bg-indigo-50 cursor-pointer flex items-center gap-3">
-                                      <div className="w-6 h-6 flex items-center justify-center">
-                                          <div className="bg-gray-200 border border-gray-400" style={{ width: `${w/Math.max(w,h)*20}px`, height: `${h/Math.max(w,h)*20}px`}}></div>
-                                      </div>
-                                      <span>{t(name)} ({value})</span>
-                                  </div>
-                              ))}
-                          </div>
-                      )}
+          <div ref={editorAreaRef} className="workspace-pane">
+            <aside className={`sidebar-pane ${isSidebarOpen ? 'is-visible' : 'is-hidden'}`}>
+              <section className="sidebar-pane__section">
+                <div className="sidebar-pane__section-header">
+                  <div className="sidebar-pane__section-meta">
+                    <span className="heading-eyebrow">{t('pages')}</span>
+                    <span className="badge-inline">{pages.length} {t('pages')}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="icon-button sidebar-pane__close"
+                    aria-label={t('toggleSidebar')}
+                    onClick={() => setIsSidebarOpen(false)}
+                  >
+                    <XIcon className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="stagger-grid">
+                  <div className="relative">
+                    <label htmlFor="aspect-ratio-select" className="input-help">{t('aspectRatio')}</label>
+                    <button
+                        onClick={() => setIsAspectRatioOpen(prev => !prev)}
+                        className="button-secondary w-full justify-between"
+                    >
+                        <span>{t(aspectRatios[currentPage.aspectRatio].name)} ({aspectRatios[currentPage.aspectRatio].value})</span>
+                        <svg className={`w-4 h-4 transition-transform ${isAspectRatioOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    {isAspectRatioOpen && (
+                        <div className="language-menu__list mt-3">
+                            {Object.entries(aspectRatios).map(([key, {name, value, w, h}]) => (
+                                <button key={key} onClick={() => { handleUpdateCurrentPage({ aspectRatio: key }); setIsAspectRatioOpen(false); }} className="language-menu__item text-left flex items-center gap-3">
+                                    <span className="flex items-center justify-center w-6 h-6">
+                                      <span className="inline-block bg-slate-200 border border-slate-400" style={{ width: `${w/Math.max(w,h)*20}px`, height: `${h/Math.max(w,h)*20}px`}}></span>
+                                    </span>
+                                    <span>{t(name)} ({value})</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
                   </div>
                   {assistantModeState?.isActive ? (
-                    <div className="flex flex-col gap-2 overflow-y-auto max-h-96">
+                    <div className="card-thumbnail-list max-h-96 overflow-y-auto">
                         {pages.filter(p => p.assistantProposalImage).map(page => (
-                            <div key={`thumb-${page.id}`} onClick={() => setCurrentPageId(page.id)} className={`relative rounded-lg cursor-pointer border-2 ${currentPageId === page.id ? 'border-indigo-500' : 'border-transparent'}`}>
+                            <div key={`thumb-${page.id}`} onClick={() => setCurrentPageId(page.id)} className={`relative surface-card cursor-pointer overflow-hidden ${currentPageId === page.id ? 'border-[var(--color-border-strong)]' : ''}`}>
                                 <img 
                                     src={page.assistantProposalImage!} 
                                     alt={page.name}
-                                    className="w-full h-auto object-cover rounded-md"
+                                    className="w-full h-full object-cover"
                                 />
-                                <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs font-semibold text-center p-1 rounded-b-md">{page.name}</div>
+                                <div className="absolute inset-x-0 bottom-0 bg-black/45 text-white text-xs font-semibold text-center py-1">{page.name}</div>
                             </div>
                         ))}
                     </div>
                   ) : (
-                    <>
-                    {pages.map((page, index) => (
-                        <div key={page.id} className={`rounded-lg p-2 font-semibold mb-2 flex items-center justify-between group ${currentPageId === page.id ? 'border-2 border-indigo-500 bg-indigo-50 text-indigo-700' : 'border border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-400'}`}>
-                            <span onClick={() => setCurrentPageId(page.id)} className="flex-grow text-center cursor-pointer">{page.name}</span>
-                            <div className="flex items-center">
-                                {index > 0 && (
-                                  <div className="relative group flex items-center">
-                                        <button onClick={() => handleToggleReferencePrevious(page.id)} className="p-1 rounded-full hover:bg-indigo-100">
-                                            <LinkIcon className={`w-4 h-4 transition-colors ${page.shouldReferencePrevious ? 'text-indigo-600' : 'text-gray-400'}`} />
-                                        </button>
-                                        <div className="absolute bottom-full right-0 mb-1 w-max max-w-xs px-2 py-1 bg-gray-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                                            {t('referencePreviousPage')}
-                                        </div>
-                                    </div>
-                                )}
-                                <button onClick={() => handleDeletePage(page.id)} className="p-1 rounded-full hover:bg-red-100 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0" disabled={pages.length <= 1}>
-                                    <TrashIcon className="w-4 h-4 text-red-500" />
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                    <div onClick={() => handleAddPage()} className="border border-dashed border-gray-300 bg-gray-50 rounded-lg p-2 text-center font-semibold text-gray-500 mt-2 cursor-pointer hover:border-indigo-500 hover:text-indigo-700">
-                      {t('addPage')}
-                    </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <h3 className="font-bold text-sm mb-2 text-gray-500 tracking-wider uppercase">{t('characters')}</h3>
-                  <div className="flex flex-col gap-2">
-                      {characters.length === 0 && <p className="text-xs text-gray-400 text-center p-2">{t('createCharacterPrompt')}</p>}
-                      {characters.map(char => (
-                          <div key={char.id} className="flex items-center justify-between gap-3 p-2 rounded-md bg-gray-100 border border-gray-200 group relative">
-                              <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">{t('dragMe')}</div>
-                              <div className="flex items-center gap-3 flex-grow cursor-grab" draggable onDragStart={(e) => { e.dataTransfer.setData('characterId', char.id); setIsDraggingCharacter(true); }} onDragEnd={() => setIsDraggingCharacter(false)}>
-                                  <img src={char.sheetImage} alt={char.name} className="w-10 h-10 rounded-sm object-cover" />
-                                  <span className="font-semibold text-sm text-gray-700">{char.name}</span>
+                    <div className="sidebar-pane__cards">
+                      {pages.map((page, index) => (
+                          <div key={page.id} className={`page-card ${currentPageId === page.id ? 'is-active' : ''}`}>
+                              <span onClick={() => setCurrentPageId(page.id)} className="page-card__name cursor-pointer">{page.name}</span>
+                              <div className="page-card__actions">
+                                  {index > 0 && (
+                                    <button onClick={() => handleToggleReferencePrevious(page.id)} className={`icon-button ${page.shouldReferencePrevious ? 'is-active' : ''}`} title={t('referencePreviousPage')}>
+                                        <LinkIcon className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                  <button onClick={() => handleDeletePage(page.id)} className="icon-button is-critical" title={t('delete')} disabled={pages.length <= 1}>
+                                      <TrashIcon className="w-4 h-4" />
+                                  </button>
                               </div>
-                              <button onClick={() => handleDeleteCharacter(char.id)} className="p-1 rounded-full hover:bg-red-100 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <TrashIcon className="w-4 h-4 text-red-500" />
-                              </button>
                           </div>
                       ))}
-                  </div>
-                  <button onClick={() => setShowCharacterModal(true)} className="w-full mt-2 flex items-center justify-center gap-2 border border-dashed border-gray-300 bg-gray-50 rounded-lg p-2 text-center font-semibold text-gray-500 cursor-pointer hover:border-indigo-500 hover:text-indigo-700">
-                    <AddUserIcon className="w-5 h-5" /> {t('addCharacter')}
-                  </button>
+                      <button onClick={() => handleAddPage()} className="button-secondary justify-center text-sm">
+                        <AddUserIcon className="w-4 h-4" />
+                        {t('addPage')}
+                      </button>
+                    </div>
+                  )}
                 </div>
-              </aside>
+              </section>
 
-              <main className="flex-1 p-4 lg:p-6 overflow-auto relative">
-                {viewMode === 'result' && currentPage.generatedImage && currentPage.panelLayoutImage ? (
-                  <ComparisonViewer 
-                      beforeImage={currentPage.panelLayoutImage}
-                      afterImage={currentPage.generatedImage}
-                      isMonochromeResult={isMonochromeResult}
-                      onColorize={handleColorize}
-                      isColoring={isColoring}
+              <section className="sidebar-pane__section">
+                <div className="sidebar-pane__section-header">
+                  <span className="heading-eyebrow">{t('characters')}</span>
+                  {characters.length > 0 && <span className="badge-inline">{characters.length}</span>}
+                </div>
+                <div className="sidebar-pane__cards">
+                    {characters.length === 0 && <p className="empty-state__description">{t('createCharacterPrompt')}</p>}
+                    {characters.map(char => (
+                        <div key={char.id} className="character-card group">
+                            <div className="character-card__meta cursor-grab" draggable onDragStart={(e) => { e.dataTransfer.setData('characterId', char.id); setIsDraggingCharacter(true); }} onDragEnd={() => setIsDraggingCharacter(false)}>
+                                <img src={char.sheetImage} alt={char.name} className="w-12 h-12 rounded-md object-cover" />
+                                <span>{char.name}</span>
+                            </div>
+                            <button onClick={() => handleDeleteCharacter(char.id)} className="icon-button is-critical opacity-0 group-hover:opacity-100 transition-opacity" title={t('delete')}>
+                                <TrashIcon className="w-4 h-4" />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+                <button onClick={() => setShowCharacterModal(true)} className="button-secondary justify-center">
+                  <AddUserIcon className="w-4 h-4" />
+                  {t('addCharacter')}
+                </button>
+              </section>
+            </aside>
+
+            <div className="workspace-pane__body">
+              <section className="workspace-canvas">
+                <div className="workspace-pane__header">
+                  <span className="floating-pill">{currentPage.name}</span>
+                  {currentPage.generatedImage && (
+                    <button className="button-ghost" onClick={() => setViewMode(viewMode === 'result' ? 'editor' : 'result')}>
+                      {viewMode === 'result' ? t('backToEditor') : t('viewResult')}
+                    </button>
+                  )}
+                </div>
+                <div className="workspace-canvas__scroll">
+                  {viewMode === 'result' && currentPage.generatedImage && currentPage.panelLayoutImage ? (
+                    <ComparisonViewer 
+                        beforeImage={currentPage.panelLayoutImage}
+                        afterImage={currentPage.generatedImage}
+                        isMonochromeResult={isMonochromeResult}
+                        onColorize={handleColorize}
+                        isColoring={isColoring}
+                    />
+                  ) : (
+                    <PanelEditor 
+                        ref={panelEditorRef}
+                        key={currentPage.id}
+                        shapes={currentPage.shapes}
+                        onShapesChange={handleShapesChange}
+                        characters={characters}
+                        aspectRatio={currentPage.aspectRatio}
+                        viewTransform={currentPage.viewTransform}
+                        onViewTransformChange={handleViewTransformChange}
+                        isDraggingCharacter={isDraggingCharacter}
+                        onUndo={handleUndo}
+                        onRedo={handleRedo}
+                        canUndo={currentPage.shapesHistoryIndex > 0}
+                        canRedo={currentPage.shapesHistoryIndex < currentPage.shapesHistory.length - 1}
+                        proposalImage={currentPage.assistantProposalImage}
+                        proposalOpacity={currentPage.proposalOpacity}
+                        isProposalVisible={currentPage.isProposalVisible}
+                        onProposalSettingsChange={(updates) => handleUpdateCurrentPage(updates)}
+                        onApplyLayout={handleApplyLayout}
+                        isFullscreen={isFullscreen}
+                        onToggleFullscreen={toggleFullscreen}
+                    />
+                  )}
+                </div>
+              </section>
+
+              <aside className="utility-pane">
+                {viewMode === 'result' && currentPage.generatedImage && !error ? (
+                  <ResultDisplay
+                    isLoading={isLoading}
+                    isColoring={isColoring}
+                    generatedContent={{ image: currentPage.generatedImage, text: currentPage.generatedText }}
+                    error={error}
+                    isMonochromeResult={isMonochromeResult}
+                    onColorize={handleColorize}
+                    onRegenerate={handleGenerateImage}
+                    onEdit={handleEditImage}
+                    onStartMasking={() => setIsMasking(true)}
+                    mask={currentMask}
+                    onClearMask={() => setCurrentMask(null)}
+                    onReturnToEditor={() => setViewMode('editor')}
+                    isAnalyzing={isAnalyzing}
+                    analysisResult={analysisResult}
+                    onAnalyze={handleAnalyzeResult}
+                    onApplyCorrection={handleApplyCorrection}
+                    onClearAnalysis={() => setAnalysisResult(null)}
+                    characters={characters}
                   />
                 ) : (
-                  <PanelEditor 
-                      ref={panelEditorRef}
-                      key={currentPage.id}
-                      shapes={currentPage.shapes}
-                      onShapesChange={handleShapesChange}
-                      characters={characters}
-                      aspectRatio={currentPage.aspectRatio}
-                      viewTransform={currentPage.viewTransform}
-                      onViewTransformChange={handleViewTransformChange}
-                      isDraggingCharacter={isDraggingCharacter}
-                      onUndo={handleUndo}
-                      onRedo={handleRedo}
-                      canUndo={currentPage.shapesHistoryIndex > 0}
-                      canRedo={currentPage.shapesHistoryIndex < currentPage.shapesHistory.length - 1}
-                      proposalImage={currentPage.assistantProposalImage}
-                      proposalOpacity={currentPage.proposalOpacity}
-                      isProposalVisible={currentPage.isProposalVisible}
-                      onProposalSettingsChange={(updates) => handleUpdateCurrentPage(updates)}
-                      onApplyLayout={handleApplyLayout}
-                      isFullscreen={isFullscreen}
-                      onToggleFullscreen={toggleFullscreen}
-                  />
-                )}
-              </main>
-            </div>
-            <aside className="w-96 bg-white p-6 border-l border-gray-200 flex flex-col gap-6 overflow-y-auto flex-shrink-0">
-              {viewMode === 'result' && currentPage.generatedImage && !error ? (
-                <ResultDisplay
-                  isLoading={isLoading}
-                  isColoring={isColoring}
-                  generatedContent={{ image: currentPage.generatedImage, text: currentPage.generatedText }}
-                  error={error}
-                  isMonochromeResult={isMonochromeResult}
-                  onColorize={handleColorize}
-                  onRegenerate={handleGenerateImage}
-                  onEdit={handleEditImage}
-                  onStartMasking={() => setIsMasking(true)}
-                  mask={currentMask}
-                  onClearMask={() => setCurrentMask(null)}
-                  onReturnToEditor={() => setViewMode('editor')}
-                  isAnalyzing={isAnalyzing}
-                  analysisResult={analysisResult}
-                  onAnalyze={handleAnalyzeResult}
-                  onApplyCorrection={handleApplyCorrection}
-                  onClearAnalysis={() => setAnalysisResult(null)}
-                  characters={characters}
-                />
-              ) : (
-                <div className="flex flex-col gap-6 h-full">
-                  {!anyLoading && <h2 className="text-xl font-bold text-gray-800">{t('generateYourManga')}</h2>}
-                  {anyLoading ? (
-                    <div className="flex flex-col items-center justify-center h-full text-center">
-                        {assistantModeState?.hasError ? (
-                            <div className="flex flex-col items-center gap-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                </svg>
-                                <p className="text-red-600 font-semibold px-4">{assistantModeState.statusMessage}</p>
-                                <button 
-                                    onClick={() => handleStartAutoGeneration(assistantModeState.totalPages, assistantModeState.failedPageNumber)}
-                                    className="bg-indigo-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-indigo-500 transition-colors text-sm"
-                                >
-                                    {t('retryGeneration')}
-                                </button>
-                            </div>
-                        ) : (
-                            <>
-                                <svg className="animate-spin h-10 w-10 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                <p className="text-gray-500 mt-4 font-semibold">
-                                   {assistantModeState?.isActive ? assistantModeState.statusMessage :
-                                    isAnalyzing ? t('analyzing') :
-                                    isSuggestingStory ? t('storySuggesting') : 
-                                    isSuggestingLayout ? t('layoutSuggesting') : 
-                                    isColoring ? t('coloringPage') : t('generating')}
-                                </p>
-                                {assistantModeState?.isActive && !assistantModeState?.hasError && (
-                                    <button
-                                        onClick={handleStopAutoGeneration}
-                                        className="mt-4 bg-red-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-red-500 transition-colors text-sm"
-                                    >
-                                        {t('stopGeneration')}
-                                    </button>
-                                )}
-                            </>
-                        )}
-                    </div>
-                   ) : (
-                    <>
+                  <div className="result-shell">
+                    {!anyLoading && <h2 className="utility-pane__group-title">{t('generateYourManga')}</h2>}
+                    {anyLoading ? (
+                      <div className="status-card">
+                          {assistantModeState?.hasError ? (
+                              <>
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-10 w-10 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                  </svg>
+                                  <p className="status-card__title">{assistantModeState.statusMessage}</p>
+                                  <button 
+                                      onClick={() => handleStartAutoGeneration(assistantModeState.totalPages, assistantModeState.failedPageNumber)}
+                                      className="button-primary justify-center text-sm"
+                                  >
+                                      {t('retryGeneration')}
+                                  </button>
+                              </>
+                          ) : (
+                              <>
+                                  <div className="loader-ring" aria-hidden />
+                                  <p className="status-card__body">
+                                     {assistantModeState?.isActive ? assistantModeState.statusMessage :
+                                      isAnalyzing ? t('analyzing') :
+                                      isSuggestingStory ? t('storySuggesting') : 
+                                      isSuggestingLayout ? t('layoutSuggesting') : 
+                                      isColoring ? t('coloringPage') : t('generating')}
+                                  </p>
+                                  {assistantModeState?.isActive && !assistantModeState?.hasError && (
+                                      <button
+                                          onClick={handleStopAutoGeneration}
+                                          className="button-secondary justify-center text-sm"
+                                      >
+                                          {t('stopGeneration')}
+                                      </button>
+                                  )}
+                              </>
+                          )}
+                      </div>
+                     ) : (
                       <GenerationControls
                         onGenerateImage={handleGenerateImage}
                         isLoading={isLoading}
@@ -892,15 +916,25 @@ export default function App(): React.ReactElement {
                         setGenerateEmptyBubbles={setGenerateEmptyBubbles}
                         assistantModeState={assistantModeState}
                       />
-                    </>
-                  )}
-                   {error && <div className="text-red-700 bg-red-100 p-4 rounded-lg border border-red-300 text-sm">{error}</div>}
-                </div>
-              )}
-            </aside>
+                    )}
+                     {error && <div className="status-card status-card--error">{error}</div>}
+                  </div>
+                )}
+              </aside>
+            </div>
+          </div>
+          {isSidebarOpen && (
+            <button
+              type="button"
+              className="sidebar-backdrop"
+              aria-label={t('toggleSidebar')}
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          )}
           </>
         )}
       </div>
     </div>
   );
+
 }
