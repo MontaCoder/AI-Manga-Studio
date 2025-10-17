@@ -1141,73 +1141,232 @@ export const PanelEditor = forwardRef<
     const sortedShapes = useMemo(() => [...shapes].sort((a, b) => (shapeOrder[a.type] || 99) - (shapeOrder[b.type] || 99)), [shapes, shapeOrder]);
 
   return (
-    <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm h-full flex flex-col relative" onDragOver={handleDragOver} onDrop={handleDrop}>
+    <div className="surface-card editor-shell" onDragOver={handleDragOver} onDrop={handleDrop}>
         <input type="file" ref={imageUploadRef} onChange={handleImageFileSelect} accept="image/png, image/jpeg, image/webp" className="hidden"/>
         {tooltip && (
-            <div style={{ position: 'fixed', left: tooltip.x, top: tooltip.y, zIndex: 100 }} className="bg-gray-800 text-white text-xs px-2 py-1 rounded-md shadow-lg pointer-events-none transition-opacity duration-150">
+            <div style={{ position: 'fixed', left: tooltip.x, top: tooltip.y, zIndex: 100 }} className="editor-tooltip">
                 {tooltip.text}
             </div>
         )}
         {isDraggingCharacter && (
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 pointer-events-none rounded-xl">
-                <p className="text-white text-2xl font-bold bg-indigo-600/80 px-6 py-3 rounded-lg">{t('dropCharacterOnPanel')}</p>
+            <div className="drag-overlay">
+                <p className="drag-overlay__label">{t('dropCharacterOnPanel')}</p>
             </div>
         )}
         {posingCharacter && <PoseEditorModal character={posingCharacter} onSave={savePose} onClose={() => setPosingCharacter(null)} />}
         {editingShapeId && editingShape && editingShapeSVGPos && (
-             <textarea ref={textEditRef} value={editingShape.text} onChange={(e) => onShapesChange(shapes.map(s => s.id === editingShapeId ? {...s, text: e.target.value} : s), false)} onBlur={() => { onShapesChange(shapes, true); setEditingShapeId(null); } } onKeyDown={(e) => e.key === 'Enter' && e.shiftKey ? null : e.key === 'Escape' || e.key === 'Enter' ? setEditingShapeId(null) : null} className="absolute z-50 p-2 border-2 border-indigo-500 rounded-md bg-white resize-none shadow-lg" style={{ left: `${editingShapeSVGPos.x}px`, top: `${editingShapeSVGPos.y}px`, width: `${editingShapeSVGPos.width}px`, height: `${editingShapeSVGPos.height}px`, fontFamily: 'sans-serif', fontSize: `${editingShapeSVGPos.fontSize}px`, lineHeight: 1.2, outline: 'none' }}/>
+             <textarea
+              ref={textEditRef}
+              value={editingShape.text}
+              onChange={(e) => onShapesChange(shapes.map(s => s.id === editingShapeId ? {...s, text: e.target.value} : s), false)}
+              onBlur={() => { onShapesChange(shapes, true); setEditingShapeId(null); } }
+              onKeyDown={(e) => e.key === 'Enter' && e.shiftKey ? null : e.key === 'Escape' || e.key === 'Enter' ? setEditingShapeId(null) : null}
+              className="floating-text-editor"
+              style={{ left: `${editingShapeSVGPos.x}px`, top: `${editingShapeSVGPos.y}px`, width: `${editingShapeSVGPos.width}px`, height: `${editingShapeSVGPos.height}px`, fontSize: `${editingShapeSVGPos.fontSize}px`, lineHeight: 1.2 }}
+            />
         )}
-        <div className="flex justify-between items-center mb-4 px-2">
-            <h2 className="text-lg font-semibold text-gray-700">{t('createVisualLayout')}</h2>
-            <button onClick={onToggleFullscreen} className="p-2 rounded-full hover:bg-gray-200" onMouseEnter={(e) => handleTooltipShow(e, isFullscreen ? t('fullscreenExit') : t('fullscreenEnter'))} onMouseLeave={handleTooltipHide}>
+        <div className="editor-shell__header">
+            <h2 className="heading-md">{t('createVisualLayout')}</h2>
+            <button
+              type="button"
+              className="button-ghost"
+              onClick={onToggleFullscreen}
+              aria-label={isFullscreen ? t('fullscreenExit') : t('fullscreenEnter')}
+              onMouseEnter={(e) => handleTooltipShow(e, isFullscreen ? t('fullscreenExit') : t('fullscreenEnter'))}
+              onMouseLeave={handleTooltipHide}
+            >
                 {isFullscreen ? <ShrinkIcon className="w-5 h-5" /> : <ExpandIcon className="w-5 h-5" />}
             </button>
         </div>
-      <div className="flex-grow w-full h-full flex items-start justify-center gap-4 bg-gray-100 rounded-lg overflow-hidden p-4 relative">
-        {/* Toolbar */}
-        <div className="bg-white shadow-lg rounded-full border border-gray-200 p-2 flex flex-col items-center gap-1 z-10">
-            <button onClick={onUndo} disabled={!canUndo} className="p-3 rounded-full hover:bg-gray-200 text-gray-700 disabled:text-gray-300 disabled:cursor-not-allowed" onMouseEnter={(e) => handleTooltipShow(e, t('undo'))} onMouseLeave={handleTooltipHide}><UndoIcon className="w-5 h-5"/></button>
-            <button onClick={onRedo} disabled={!canRedo} className="p-3 rounded-full hover:bg-gray-200 text-gray-700 disabled:text-gray-300 disabled:cursor-not-allowed" onMouseEnter={(e) => handleTooltipShow(e, t('redo'))} onMouseLeave={handleTooltipHide}><RedoIcon className="w-5 h-5"/></button>
-            <div className="w-8 h-px bg-gray-300 my-1"></div>
-            <button onClick={() => { setActiveTool('select'); }} className={`p-3 rounded-full ${activeTool === 'select' ? 'bg-indigo-600 text-white' : 'hover:bg-gray-200 text-gray-700'}`} onMouseEnter={(e) => handleTooltipShow(e, t('selectAndMove'))} onMouseLeave={handleTooltipHide}><SelectIcon className="w-5 h-5"/></button>
-            <button onClick={() => setActiveTool('pan')} className={`p-3 rounded-full ${activeTool === 'pan' ? 'bg-indigo-600 text-white' : 'hover:bg-gray-200 text-gray-700'}`} onMouseEnter={(e) => handleTooltipShow(e, t('panCanvas'))} onMouseLeave={handleTooltipHide}><HandIcon className="w-5 h-5"/></button>
-            <div className="w-8 h-px bg-gray-300 my-1"></div>
-            <button onClick={() => setActiveTool('panel')} className={`p-3 rounded-full ${activeTool === 'panel' ? 'bg-indigo-600 text-white' : 'hover:bg-gray-200 text-gray-700'}`} onMouseEnter={(e) => handleTooltipShow(e, t('drawPanel'))} onMouseLeave={handleTooltipHide}><PolygonIcon className="w-5 h-5"/></button>
-            <button onClick={() => setActiveTool('text')} className={`p-3 rounded-full ${activeTool === 'text' ? 'bg-indigo-600 text-white' : 'hover:bg-gray-200 text-gray-700'}`} onMouseEnter={(e) => handleTooltipShow(e, t('addText'))} onMouseLeave={handleTooltipHide}><TextToolIcon className="w-5 h-5"/></button>
-            <button onClick={() => setActiveTool('draw')} className={`p-3 rounded-full ${activeTool === 'draw' ? 'bg-indigo-600 text-white' : 'hover:bg-gray-200 text-gray-700'}`} onMouseEnter={(e) => handleTooltipShow(e, t('drawFreehand'))} onMouseLeave={handleTooltipHide}><BrushIcon className="w-5 h-5"/></button>
-            <button onClick={() => setActiveTool('arrow')} className={`p-3 rounded-full ${activeTool === 'arrow' ? 'bg-indigo-600 text-white' : 'hover:bg-gray-200 text-gray-700'}`} onMouseEnter={(e) => handleTooltipShow(e, t('drawArrow'))} onMouseLeave={handleTooltipHide}><ArrowIcon className="w-5 h-5"/></button>
-            <button onClick={() => imageUploadRef.current?.click()} className="p-3 rounded-full hover:bg-gray-200 text-gray-700" onMouseEnter={(e) => handleTooltipShow(e, t('uploadPose'))} onMouseLeave={handleTooltipHide}><UploadIcon className="w-5 h-5"/></button>
-            
-            <div className="w-8 h-px bg-gray-300 my-1"></div>
-            
-            <div className="flex flex-col items-center gap-1 bg-gray-100 rounded-full p-1">
-                <button onClick={() => {setActiveTool('bubble'); setActiveBubbleType('rounded')}} className={`p-2 rounded-full ${activeTool === 'bubble' && activeBubbleType === 'rounded' ? 'bg-indigo-500 text-white' : 'hover:bg-gray-200 text-gray-700'}`} onMouseEnter={(e) => handleTooltipShow(e, t('roundedBubble'))} onMouseLeave={handleTooltipHide}><BubbleToolIcon className="w-5 h-5"/></button>
-                <button onClick={() => {setActiveTool('bubble'); setActiveBubbleType('oval')}} className={`p-2 rounded-full ${activeTool === 'bubble' && activeBubbleType === 'oval' ? 'bg-indigo-500 text-white' : 'hover:bg-gray-200 text-gray-700'}`} onMouseEnter={(e) => handleTooltipShow(e, t('ovalBubble'))} onMouseLeave={handleTooltipHide}><CircleIcon className="w-5 h-5"/></button>
-                <button onClick={() => {setActiveTool('bubble'); setActiveBubbleType('rect')}} className={`p-2 rounded-full ${activeTool === 'bubble' && activeBubbleType === 'rect' ? 'bg-indigo-500 text-white' : 'hover:bg-gray-200 text-gray-700'}`} onMouseEnter={(e) => handleTooltipShow(e, t('rectangularBubble'))} onMouseLeave={handleTooltipHide}><SquareIcon className="w-5 h-5"/></button>
+      <div className="editor-shell__main">
+        <nav className="tool-rail" aria-label={t('canvasTools')} role="toolbar">
+            <div className="tool-rail__section" role="group" aria-label={t('history')}>
+                <button
+                  type="button"
+                  className="tool-button"
+                  onClick={onUndo}
+                  disabled={!canUndo}
+                  aria-label={t('undo')}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('undo'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <UndoIcon className="w-5 h-5"/>
+                </button>
+                <button
+                  type="button"
+                  className="tool-button"
+                  onClick={onRedo}
+                  disabled={!canRedo}
+                  aria-label={t('redo')}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('redo'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <RedoIcon className="w-5 h-5"/>
+                </button>
             </div>
-
-            <div className="w-8 h-px bg-gray-300 my-1"></div>
-            <button onClick={clearCanvas} className="p-3 rounded-full hover:bg-red-500 hover:text-white text-gray-700" onMouseEnter={(e) => handleTooltipShow(e, t('clearCanvas'))} onMouseLeave={handleTooltipHide}><TrashIcon className="w-5 h-5"/></button>
-        </div>
+            <span className="tool-divider" aria-hidden="true" />
+            <div className="tool-rail__section" role="group" aria-label={t('navigationTools')}>
+                <button
+                  type="button"
+                  className={`tool-button ${activeTool === 'select' ? 'is-active' : ''}`}
+                  onClick={() => setActiveTool('select')}
+                  aria-label={t('selectAndMove')}
+                  aria-pressed={activeTool === 'select'}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('selectAndMove'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <SelectIcon className="w-5 h-5"/>
+                </button>
+                <button
+                  type="button"
+                  className={`tool-button ${activeTool === 'pan' ? 'is-active' : ''}`}
+                  onClick={() => setActiveTool('pan')}
+                  aria-label={t('panCanvas')}
+                  aria-pressed={activeTool === 'pan'}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('panCanvas'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <HandIcon className="w-5 h-5"/>
+                </button>
+            </div>
+            <span className="tool-divider" aria-hidden="true" />
+            <div className="tool-rail__section" role="group" aria-label={t('creationTools')}>
+                <button
+                  type="button"
+                  className={`tool-button ${activeTool === 'panel' ? 'is-active' : ''}`}
+                  onClick={() => setActiveTool('panel')}
+                  aria-label={t('drawPanel')}
+                  aria-pressed={activeTool === 'panel'}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('drawPanel'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <PolygonIcon className="w-5 h-5"/>
+                </button>
+                <button
+                  type="button"
+                  className={`tool-button ${activeTool === 'text' ? 'is-active' : ''}`}
+                  onClick={() => setActiveTool('text')}
+                  aria-label={t('addText')}
+                  aria-pressed={activeTool === 'text'}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('addText'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <TextToolIcon className="w-5 h-5"/>
+                </button>
+                <button
+                  type="button"
+                  className={`tool-button ${activeTool === 'draw' ? 'is-active' : ''}`}
+                  onClick={() => setActiveTool('draw')}
+                  aria-label={t('drawFreehand')}
+                  aria-pressed={activeTool === 'draw'}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('drawFreehand'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <BrushIcon className="w-5 h-5"/>
+                </button>
+                <button
+                  type="button"
+                  className={`tool-button ${activeTool === 'arrow' ? 'is-active' : ''}`}
+                  onClick={() => setActiveTool('arrow')}
+                  aria-label={t('drawArrow')}
+                  aria-pressed={activeTool === 'arrow'}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('drawArrow'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <ArrowIcon className="w-5 h-5"/>
+                </button>
+                <button
+                  type="button"
+                  className="tool-button"
+                  onClick={() => imageUploadRef.current?.click()}
+                  aria-label={t('uploadPose')}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('uploadPose'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <UploadIcon className="w-5 h-5"/>
+                </button>
+            </div>
+            <span className="tool-divider" aria-hidden="true" />
+            <div className="tool-selector" role="group" aria-label={t('bubbleStyles')}>
+                <button
+                  type="button"
+                  className={`tool-button ${activeTool === 'bubble' && activeBubbleType === 'rounded' ? 'is-active' : ''}`}
+                  onClick={() => {setActiveTool('bubble'); setActiveBubbleType('rounded');}}
+                  aria-label={t('roundedBubble')}
+                  aria-pressed={activeTool === 'bubble' && activeBubbleType === 'rounded'}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('roundedBubble'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <BubbleToolIcon className="w-5 h-5"/>
+                </button>
+                <button
+                  type="button"
+                  className={`tool-button ${activeTool === 'bubble' && activeBubbleType === 'oval' ? 'is-active' : ''}`}
+                  onClick={() => {setActiveTool('bubble'); setActiveBubbleType('oval');}}
+                  aria-label={t('ovalBubble')}
+                  aria-pressed={activeTool === 'bubble' && activeBubbleType === 'oval'}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('ovalBubble'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <CircleIcon className="w-5 h-5"/>
+                </button>
+                <button
+                  type="button"
+                  className={`tool-button ${activeTool === 'bubble' && activeBubbleType === 'rect' ? 'is-active' : ''}`}
+                  onClick={() => {setActiveTool('bubble'); setActiveBubbleType('rect');}}
+                  aria-label={t('rectangularBubble')}
+                  aria-pressed={activeTool === 'bubble' && activeBubbleType === 'rect'}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('rectangularBubble'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <SquareIcon className="w-5 h-5"/>
+                </button>
+            </div>
+            <span className="tool-divider" aria-hidden="true" />
+            <div className="tool-rail__section" role="group" aria-label={t('canvasActions')}>
+                <button
+                  type="button"
+                  className="tool-button is-danger"
+                  onClick={clearCanvas}
+                  aria-label={t('clearCanvas')}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('clearCanvas'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <TrashIcon className="w-5 h-5"/>
+                </button>
+            </div>
+        </nav>
         
-        {/* Brush Controls */}
         {(activeTool === 'draw' || activeTool === 'arrow') && (
-            <div className="absolute top-6 left-24 z-10 bg-white shadow-lg rounded-lg border border-gray-200 p-2 flex items-center gap-3 animate-fade-in">
-                <label htmlFor="brush-color" className="text-sm font-medium text-gray-700">{t('brushColor')}</label>
-                <input id="brush-color" type="color" value={brushColor} onChange={(e) => setBrushColor(e.target.value)} className="w-8 h-8 p-0 border-none rounded cursor-pointer bg-white" style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }} />
-                <label htmlFor="brush-size" className="text-sm font-medium text-gray-700 ml-2">{t('brushSize')}</label>
-                <div className="flex items-center gap-2">
-                    <input id="brush-size" type="range" min="1" max="50" value={brushSize} onChange={(e) => setBrushSize(Number(e.target.value))} className="w-24" />
-                    <span className="text-sm w-6 text-center font-semibold text-gray-600">{brushSize}</span>
+            <div className="control-flyout" style={{ top: '1.5rem', left: '6rem' }}>
+                <label htmlFor="brush-color" className="text-caption">{t('brushColor')}</label>
+                <input
+                  id="brush-color"
+                  type="color"
+                  value={brushColor}
+                  onChange={(e) => setBrushColor(e.target.value)}
+                  className="control-flyout__color"
+                />
+                <div className="control-flyout__metric">
+                    <label htmlFor="brush-size" className="text-caption">{t('brushSize')}</label>
+                    <input
+                      id="brush-size"
+                      type="range"
+                      min="1"
+                      max="50"
+                      value={brushSize}
+                      onChange={(e) => setBrushSize(Number(e.target.value))}
+                      className="control-flyout__slider"
+                    />
+                    <span className="control-flyout__value">{brushSize}</span>
                 </div>
             </div>
         )}
 
-        {/* Canvas */}
-        <div className="w-full h-full relative" onWheel={handleWheel}>
+        <div className="editor-canvas-wrapper" onWheel={handleWheel}>
             <svg
                 ref={svgRef} width="100%" height="100%"
-                className={`${isSpacePressed.current || action.type === 'panning' ? 'cursor-grabbing' : activeTool === 'pan' ? 'cursor-grab' : 'cursor-default'}`}
+                className="editor-canvas"
                 style={{ cursor: (activeTool === 'draw' || activeTool === 'arrow') ? 'none' : (isSpacePressed.current || action.type === 'panning' ? 'grabbing' : activeTool === 'pan' ? 'grab' : activeTool === 'select' ? 'default' : 'crosshair')}}
                 onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={() => { handleMouseUp(null as any); setCursorPreview(null); }}
             >
@@ -1452,30 +1611,72 @@ export const PanelEditor = forwardRef<
             </svg>
         </div>
          {/* Zoom & Proposal Controls */}
-        <div className="absolute bottom-6 right-6 z-10 flex flex-col items-end gap-3">
+        <div className="editor-fabs">
              {proposalImage && (
-                <div className="bg-white shadow-lg rounded-lg border border-gray-200 p-2 flex flex-col gap-2 animate-fade-in">
-                    <div className="flex items-center justify-between text-sm font-medium text-gray-700 px-1">
+                <div className="proposal-panel">
+                    <div className="proposal-panel__header">
                         <span>{t('assistantGuide')}</span>
-                         <button onClick={() => onProposalSettingsChange({ isProposalVisible: !isProposalVisible })} className="p-1 rounded-full hover:bg-gray-200">
+                         <button
+                          type="button"
+                          onClick={() => onProposalSettingsChange({ isProposalVisible: !isProposalVisible })}
+                          className="icon-button"
+                          aria-label={isProposalVisible ? t('hideAssistantGuide') : t('showAssistantGuide')}
+                        >
                             {isProposalVisible ? <EyeIcon className="w-4 h-4"/> : <EyeOffIcon className="w-4 h-4"/>}
                         </button>
                     </div>
                     {isProposalVisible && (
                        <>
-                        <div className="flex items-center gap-2">
-                             <span className="text-xs font-medium text-gray-500">{t('opacity')}</span>
-                             <input type="range" min="0" max="1" step="0.05" value={proposalOpacity} onChange={(e) => onProposalSettingsChange({ proposalOpacity: parseFloat(e.target.value) })} className="w-24" />
+                        <div className="control-flyout__metric">
+                             <span className="text-subtle">{t('opacity')}</span>
+                             <input
+                               type="range"
+                               min="0"
+                               max="1"
+                               step="0.05"
+                               value={proposalOpacity}
+                               onChange={(e) => onProposalSettingsChange({ proposalOpacity: parseFloat(e.target.value) })}
+                               className="control-flyout__slider"
+                             />
                         </div>
-                        <button onClick={onApplyLayout} className="w-full text-xs font-semibold bg-indigo-100 text-indigo-700 hover:bg-indigo-200 rounded-md py-1.5">{t('applyLayout')}</button>
+                        <button type="button" onClick={onApplyLayout} className="button-secondary is-full-width text-xs">
+                          {t('applyLayout')}
+                        </button>
                        </>
                     )}
                 </div>
              )}
-            <div className="bg-white shadow-lg rounded-full border border-gray-200 p-1 flex items-center gap-1">
-                <button onClick={zoomOut} className="p-2 rounded-full hover:bg-gray-200 text-gray-700" onMouseEnter={(e) => handleTooltipShow(e, t('zoomOut'))} onMouseLeave={handleTooltipHide}><MinusIcon className="w-5 h-5"/></button>
-                <button onClick={fitAndCenterCanvas} className="p-2 rounded-full hover:bg-gray-200 text-gray-700 text-xs font-semibold" onMouseEnter={(e) => handleTooltipShow(e, t('fitToScreen'))} onMouseLeave={handleTooltipHide}>{Math.round(viewTransform.scale * 100)}%</button>
-                <button onClick={zoomIn} className="p-2 rounded-full hover:bg-gray-200 text-gray-700" onMouseEnter={(e) => handleTooltipShow(e, t('zoomIn'))} onMouseLeave={handleTooltipHide}><PlusIcon className="w-5 h-5"/></button>
+            <div className="zoom-cluster">
+                <button
+                  type="button"
+                  className="tool-button"
+                  onClick={zoomOut}
+                  aria-label={t('zoomOut')}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('zoomOut'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <MinusIcon className="w-5 h-5"/>
+                </button>
+                <button
+                  type="button"
+                  className="zoom-cluster__label"
+                  onClick={fitAndCenterCanvas}
+                  aria-label={t('fitToScreen')}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('fitToScreen'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  {Math.round(viewTransform.scale * 100)}%
+                </button>
+                <button
+                  type="button"
+                  className="tool-button"
+                  onClick={zoomIn}
+                  aria-label={t('zoomIn')}
+                  onMouseEnter={(e) => handleTooltipShow(e, t('zoomIn'))}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <PlusIcon className="w-5 h-5"/>
+                </button>
             </div>
         </div>
 
