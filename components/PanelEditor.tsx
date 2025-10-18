@@ -1123,6 +1123,7 @@ export const PanelEditor = forwardRef<
                   onClick={onUndo}
                   disabled={!canUndo}
                   aria-label={t('undo')}
+                  title={t('undo')}
                   onMouseEnter={(e) => handleTooltipShow(e, t('undo'))}
                   onMouseLeave={handleTooltipHide}
                 >
@@ -1134,6 +1135,7 @@ export const PanelEditor = forwardRef<
                   onClick={onRedo}
                   disabled={!canRedo}
                   aria-label={t('redo')}
+                  title={t('redo')}
                   onMouseEnter={(e) => handleTooltipShow(e, t('redo'))}
                   onMouseLeave={handleTooltipHide}
                 >
@@ -1148,6 +1150,7 @@ export const PanelEditor = forwardRef<
                   onClick={() => setActiveTool('select')}
                   aria-label={t('selectAndMove')}
                   aria-pressed={activeTool === 'select'}
+                  title={t('selectAndMove')}
                   onMouseEnter={(e) => handleTooltipShow(e, t('selectAndMove'))}
                   onMouseLeave={handleTooltipHide}
                 >
@@ -1159,6 +1162,7 @@ export const PanelEditor = forwardRef<
                   onClick={() => setActiveTool('pan')}
                   aria-label={t('panCanvas')}
                   aria-pressed={activeTool === 'pan'}
+                  title={t('panCanvas')}
                   onMouseEnter={(e) => handleTooltipShow(e, t('panCanvas'))}
                   onMouseLeave={handleTooltipHide}
                 >
@@ -1173,6 +1177,7 @@ export const PanelEditor = forwardRef<
                   onClick={() => setActiveTool('panel')}
                   aria-label={t('drawPanel')}
                   aria-pressed={activeTool === 'panel'}
+                  title={t('drawPanel')}
                   onMouseEnter={(e) => handleTooltipShow(e, t('drawPanel'))}
                   onMouseLeave={handleTooltipHide}
                 >
@@ -1184,6 +1189,7 @@ export const PanelEditor = forwardRef<
                   onClick={() => setActiveTool('text')}
                   aria-label={t('addText')}
                   aria-pressed={activeTool === 'text'}
+                  title={t('addText')}
                   onMouseEnter={(e) => handleTooltipShow(e, t('addText'))}
                   onMouseLeave={handleTooltipHide}
                 >
@@ -1195,6 +1201,7 @@ export const PanelEditor = forwardRef<
                   onClick={() => setActiveTool('draw')}
                   aria-label={t('drawFreehand')}
                   aria-pressed={activeTool === 'draw'}
+                  title={t('drawFreehand')}
                   onMouseEnter={(e) => handleTooltipShow(e, t('drawFreehand'))}
                   onMouseLeave={handleTooltipHide}
                 >
@@ -1206,6 +1213,7 @@ export const PanelEditor = forwardRef<
                   onClick={() => setActiveTool('arrow')}
                   aria-label={t('drawArrow')}
                   aria-pressed={activeTool === 'arrow'}
+                  title={t('drawArrow')}
                   onMouseEnter={(e) => handleTooltipShow(e, t('drawArrow'))}
                   onMouseLeave={handleTooltipHide}
                 >
@@ -1216,6 +1224,7 @@ export const PanelEditor = forwardRef<
                   className="tool-button"
                   onClick={() => imageUploadRef.current?.click()}
                   aria-label={t('uploadPose')}
+                  title={t('uploadPose')}
                   onMouseEnter={(e) => handleTooltipShow(e, t('uploadPose'))}
                   onMouseLeave={handleTooltipHide}
                 >
@@ -1230,6 +1239,7 @@ export const PanelEditor = forwardRef<
                   onClick={() => {setActiveTool('bubble'); setActiveBubbleType('rounded');}}
                   aria-label={t('roundedBubble')}
                   aria-pressed={activeTool === 'bubble' && activeBubbleType === 'rounded'}
+                  title={t('roundedBubble')}
                   onMouseEnter={(e) => handleTooltipShow(e, t('roundedBubble'))}
                   onMouseLeave={handleTooltipHide}
                 >
@@ -1241,6 +1251,7 @@ export const PanelEditor = forwardRef<
                   onClick={() => {setActiveTool('bubble'); setActiveBubbleType('oval');}}
                   aria-label={t('ovalBubble')}
                   aria-pressed={activeTool === 'bubble' && activeBubbleType === 'oval'}
+                  title={t('ovalBubble')}
                   onMouseEnter={(e) => handleTooltipShow(e, t('ovalBubble'))}
                   onMouseLeave={handleTooltipHide}
                 >
@@ -1252,6 +1263,7 @@ export const PanelEditor = forwardRef<
                   onClick={() => {setActiveTool('bubble'); setActiveBubbleType('rect');}}
                   aria-label={t('rectangularBubble')}
                   aria-pressed={activeTool === 'bubble' && activeBubbleType === 'rect'}
+                  title={t('rectangularBubble')}
                   onMouseEnter={(e) => handleTooltipShow(e, t('rectangularBubble'))}
                   onMouseLeave={handleTooltipHide}
                 >
@@ -1265,6 +1277,7 @@ export const PanelEditor = forwardRef<
                   className="tool-button is-danger"
                   onClick={clearCanvas}
                   aria-label={t('clearCanvas')}
+                  title={t('clearCanvas')}
                   onMouseEnter={(e) => handleTooltipShow(e, t('clearCanvas'))}
                   onMouseLeave={handleTooltipHide}
                 >
