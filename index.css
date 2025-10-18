@@ -684,9 +684,11 @@ select:focus {
   gap: 0.75rem;
   padding: 0.65rem 0.8rem;
   border-radius: var(--radius-lg);
-  background: var(--surface-primary);
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-sm);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--border-muted);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+  z-index: 40;
 }
 
 .control-flyout__color {
