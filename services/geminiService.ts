@@ -1,46 +1,7 @@
-import { GoogleGenAI, Modality, Type } from "@google/genai";
+import { Modality, Type } from "@google/genai";
 import type { GeneratedContent, Character, Page, StorySuggestion, PanelShape, ImageShape, CanvasShape, Pose, AnalysisResult } from '../types';
 import { SkeletonPose, SkeletonData } from '../types';
-
-/**
- * Resolve API key at runtime. Priority:
- * 1. Browser localStorage key `gemini_api_key`
- * 2. Environment variables (process.env.GEMINI_API_KEY or process.env.API_KEY)
- */
-function getApiKey(): string | null {
-    try {
-        if (typeof window !== 'undefined' && window.localStorage) {
-            const stored = localStorage.getItem('gemini_api_key');
-            if (stored && stored.trim()) return stored;
-        }
-    } catch (e) {
-        // ignore localStorage access errors (e.g., SSR)
-    }
-
-    if (typeof process !== 'undefined' && process.env) {
-        const envKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
-        if (envKey && envKey !== '""' && envKey !== 'undefined') return envKey as string;
-    }
-
-    return null;
-}
-
-function getAiClient(): GoogleGenAI {
-    const key = getApiKey();
-    if (!key) {
-        throw new Error("No Gemini API key found. Please set it in the app (localStorage key 'gemini_api_key') or provide GEMINI_API_KEY / API_KEY in the environment.");
-    }
-    return new GoogleGenAI({ apiKey: key });
-}
-
-function base64ToGeminiPart(base64: string, mimeType: string) {
-  return {
-    inlineData: {
-      data: base64.split(',')[1],
-      mimeType,
-    },
-  };
-}
+import { getAiClient, base64ToGeminiPart } from './geminiClient';
 
 export async function generateWorldview(characters: Character[]): Promise<string> {
     let prompt = `你是一位富有创意的世界观构建者和故事讲述者。根据以下角色列表，为漫画创作一个引人入胜且充满想象力的世界观或背景设定。
@@ -245,7 +206,7 @@ export async function generateLayoutProposal(
     const contents = { parts };
 
     const response = await getAiClient().models.generateContent({
-        model: 'gemini-2.5-flash-image-preview',
+        model: 'gemini-2.5-flash-image',
         contents,
         config: {
             responseModalities: [Modality.IMAGE, Modality.TEXT],
@@ -299,7 +260,7 @@ export async function generateCharacterSheet(
     };
 
     const response = await getAiClient().models.generateContent({
-        model: 'gemini-2.5-flash-image-preview',
+        model: 'gemini-2.5-flash-image',
         contents,
         config: {
             responseModalities: [Modality.IMAGE, Modality.TEXT],
@@ -356,7 +317,7 @@ export async function generateCharacterFromReference(
     };
 
     const response = await getAiClient().models.generateContent({
-        model: 'gemini-2.5-flash-image-preview',
+        model: 'gemini-2.5-flash-image',
         contents,
         config: {
             responseModalities: [Modality.IMAGE, Modality.TEXT],
@@ -407,7 +368,7 @@ export async function editCharacterSheet(
     };
 
     const response = await getAiClient().models.generateContent({
-        model: 'gemini-2.5-flash-image-preview',
+        model: 'gemini-2.5-flash-image',
         contents,
         config: {
             responseModalities: [Modality.IMAGE, Modality.TEXT],
@@ -505,7 +466,7 @@ ${previousPage.sceneDescription}
   const contents = { parts };
 
     const response = await getAiClient().models.generateContent({
-    model: 'gemini-2.5-flash-image-preview',
+    model: 'gemini-2.5-flash-image',
     contents,
     config: {
       responseModalities: [Modality.IMAGE, Modality.TEXT],
@@ -577,7 +538,7 @@ export async function colorizeMangaPage(
     };
 
     const response = await getAiClient().models.generateContent({
-        model: 'gemini-2.5-flash-image-preview',
+        model: 'gemini-2.5-flash-image',
         contents,
         config: {
             responseModalities: [Modality.IMAGE, Modality.TEXT],
@@ -657,7 +618,7 @@ export async function editMangaPage(
     const contents = { parts };
 
     const response = await getAiClient().models.generateContent({
-        model: 'gemini-2.5-flash-image-preview',
+        model: 'gemini-2.5-flash-image',
         contents,
         config: {
             responseModalities: [Modality.IMAGE, Modality.TEXT],
