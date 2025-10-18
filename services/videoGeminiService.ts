@@ -221,7 +221,7 @@ ${characterList}
 export const generateVideoFrame = async (prompt: string, referenceImage: {data: string, mimeType: string}): Promise<string> => {
     const ai = getAiClient();
     const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image-preview',
+        model: 'gemini-2.5-flash-image',
         contents: {
             parts: [
                 base64ToGeminiPart(blank16x9Canvas, 'image/png'),
@@ -268,7 +268,7 @@ export const generateWebtoonEndFrame = async (startFrameBase64: string, narrativ
 
     const ai = getAiClient();
     const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image-preview',
+        model: 'gemini-2.5-flash-image',
         contents: { parts: [base64ToGeminiPart(blank16x9Canvas, 'image/png'), startFramePart, { text: prompt }] },
         config: { responseModalities: [Modality.IMAGE, Modality.TEXT] },
     });
@@ -305,7 +305,7 @@ export const regenerateVideoFrame = async (
 
     const ai = getAiClient();
     const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image-preview',
+        model: 'gemini-2.5-flash-image',
         contents: { parts: [originalFramePart, { text: prompt }] },
         config: { responseModalities: [Modality.IMAGE, Modality.TEXT] },
     });
