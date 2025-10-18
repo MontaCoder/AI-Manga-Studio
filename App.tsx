@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Header } from './components/Header';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { PanelEditor } from './components/PanelEditor';
@@ -18,6 +18,7 @@ import { AddUserIcon, TrashIcon, LinkIcon, XIcon } from './components/icons';
 import { useLocalization } from './hooks/useLocalization';
 import { Language } from './i18n/locales';
 import { useApiKey } from './hooks/useApiKey';
+import { usePagesState, createPage } from './hooks/usePagesState';
 
 const createInitialSkeleton = (x: number, y: number, width: number, height: number) => {
     const centerX = x + width / 2;
@@ -44,25 +45,6 @@ const createInitialSkeleton = (x: number, y: number, width: number, height: numb
     };
 };
 
-const initialPage: Omit<Page, 'id' | 'name'> = {
-  shapes: [],
-  shapesHistory: [[]],
-  shapesHistoryIndex: 0,
-  panelLayoutImage: null,
-  sceneDescription: '',
-  panelCharacterMap: {},
-  generatedImage: null,
-  generatedText: null,
-  generatedColorMode: null,
-  aspectRatio: 'A4',
-  viewTransform: { scale: 1, x: 0, y: 0 },
-  shouldReferencePrevious: false,
-  assistantProposalImage: null,
-  proposalOpacity: 0.5,
-  isProposalVisible: true,
-  proposedShapes: null,
-};
-
 const aspectRatios: { [key: string]: { name: string, value: string, w: number, h: number } } = {
     'A4': { name: 'a4', value: '210:297', w: 595, h: 842 },
     'portrait34': { name: 'portrait34', value: '3:4', w: 600, h: 800 },
@@ -74,9 +56,26 @@ const aspectRatios: { [key: string]: { name: string, value: string, w: number, h
 export default function App(): React.ReactElement {
   const { t, language, setLanguage } = useLocalization();
   const { apiKey, isApiKeyModalOpen, setIsApiKeyModalOpen, saveApiKey, clearApiKey, hasApiKey } = useApiKey();
-  
-  const [pages, setPages] = useState<Page[]>([{...initialPage, id: Date.now().toString(), name: `${t('pages')} 1` }]);
-  const [currentPageId, setCurrentPageId] = useState<string>(pages[0].id);
+
+  const createPageName = useCallback((index: number) => `${t('pages')} ${index}`, [t]);
+
+  const {
+    pages,
+    setPages,
+    currentPageId,
+    setCurrentPageId,
+    currentPage,
+    handleUpdateCurrentPage,
+    handleViewTransformChange,
+    handleShapesChange,
+    handleUndo,
+    handleRedo,
+    canUndo,
+    canRedo,
+    handleAddPage,
+    handleDeletePage,
+    handleToggleReferencePrevious,
+  } = usePagesState({ createPageName });
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [showCharacterModal, setShowCharacterModal] = useState<boolean>(false);
@@ -180,92 +179,10 @@ export default function App(): React.ReactElement {
   }, [isSidebarOpen]);
   const panelEditorRef = useRef<{ getLayoutAsImage: (includeCharacters: boolean, characters: Character[]) => Promise<string> }>(null);
 
-  const currentPage = useMemo(() => pages.find(p => p.id === currentPageId) || pages[0], [pages, currentPageId]);
-  
   useEffect(() => {
     setViewMode(currentPage.generatedImage ? 'result' : 'editor');
     setAnalysisResult(null); // Clear analysis when page changes
   }, [currentPage.id, currentPage.generatedImage]);
-
-
-  const handleUpdateCurrentPage = useCallback((updates: Partial<Page>) => {
-    setPages(prevPages => prevPages.map(p => 
-      p.id === currentPageId ? { ...p, ...updates } : p
-    ));
-  }, [currentPageId]);
-
-  const handleViewTransformChange = useCallback((vt: ViewTransform) => {
-    handleUpdateCurrentPage({ viewTransform: vt });
-  }, [handleUpdateCurrentPage]);
-
-  const handleShapesChange = useCallback((newShapes: CanvasShape[], recordHistory: boolean = true) => {
-    setPages(prevPages => prevPages.map(p => {
-        if (p.id !== currentPageId) return p;
-
-        let updatedSceneDescription = p.sceneDescription;
-        const newPanelCount = newShapes.filter(s => s.type === 'panel').length;
-        const oldPanelCount = p.shapes.filter(s => s.type === 'panel').length;
-
-        if (newPanelCount !== oldPanelCount) {
-            const existingPanels: Record<string, string> = {};
-            const panelRegex = /Panel (\d+):([\s\S]*?)(?=\n\nPanel \d+:|$)/g;
-            let match;
-            while ((match = panelRegex.exec(p.sceneDescription)) !== null) {
-                existingPanels[match[1]] = match[2].trim();
-            }
-
-            if (newPanelCount > 0) {
-                let newDesc = '';
-                for (let i = 1; i <= newPanelCount; i++) {
-                    newDesc += `Panel ${i}: ${existingPanels[i] || ''}\n\n`;
-                }
-                updatedSceneDescription = newDesc.trim();
-            } else {
-                updatedSceneDescription = '';
-            }
-        }
-
-        if (recordHistory) {
-            const newHistory = p.shapesHistory.slice(0, p.shapesHistoryIndex + 1);
-            newHistory.push(newShapes);
-            return { 
-                ...p, 
-                shapes: newShapes,
-                shapesHistory: newHistory,
-                shapesHistoryIndex: newHistory.length - 1,
-                sceneDescription: updatedSceneDescription,
-            };
-        } else {
-             const newHistory = [...p.shapesHistory];
-             newHistory[p.shapesHistoryIndex] = newShapes;
-             return { ...p, shapes: newShapes, shapesHistory: newHistory, sceneDescription: updatedSceneDescription };
-        }
-    }));
-  }, [currentPageId]);
-
-  const handleUndo = useCallback(() => {
-    setPages(prevPages => prevPages.map(p => {
-        if (p.id !== currentPageId || p.shapesHistoryIndex <= 0) return p;
-        const newIndex = p.shapesHistoryIndex - 1;
-        return {
-            ...p,
-            shapes: p.shapesHistory[newIndex],
-            shapesHistoryIndex: newIndex,
-        };
-    }));
-  }, [currentPageId]);
-
-  const handleRedo = useCallback(() => {
-     setPages(prevPages => prevPages.map(p => {
-        if (p.id !== currentPageId || p.shapesHistoryIndex >= p.shapesHistory.length - 1) return p;
-        const newIndex = p.shapesHistoryIndex + 1;
-        return {
-            ...p,
-            shapes: p.shapesHistory[newIndex],
-            shapesHistoryIndex: newIndex,
-        };
-    }));
-  }, [currentPageId]);
 
   const handleGenerateImage = useCallback(async () => {
     setIsLoading(true);
@@ -462,10 +379,9 @@ export default function App(): React.ReactElement {
       } else {
           const lastPage = currentLocalPages[currentLocalPages.length - 1];
           if (lastPage.assistantProposalImage || lastPage.shapes.length > 0 || lastPage.sceneDescription) {
-              const newPageId = Date.now().toString();
-              const newPage: Page = { ...initialPage, id: newPageId, name: `${t('pages')} ${currentLocalPages.length + 1}` };
+              const newPage = createPage(createPageName(currentLocalPages.length + 1), lastPage.aspectRatio);
               currentLocalPages = [...currentLocalPages, newPage];
-              localCurrentPageId = newPageId;
+              localCurrentPageId = newPage.id;
           } else {
               localCurrentPageId = lastPage.id;
           }
@@ -529,10 +445,9 @@ export default function App(): React.ReactElement {
           setPages([...currentLocalPages]);
           
           if (i < numPages) {
-              const nextPageId = Date.now().toString();
-              const newPage: Page = { ...initialPage, id: nextPageId, name: `${t('pages')} ${currentLocalPages.length + 1}`, aspectRatio: pageObject.aspectRatio };
+              const newPage = createPage(createPageName(currentLocalPages.length + 1), pageObject.aspectRatio);
               currentLocalPages.push(newPage);
-              localCurrentPageId = nextPageId;
+              localCurrentPageId = newPage.id;
               setPages(currentLocalPages);
               setCurrentPageId(localCurrentPageId);
           }
@@ -573,32 +488,6 @@ export default function App(): React.ReactElement {
         ...page,
         shapes: page.shapes.filter(s => s.type !== 'image' || s.characterId !== idToDelete),
     })));
-  };
-
-  const handleAddPage = (switchToNewPage: boolean = true) => {
-    const newPageId = Date.now().toString();
-    const newPage: Page = {
-      ...initialPage,
-      id: newPageId,
-      name: `${t('pages')} ${pages.length + 1}`,
-      aspectRatio: currentPage.aspectRatio,
-    };
-    setPages(prev => [...prev, newPage]);
-    if (switchToNewPage) {
-        setCurrentPageId(newPageId);
-    }
-  };
-
-  const handleDeletePage = (idToDelete: string) => {
-      if (pages.length <= 1) return;
-      setPages(prev => prev.filter(p => p.id !== idToDelete));
-      if (currentPageId === idToDelete) {
-          setCurrentPageId(pages.find(p => p.id !== idToDelete)!.id);
-      }
-  };
-  
-  const handleToggleReferencePrevious = (pageId: string) => {
-    setPages(pages.map(p => p.id === pageId ? { ...p, shouldReferencePrevious: !p.shouldReferencePrevious } : p));
   };
 
   const handleAnalyzeResult = useCallback(async () => {
