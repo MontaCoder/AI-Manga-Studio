@@ -11,39 +11,13 @@ import { MangaViewerModal } from './components/MangaViewerModal';
 import { WorldviewModal } from './components/WorldviewModal';
 import { StorySuggestionModal } from './components/StorySuggestionModal';
 import { VideoProducer } from './components/VideoProducer';
-import { generateMangaPage, generateCharacterSheet, editCharacterSheet, colorizeMangaPage, editMangaPage, generateDetailedStorySuggestion, generateLayoutProposal, analyzeAndSuggestCorrections } from './services/geminiService';
-import type { Character, Page, CanvasShape, ViewTransform, StorySuggestion, PanelShape, ImageShape, AnalysisResult } from './types';
+import { generateMangaPage, colorizeMangaPage, editMangaPage, generateDetailedStorySuggestion, generateLayoutProposal, analyzeAndSuggestCorrections } from './services/geminiService';
+import type { Character, Page, StorySuggestion, ImageShape, AnalysisResult } from './types';
 import { AddUserIcon, TrashIcon, LinkIcon, XIcon } from './components/icons';
 
 import { useLocalization } from './hooks/useLocalization';
-import { Language } from './i18n/locales';
 import { useApiKey } from './hooks/useApiKey';
 import { usePagesState, createPage } from './hooks/usePagesState';
-
-const createInitialSkeleton = (x: number, y: number, width: number, height: number) => {
-    const centerX = x + width / 2;
-    const topY = y + height * 0.15;
-    const hipY = y + height * 0.5;
-    const armY = y + height * 0.3;
-    const legY = y + height * 0.9;
-    const shoulderWidth = width * 0.2;
-    const hipWidth = width * 0.15;
-    const eyeY = topY - height * 0.03;
-    const eyeDistX = width * 0.07;
-    const noseY = topY;
-    const mouthY = topY + height * 0.05;
-    return {
-        head: { x: centerX, y: topY }, neck: { x: centerX, y: armY },
-        leftShoulder: { x: centerX - shoulderWidth, y: armY }, rightShoulder: { x: centerX + shoulderWidth, y: armY },
-        leftElbow: { x: centerX - shoulderWidth * 1.5, y: hipY }, rightElbow: { x: centerX + shoulderWidth * 1.5, y: hipY },
-        leftHand: { x: centerX - shoulderWidth * 1.2, y: legY - height * 0.1 }, rightHand: { x: centerX + shoulderWidth * 1.2, y: legY - height * 0.1 },
-        hips: { x: centerX, y: hipY }, leftHip: { x: centerX - hipWidth, y: hipY }, rightHip: { x: centerX + hipWidth, y: hipY },
-        leftKnee: { x: centerX - hipWidth, y: hipY + height * 0.2 }, rightKnee: { x: centerX + hipWidth, y: hipY + 0.2 },
-        leftFoot: { x: centerX - hipWidth, y: legY }, rightFoot: { x: centerX + hipWidth, y: legY },
-        leftEye: { x: centerX - eyeDistX, y: eyeY }, rightEye: { x: centerX + eyeDistX, y: eyeY },
-        nose: { x: centerX, y: noseY }, mouth: { x: centerX, y: mouthY },
-    };
-};
 
 const aspectRatios: { [key: string]: { name: string, value: string, w: number, h: number } } = {
     'A4': { name: 'a4', value: '210:297', w: 595, h: 842 },
