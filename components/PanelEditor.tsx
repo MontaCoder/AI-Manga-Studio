@@ -278,7 +278,16 @@ export const PanelEditor = forwardRef<
     const deleteShape = (id: string) => onShapesChange(shapes.filter(s => s.id !== id));
 
   useEffect(() => {
+      const isEditableTarget = (target: EventTarget | null) => {
+          if (!(target instanceof HTMLElement)) return false;
+          const tagName = target.tagName;
+          return tagName === 'INPUT' || tagName === 'TEXTAREA' || target.isContentEditable;
+      };
+
       const handleKeyDown = (e: KeyboardEvent) => {
+          if (isEditableTarget(e.target)) {
+              return;
+          }
           if (e.metaKey || e.ctrlKey) {
                 if (e.key === 'z') {
                     e.preventDefault();
@@ -307,6 +316,9 @@ export const PanelEditor = forwardRef<
           }
       };
       const handleKeyUp = (e: KeyboardEvent) => {
+          if (isEditableTarget(e.target)) {
+              return;
+          }
           if (e.key === ' ') isSpacePressed.current = false;
       };
       
@@ -1339,9 +1351,6 @@ export const PanelEditor = forwardRef<
                 onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={() => { handleMouseUp(null as any); setCursorPreview(null); }}
             >
                 <defs>
-                  <filter id="canvasShadow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="14" stdDeviation="14" floodColor="#1a2540" floodOpacity="0.25" />
-                  </filter>
                   <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                     <path d="M 0 0 L 10 5 L 0 10 z" fill="#FF0000" />
                   </marker>
@@ -1370,7 +1379,6 @@ export const PanelEditor = forwardRef<
                         rx={0}
                         ry={0}
                         shapeRendering="geometricPrecision"
-                        filter="url(#canvasShadow)"
                         style={{
                             transition: 'fill 220ms ease, stroke 220ms ease'
                         }}
