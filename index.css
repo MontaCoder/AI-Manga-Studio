@@ -437,12 +437,23 @@ textarea:hover, input:hover, select:hover { border-color: var(--border-muted); }
   min-height: 0;
   height: 100%;
   border-radius: var(--radius-lg);
-  border: 1px solid var(--border-subtle);
-  background: linear-gradient(180deg, rgba(250, 249, 251, 0.95) 0%, rgba(245, 243, 255, 0.7) 100%);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(15, 23, 42, 0.35);
+  background: radial-gradient(circle at top, rgba(42, 51, 73, 0.95) 0%, rgba(19, 29, 48, 0.95) 62%, rgba(10, 16, 32, 0.98) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05), 0 18px 36px -18px rgba(10, 16, 32, 0.65);
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.25rem, 2.5vw, 2rem);
 }
-.editor-canvas { display: block; }
+.editor-canvas {
+  display: block;
+  background: radial-gradient(circle at 40% 25%, rgba(31, 41, 55, 0.85) 0%, rgba(12, 19, 32, 0.95) 70%);
+  border-radius: var(--radius-lg);
+}
+#canvas-background-rect {
+  transition: fill 200ms ease, stroke 200ms ease;
+}
 
 .editor-fabs {
   position: absolute;
@@ -492,7 +503,30 @@ textarea:hover, input:hover, select:hover { border-color: var(--border-muted); }
   display: flex;
   flex-direction: column;
 }
-.workspace-canvas__scroll { flex: 1; overflow: auto; padding: clamp(1.25rem, 2.5vw, 2.5rem); }
+.workspace-canvas__scroll {
+  flex: 1;
+  overflow: auto;
+  padding: clamp(1.25rem, 2.5vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1.25rem, 2vw, 2rem);
+  background: linear-gradient(180deg, rgba(238, 242, 255, 0.65) 0%, rgba(226, 232, 255, 0.45) 100%);
+}
+
+.canvas-stage {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1.25rem, 2vw, 2rem);
+}
+.canvas-stage > * {
+  width: min(100%, 960px);
+}
+.canvas-stage--result > * {
+  width: min(100%, 1040px);
+}
 
 .utility-pane {
   width: clamp(320px, 26vw, 384px);
@@ -690,6 +724,31 @@ textarea:hover, input:hover, select:hover { border-color: var(--border-muted); }
   .sidebar-pane.is-visible { transform: translateX(0); }
   .sidebar-pane.is-hidden { display: flex; }
   .workspace-pane { padding: clamp(1rem, 2vw, 1.5rem); }
+  .workspace-pane__body { flex-direction: column; gap: 1rem; align-items: stretch; overflow: visible; }
+  .workspace-canvas { min-height: clamp(360px, 75vw, 640px); }
+  .workspace-canvas__scroll { padding: clamp(1rem, 3vw, 1.5rem); gap: clamp(1rem, 2vw, 1.5rem); }
+  .canvas-stage > * { width: 100%; }
+  .editor-shell { padding: clamp(0.85rem, 2vw, 1.3rem); gap: 1rem; }
+  .editor-shell__header { flex-wrap: wrap; gap: 0.75rem; }
+  .editor-shell__main { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; gap: 1rem; }
+  .editor-canvas-wrapper { min-height: clamp(320px, 70vw, 580px); }
+  .tool-rail {
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: flex-start;
+    width: 100%;
+    gap: 0.75rem;
+    position: static;
+    top: auto;
+    overflow-x: auto;
+    padding: 0.75rem;
+    border-radius: var(--radius-lg);
+  }
+  .tool-rail__section,
+  .tool-selector { flex-direction: row; }
+  .tool-selector { gap: 0.5rem; padding-inline: 0.5rem; }
+  .tool-button { width: 2.5rem; height: 2.5rem; }
+  .tool-divider { width: 1px; height: 2.5rem; }
   .utility-pane { width: 100%; border-left: none; border-top: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: clamp(1rem, 3vw, 1.75rem); }
 }
 
@@ -699,4 +758,19 @@ textarea:hover, input:hover, select:hover { border-color: var(--border-muted); }
   .workspace-pane__body { flex-direction: column; }
   .workspace-canvas__scroll { padding: clamp(1rem, 3vw, 1.5rem); }
   .utility-pane__group-title { text-align: center; }
+  .tool-rail { flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+  .tool-rail__section,
+  .tool-selector { flex-wrap: wrap; justify-content: center; }
+  .tool-divider { display: none; }
+  .tool-button { width: 2.35rem; height: 2.35rem; }
+  .editor-canvas-wrapper { min-height: clamp(300px, 92vw, 520px); }
+}
+
+@media (max-width: 520px) {
+  .workspace-pane { padding: clamp(0.75rem, 4vw, 1.25rem); gap: 0.75rem; }
+  .workspace-canvas__scroll { padding: clamp(0.75rem, 5vw, 1.25rem); }
+  .editor-shell { padding: clamp(0.75rem, 4vw, 1.25rem); }
+  .tool-rail { padding: 0.65rem; gap: 0.5rem; }
+  .tool-button { width: 2.1rem; height: 2.1rem; }
+  .zoom-cluster__label { font-size: 0.8rem; padding: 0.35rem 0.65rem; }
 }
