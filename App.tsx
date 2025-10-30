@@ -86,7 +86,7 @@ export default function App(): React.ReactElement {
     failedPageNumber?: number;
   } | null>(null);
 
-  const editorAreaRef = useRef<HTMLDivElement>(null);
+  const workspaceCanvasRef = useRef<HTMLElement | null>(null);
   const sidebarRef = useRef<HTMLElement>(null);
   const sidebarCloseButtonRef = useRef<HTMLButtonElement>(null);
   const stopAutoGenerationRef = useRef(false);
@@ -94,19 +94,21 @@ export default function App(): React.ReactElement {
   const [currentView, setCurrentView] = useState<'manga-editor' | 'video-producer'>('manga-editor');
 
   const toggleFullscreen = useCallback(() => {
-    const elem = editorAreaRef.current;
+    const elem = workspaceCanvasRef.current;
     if (!elem) return;
-    if (!document.fullscreenElement) {
-        elem.requestFullscreen().catch(err => {
-            alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-        });
-    } else {
-        document.exitFullscreen();
+
+    if (document.fullscreenElement === elem) {
+      document.exitFullscreen();
+      return;
     }
+
+    elem.requestFullscreen().catch(err => {
+      alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+    });
   }, []);
 
   useEffect(() => {
-      const onFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
+      const onFullscreenChange = () => setIsFullscreen(document.fullscreenElement === workspaceCanvasRef.current);
       document.addEventListener('fullscreenchange', onFullscreenChange);
       return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
   }, []);
@@ -592,7 +594,7 @@ export default function App(): React.ReactElement {
           </div>
         ) : (
           <>
-          <div ref={editorAreaRef} className="workspace-pane">
+          <div className="workspace-pane">
             <aside
               ref={sidebarRef}
               className={`sidebar-pane ${isSidebarOpen ? 'is-visible' : 'is-hidden'}`}
@@ -719,7 +721,7 @@ export default function App(): React.ReactElement {
             </aside>
 
             <div className="workspace-pane__body">
-              <section className="workspace-canvas">
+              <section ref={workspaceCanvasRef} className="workspace-canvas">
                 <div className="workspace-pane__header">
                   <span className="floating-pill">{currentPage.name}</span>
                   {currentPage.generatedImage && (
