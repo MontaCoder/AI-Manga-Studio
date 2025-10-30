@@ -250,6 +250,25 @@ export const PanelEditor = forwardRef<
   }, [fitAndCenterCanvas]);
 
   useEffect(() => {
+    let resizeRaf: number | null = null;
+    const handleResize = () => {
+      if (resizeRaf !== null) cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(() => {
+        fitAndCenterCanvas();
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
+    return () => {
+      if (resizeRaf !== null) cancelAnimationFrame(resizeRaf);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, [fitAndCenterCanvas]);
+
+  useEffect(() => {
     if (editingShapeId && textEditRef.current) {
         textEditRef.current.focus();
         textEditRef.current.select();
@@ -1346,7 +1365,7 @@ export const PanelEditor = forwardRef<
                         x="0" y="0" 
                         width={canvasConfig.w} height={canvasConfig.h} 
                         fill={proposalImage ? 'transparent' : 'white'}
-                        stroke="rgba(30, 41, 59, 0.18)" strokeWidth={1.5}
+                        stroke="none"
                         vectorEffect="non-scaling-stroke"
                         rx={24}
                         ry={24}
