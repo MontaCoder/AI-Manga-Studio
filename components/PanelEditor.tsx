@@ -1320,6 +1320,9 @@ export const PanelEditor = forwardRef<
                 onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={() => { handleMouseUp(null as any); setCursorPreview(null); }}
             >
                 <defs>
+                  <filter id="canvasShadow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="18" stdDeviation="18" floodColor="#0f172a" floodOpacity="0.35" />
+                  </filter>
                   <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                     <path d="M 0 0 L 10 5 L 0 10 z" fill="#FF0000" />
                   </marker>
@@ -1339,12 +1342,18 @@ export const PanelEditor = forwardRef<
                     )}
                     <rect 
                         id="canvas-background-rect"
+                        className="canvas-background-rect"
                         x="0" y="0" 
                         width={canvasConfig.w} height={canvasConfig.h} 
                         fill={proposalImage ? 'transparent' : 'white'}
-                        stroke="rgba(0,0,0,0.15)" strokeWidth="1" vectorEffect="non-scaling-stroke"
+                        stroke="rgba(15, 23, 42, 0.25)" strokeWidth={1.5}
+                        vectorEffect="non-scaling-stroke"
+                        rx={24}
+                        ry={24}
+                        shapeRendering="geometricPrecision"
+                        filter="url(#canvasShadow)"
                         style={{
-                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+                            transition: 'fill 220ms ease, stroke 220ms ease'
                         }}
                     />
                      {drawingGuideRect && (
