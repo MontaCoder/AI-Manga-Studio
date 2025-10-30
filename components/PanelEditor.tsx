@@ -1321,7 +1321,7 @@ export const PanelEditor = forwardRef<
             >
                 <defs>
                   <filter id="canvasShadow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="18" stdDeviation="18" floodColor="#0f172a" floodOpacity="0.35" />
+                    <feDropShadow dx="0" dy="14" stdDeviation="14" floodColor="#1a2540" floodOpacity="0.25" />
                   </filter>
                   <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                     <path d="M 0 0 L 10 5 L 0 10 z" fill="#FF0000" />
@@ -1346,7 +1346,7 @@ export const PanelEditor = forwardRef<
                         x="0" y="0" 
                         width={canvasConfig.w} height={canvasConfig.h} 
                         fill={proposalImage ? 'transparent' : 'white'}
-                        stroke="rgba(15, 23, 42, 0.25)" strokeWidth={1.5}
+                        stroke="rgba(30, 41, 59, 0.18)" strokeWidth={1.5}
                         vectorEffect="non-scaling-stroke"
                         rx={24}
                         ry={24}
