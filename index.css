@@ -437,9 +437,9 @@ textarea:hover, input:hover, select:hover { border-color: var(--border-muted); }
   min-height: 0;
   height: 100%;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(15, 23, 42, 0.35);
-  background: radial-gradient(circle at top, rgba(42, 51, 73, 0.95) 0%, rgba(19, 29, 48, 0.95) 62%, rgba(10, 16, 32, 0.98) 100%);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05), 0 18px 36px -18px rgba(10, 16, 32, 0.65);
+  border: 1px solid rgba(30, 41, 59, 0.28);
+  background: radial-gradient(circle at 45% 8%, rgba(89, 99, 128, 0.92) 0%, rgba(56, 66, 94, 0.9) 55%, rgba(28, 36, 57, 0.94) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 16px 32px -20px rgba(15, 23, 42, 0.55);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -448,7 +448,7 @@ textarea:hover, input:hover, select:hover { border-color: var(--border-muted); }
 }
 .editor-canvas {
   display: block;
-  background: radial-gradient(circle at 40% 25%, rgba(31, 41, 55, 0.85) 0%, rgba(12, 19, 32, 0.95) 70%);
+  background: radial-gradient(circle at 45% 22%, rgba(103, 115, 147, 0.86) 0%, rgba(48, 58, 86, 0.9) 68%, rgba(24, 31, 50, 0.93) 100%);
   border-radius: var(--radius-lg);
 }
 #canvas-background-rect {
