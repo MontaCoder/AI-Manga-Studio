@@ -334,7 +334,7 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
     const selectedScene = scenes.find(s => s.id === selectedSceneId);
 
     return (
-        <div className="flex flex-1 overflow-hidden bg-gray-100 text-gray-800 font-sans">
+        <div className="video-producer-shell flex flex-1 flex-col xl:flex-row gap-6 xl:gap-0 bg-gray-100 text-gray-800 font-sans min-h-0 p-4 xl:px-4 xl:py-0">
             {regenState && (
                 <RegenerationModal 
                     sceneId={regenState.sceneId}
@@ -343,7 +343,7 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
                     onConfirm={handleRegenerateFrame}
                 />
             )}
-            <aside className="w-64 bg-white p-4 border-r border-gray-200 flex-col gap-8 flex-shrink-0">
+            <aside className="video-producer-sidebar order-1 w-full xl:w-64 bg-white border border-gray-200 xl:border-r xl:border-l-0 xl:border-t-0 xl:border-b-0 rounded-xl xl:rounded-none shadow-sm xl:shadow-none p-4 flex flex-col gap-6 flex-shrink-0 xl:max-h-full xl:overflow-y-auto">
                  <div>
                     <h3 className="font-bold text-sm mb-2 text-gray-500 tracking-wider uppercase">Video Models</h3>
                     <div className="flex flex-col gap-2">
@@ -374,7 +374,7 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
                 </div>
             </aside>
 
-            <main className="flex-1 p-4 lg:p-6 flex flex-col gap-4 overflow-y-auto">
+            <main className="video-producer-board order-2 xl:order-none flex-1 bg-white border border-gray-200 rounded-xl xl:rounded-none shadow-sm xl:shadow-none p-4 xl:p-6 flex flex-col gap-4 overflow-visible xl:overflow-y-auto min-h-0">
                 <h3 className="font-bold text-sm text-gray-500 tracking-wider uppercase">{t('storyboard')}</h3>
                 <div className="flex flex-col gap-2">
                     {scenes.length > 0 ? (
@@ -391,7 +391,7 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
                                             <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                                             <div className="h-3 bg-gray-200 rounded w-1/4 mt-1"></div>
                                         </div>
-                                        <div className="flex gap-1 flex-shrink-0">
+                                        <div className="hidden sm:flex gap-1 flex-shrink-0">
                                             <div className="w-20 h-12 bg-gray-200 rounded"></div>
                                             <div className="w-20 h-12 bg-gray-200 rounded"></div>
                                         </div>
@@ -403,7 +403,7 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
                                             <p className="font-semibold text-gray-800 truncate text-sm">{scene.description}</p>
                                             <p className="text-xs text-gray-500">{scene.duration} seconds</p>
                                         </div>
-                                        <div className="flex gap-1 flex-shrink-0">
+                                        <div className="hidden sm:flex gap-1 flex-shrink-0">
                                             <img src={scene.startFrame} alt="start frame" className="w-20 h-12 bg-gray-200 rounded object-cover border border-gray-300"/>
                                             <img src={scene.endFrame} alt="end frame" className="w-20 h-12 bg-gray-200 rounded object-cover border border-gray-300"/>
                                         </div>
@@ -423,7 +423,7 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
                 </div>
             </main>
 
-            <aside className="w-[450px] bg-white p-6 border-l border-gray-200 flex flex-col gap-6 overflow-y-auto flex-shrink-0">
+            <aside className="video-producer-inspector order-3 w-full xl:w-[450px] bg-white border border-gray-200 xl:border-l xl:border-r-0 xl:border-t-0 xl:border-b-0 rounded-xl xl:rounded-none shadow-sm xl:shadow-none p-4 xl:p-6 flex flex-col gap-6 flex-shrink-0 overflow-visible xl:overflow-y-auto min-h-0">
                  {selectedScene ? (
                      <>
                         <div className="flex-grow flex flex-col gap-6">
@@ -495,7 +495,7 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
 
                         <div className="border-t border-gray-200 pt-4 mt-auto">
                             <h3 className="font-bold text-sm text-gray-500 tracking-wider uppercase mb-2">{t('sceneActions')}</h3>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                                 <button onClick={() => alert('Regenerate Scene: Not implemented')} className="p-2 bg-gray-100 text-gray-700 font-semibold rounded-md hover:bg-gray-200">{t('regenerateScene')}</button>
                                 <button onClick={() => alert('Extend Scene: Not implemented')} className="p-2 bg-gray-100 text-gray-700 font-semibold rounded-md hover:bg-gray-200">{t('extendScene')}</button>
                                 <button onClick={() => alert('Add Related Scene: Not implemented')} className="p-2 bg-gray-100 text-gray-700 font-semibold rounded-md hover:bg-gray-200">{t('addRelatedScene')}</button>
