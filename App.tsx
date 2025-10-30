@@ -733,38 +733,40 @@ export default function App(): React.ReactElement {
                   )}
                 </div>
                 <div className="workspace-canvas__scroll">
-                  {viewMode === 'result' && currentPage.generatedImage && currentPage.panelLayoutImage ? (
-                    <ComparisonViewer 
-                        beforeImage={currentPage.panelLayoutImage}
-                        afterImage={currentPage.generatedImage}
-                        isMonochromeResult={isMonochromeResult}
-                        onColorize={handleColorize}
-                        isColoring={isColoring}
-                    />
-                  ) : (
-                    <PanelEditor 
-                        ref={panelEditorRef}
-                        key={currentPage.id}
-                        shapes={currentPage.shapes}
-                        onShapesChange={handleShapesChange}
-                        characters={characters}
-                        aspectRatio={currentPage.aspectRatio}
-                        viewTransform={currentPage.viewTransform}
-                        onViewTransformChange={handleViewTransformChange}
-                        isDraggingCharacter={isDraggingCharacter}
-                        onUndo={handleUndo}
-                        onRedo={handleRedo}
-                        canUndo={currentPage.shapesHistoryIndex > 0}
-                        canRedo={currentPage.shapesHistoryIndex < currentPage.shapesHistory.length - 1}
-                        proposalImage={currentPage.assistantProposalImage}
-                        proposalOpacity={currentPage.proposalOpacity}
-                        isProposalVisible={currentPage.isProposalVisible}
-                        onProposalSettingsChange={(updates) => handleUpdateCurrentPage(updates)}
-                        onApplyLayout={handleApplyLayout}
-                        isFullscreen={isFullscreen}
-                        onToggleFullscreen={toggleFullscreen}
-                    />
-                  )}
+                  <div className={`canvas-stage ${viewMode === 'result' ? 'canvas-stage--result' : 'canvas-stage--editor'}`}>
+                    {viewMode === 'result' && currentPage.generatedImage && currentPage.panelLayoutImage ? (
+                      <ComparisonViewer 
+                          beforeImage={currentPage.panelLayoutImage}
+                          afterImage={currentPage.generatedImage}
+                          isMonochromeResult={isMonochromeResult}
+                          onColorize={handleColorize}
+                          isColoring={isColoring}
+                      />
+                    ) : (
+                      <PanelEditor 
+                          ref={panelEditorRef}
+                          key={currentPage.id}
+                          shapes={currentPage.shapes}
+                          onShapesChange={handleShapesChange}
+                          characters={characters}
+                          aspectRatio={currentPage.aspectRatio}
+                          viewTransform={currentPage.viewTransform}
+                          onViewTransformChange={handleViewTransformChange}
+                          isDraggingCharacter={isDraggingCharacter}
+                          onUndo={handleUndo}
+                          onRedo={handleRedo}
+                          canUndo={currentPage.shapesHistoryIndex > 0}
+                          canRedo={currentPage.shapesHistoryIndex < currentPage.shapesHistory.length - 1}
+                          proposalImage={currentPage.assistantProposalImage}
+                          proposalOpacity={currentPage.proposalOpacity}
+                          isProposalVisible={currentPage.isProposalVisible}
+                          onProposalSettingsChange={(updates) => handleUpdateCurrentPage(updates)}
+                          onApplyLayout={handleApplyLayout}
+                          isFullscreen={isFullscreen}
+                          onToggleFullscreen={toggleFullscreen}
+                      />
+                    )}
+                  </div>
                 </div>
               </section>
 
