@@ -811,6 +811,11 @@ textarea:hover, input:hover, select:hover { border-color: var(--border-muted); }
   scroll-behavior: smooth;
 }
 
+.animate-in {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 .animate-in.features-header,
 .animate-in.how-it-works-header,
 .animate-in.gallery-header {
