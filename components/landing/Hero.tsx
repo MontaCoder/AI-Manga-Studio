@@ -46,30 +46,20 @@ export function Hero(): React.ReactElement {
         justifyContent: 'center',
         position: 'relative',
         overflow: 'hidden',
+        background: 'var(--gradient-app)',
       }}
     >
       <div
-        className="landing-hero__background"
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'var(--gradient-app)',
-          zIndex: 0,
+          opacity: 0.02,
+          backgroundImage: `radial-gradient(circle at 2px 2px, var(--color-primary) 1px, transparent 0)`,
+          backgroundSize: '48px 48px',
         }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            opacity: 0.03,
-            backgroundImage: `radial-gradient(circle at 2px 2px, var(--color-primary) 1px, transparent 0)`,
-            backgroundSize: '48px 48px',
-          }}
-        />
-      </div>
+      />
 
       <div
-        className="landing-hero__content"
         style={{
           position: 'relative',
           zIndex: 1,
@@ -80,45 +70,53 @@ export function Hero(): React.ReactElement {
         }}
       >
         <h1
-          className="landing-hero__title"
           style={{
-            fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
-            fontWeight: 800,
-            lineHeight: 1.1,
-            letterSpacing: '-0.03em',
-            color: 'var(--color-text)',
+            fontSize: 'clamp(3rem, 7vw, 5rem)',
+            fontWeight: 900,
+            lineHeight: 1.05,
+            letterSpacing: '-0.04em',
             marginBottom: '1.5rem',
-            background: 'linear-gradient(135deg, var(--color-primary-strong), var(--color-primary), var(--color-accent))',
+            background: 'linear-gradient(135deg, var(--color-primary-strong) 0%, var(--color-primary) 50%, var(--color-accent) 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
+            opacity: 0,
+            transform: 'translateY(30px)',
+            transition: 'all 1s ease-out 0.5s',
           }}
+          className="animate-in"
         >
           {t('landingHero')}
         </h1>
 
         <p
-          className="landing-hero__subtitle"
           style={{
-            fontSize: 'clamp(1.125rem, 2vw, 1.5rem)',
-            lineHeight: 1.6,
+            fontSize: 'clamp(1.25rem, 2.2vw, 1.625rem)',
+            lineHeight: 1.5,
             color: 'var(--color-text-muted)',
-            maxWidth: '800px',
+            maxWidth: '700px',
             margin: '0 auto 3rem',
             fontWeight: 500,
+            opacity: 0,
+            transform: 'translateY(20px)',
+            transition: 'all 1s ease-out 0.7s',
           }}
+          className="animate-in"
         >
           {t('landingSubtitle')}
         </p>
 
         <div
-          className="landing-hero__actions"
           style={{
             display: 'flex',
-            gap: '1.25rem',
+            gap: '1rem',
             justifyContent: 'center',
             flexWrap: 'wrap',
+            opacity: 0,
+            transform: 'translateY(20px)',
+            transition: 'all 1s ease-out 0.9s',
           }}
+          className="animate-in"
         >
           <button
             onClick={() => navigate('/studio')}
@@ -126,8 +124,8 @@ export function Hero(): React.ReactElement {
             style={{
               fontSize: '1.125rem',
               padding: '1rem 2.5rem',
-              boxShadow: 'var(--shadow-md)',
-              transition: 'all var(--transition-soft)',
+              boxShadow: 'var(--shadow-lg)',
+              transition: 'all var(--transition-bounce)',
             }}
           >
             {t('getStarted')}
@@ -138,6 +136,7 @@ export function Hero(): React.ReactElement {
             style={{
               fontSize: '1.125rem',
               padding: '0.9375rem 2.5rem',
+              transition: 'all var(--transition-soft)',
             }}
           >
             {t('learnMore')}
@@ -145,35 +144,31 @@ export function Hero(): React.ReactElement {
         </div>
 
         <div
-          className="landing-hero__visual"
           style={{
             marginTop: '4rem',
-            display: 'flex',
-            justifyContent: 'center',
+            maxWidth: '1000px',
+            margin: '4rem auto 0',
+            aspectRatio: '21/9',
+            borderRadius: 'var(--radius-lg)',
+            overflow: 'hidden',
+            boxShadow: 'var(--shadow-lg)',
+            border: '1px solid var(--color-border)',
+            opacity: 0,
+            transform: 'translateY(40px) scale(0.95)',
+            transition: 'all 1.2s ease-out 1.1s',
           }}
+          className="animate-in"
         >
-          <div
+          <img
+            src="/og.webp"
+            alt="AI Manga Studio Preview"
+            loading="lazy"
             style={{
-              maxWidth: '900px',
               width: '100%',
-              aspectRatio: '16/9',
-              borderRadius: 'var(--radius-lg)',
-              overflow: 'hidden',
-              boxShadow: 'var(--shadow-lg)',
-              border: '1px solid var(--color-border)',
-              background: 'var(--surface-primary)',
+              height: '100%',
+              objectFit: 'cover',
             }}
-          >
-            <img
-              src="/og.webp"
-              alt="AI Manga Studio Preview"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-              }}
-            />
-          </div>
+          />
         </div>
       </div>
     </section>
