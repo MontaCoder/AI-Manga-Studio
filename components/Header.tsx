@@ -1,25 +1,56 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MenuIcon, XIcon, BookOpenIcon, GlobeIcon, VideoIcon, ArrowLeftIcon, KeyIcon } from './icons';
 import { useLocalization } from '../hooks/useLocalization';
 import { Language } from '../i18n/locales';
 
+export type HeaderVariant = 'app' | 'marketing';
+
 interface HeaderProps {
-    isSidebarOpen: boolean;
-    onToggleSidebar: () => void;
+    variant?: HeaderVariant;
+    isTransparentOnTop?: boolean;
+    isSidebarOpen?: boolean;
+    onToggleSidebar?: () => void;
     language: Language;
     setLanguage: (language: Language) => void;
-    // Optional callback to open API Key modal/settings
     onOpenApiKeyModal?: () => void;
     hasApiKey?: boolean;
-    onShowMangaViewer: () => void;
-    onShowWorldview: () => void;
-    currentView: 'manga-editor' | 'video-producer';
-    onSetView: (view: 'manga-editor' | 'video-producer') => void;
+    onShowMangaViewer?: () => void;
+    onShowWorldview?: () => void;
+    currentView?: 'manga-editor' | 'video-producer';
+    onSetView?: (view: 'manga-editor' | 'video-producer') => void;
 }
 
-export function Header({ isSidebarOpen, onToggleSidebar, language, setLanguage, onOpenApiKeyModal, hasApiKey, onShowMangaViewer, onShowWorldview, currentView, onSetView }: HeaderProps): React.ReactElement {
+export function Header({ 
+    variant = 'app',
+    isTransparentOnTop = false,
+    isSidebarOpen,
+    onToggleSidebar,
+    language,
+    setLanguage,
+    onOpenApiKeyModal,
+    hasApiKey,
+    onShowMangaViewer,
+    onShowWorldview,
+    currentView,
+    onSetView
+}: HeaderProps): React.ReactElement {
   const { t } = useLocalization();
+  const navigate = useNavigate();
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const isApp = variant === 'app';
+
+  useEffect(() => {
+    if (!isTransparentOnTop) return;
+
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isTransparentOnTop]);
 
   const languages = useMemo(() => ([
       { key: 'zh' as Language, name: t('chinese') },
@@ -27,45 +58,54 @@ export function Header({ isSidebarOpen, onToggleSidebar, language, setLanguage, 
       { key: 'ja' as Language, name: t('japanese') },
   ]), [t]);
 
+  const headerClassName = `header-bar ${isTransparentOnTop && !isScrolled ? 'landing-header--transparent' : ''} ${isTransparentOnTop && isScrolled ? 'landing-header--transparent scrolled' : ''}`;
+
   return (
-    <header className="header-bar">
+    <header className={headerClassName}>
       <div className="header-bar__inner">
         <div className="header-brand">
-            {currentView === 'video-producer' ? (
-                <button onClick={() => onSetView('manga-editor')} className="button-ghost" title={t('backToEditor')}>
+            {isApp && currentView === 'video-producer' ? (
+                <button onClick={() => onSetView?.('manga-editor')} className="button-ghost" title={t('backToEditor')}>
                     <ArrowLeftIcon className="w-5 h-5" />
                     <span className="hidden md:inline">{t('backToEditor')}</span>
                 </button>
-            ) : (
+            ) : isApp && onToggleSidebar ? (
                 <button onClick={onToggleSidebar} className="button-ghost" aria-label={t('toggleSidebar')}>
                     {isSidebarOpen ? <XIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
                 </button>
-            )}
+            ) : null}
 
             <div className="header-brand__logo">
-                {currentView === 'video-producer' 
-                    ? <VideoIcon className="w-8 h-8 text-indigo-500" /> 
-                    : <img src="/logo.svg" alt="Logo" className="w-9 h-9" />
-                }
+                {isApp && currentView === 'video-producer' ? (
+                    <VideoIcon className="w-8 h-8 text-indigo-500" />
+                ) : (
+                    <img src="/logo.svg" alt="Logo" className="w-9 h-9" />
+                )}
             </div>
             <div className="header-title">
                 <span className="header-title__primary">
-                    {currentView === 'video-producer' ? t('aiVideoProducer') : t('AIMangaStudio')}
+                    {isApp && currentView === 'video-producer' ? t('aiVideoProducer') : t('AIMangaStudio')}
                 </span>
             </div>
         </div>
         <div className="header-actions">
-            {currentView === 'manga-editor' && (
+            {isApp && currentView === 'manga-editor' && (
                 <>
-                    <button onClick={() => onSetView('video-producer')} className="button-ghost" title={t('aiVideoProducer')}>
-                        <VideoIcon className="h-5 w-5" />
-                    </button>
-                     <button onClick={onShowMangaViewer} className="button-ghost" title={t('viewCollection')}>
-                        <BookOpenIcon className="h-5 w-5" />
-                    </button>
-                    <button onClick={onShowWorldview} className="button-ghost" title={t('worldviewSettings')}>
-                        <GlobeIcon className="h-5 w-5" />
-                    </button>
+                    {onSetView && (
+                        <button onClick={() => onSetView('video-producer')} className="button-ghost" title={t('aiVideoProducer')}>
+                            <VideoIcon className="h-5 w-5" />
+                        </button>
+                    )}
+                    {onShowMangaViewer && (
+                        <button onClick={onShowMangaViewer} className="button-ghost" title={t('viewCollection')}>
+                            <BookOpenIcon className="h-5 w-5" />
+                        </button>
+                    )}
+                    {onShowWorldview && (
+                        <button onClick={onShowWorldview} className="button-ghost" title={t('worldviewSettings')}>
+                            <GlobeIcon className="h-5 w-5" />
+                        </button>
+                    )}
                 </>
             )}
 
@@ -94,7 +134,7 @@ export function Header({ isSidebarOpen, onToggleSidebar, language, setLanguage, 
                 )}
             </div>
 
-            {typeof onOpenApiKeyModal === 'function' && (
+            {isApp && typeof onOpenApiKeyModal === 'function' && (
                 <button
                     onClick={onOpenApiKeyModal}
                     className="button-ghost relative"
@@ -108,9 +148,15 @@ export function Header({ isSidebarOpen, onToggleSidebar, language, setLanguage, 
                 </button>
             )}
 
-            <button className="button-primary">
-              {t('export')}
-            </button>
+            {isApp ? (
+                <button className="button-primary">
+                    {t('export')}
+                </button>
+            ) : (
+                <button onClick={() => navigate('/studio')} className="button-primary">
+                    {t('getStarted')}
+                </button>
+            )}
         </div>
       </div>
     </header>
