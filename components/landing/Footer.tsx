@@ -16,12 +16,7 @@ export function Footer(): React.ReactElement {
         padding: 'clamp(3rem, 6vw, 5rem) clamp(1.5rem, 5vw, 3rem) clamp(2rem, 4vw, 3rem)',
       }}
     >
-      <div
-        style={{
-          maxWidth: '1400px',
-          margin: '0 auto',
-        }}
-      >
+      <div className="container">
         <div
           style={{
             display: 'grid',
