@@ -30,16 +30,33 @@ export const createPage = (name: string, aspectRatio: Page['aspectRatio'] = 'A4'
 interface UsePagesStateParams {
   createPageName: (index: number) => string;
   initialAspectRatio?: Page['aspectRatio'];
+  initialState?: {
+    pages: Page[];
+    currentPageId?: string;
+  };
 }
 
-export function usePagesState({ createPageName, initialAspectRatio = 'A4' }: UsePagesStateParams) {
+export function usePagesState({ createPageName, initialAspectRatio = 'A4', initialState }: UsePagesStateParams) {
   const initialPageRef = useRef<Page>();
   if (!initialPageRef.current) {
     initialPageRef.current = createPage(createPageName(1), initialAspectRatio);
   }
 
-  const [pages, setPages] = useState<Page[]>(() => [initialPageRef.current!]);
-  const [currentPageId, setCurrentPageId] = useState<string>(() => initialPageRef.current!.id);
+  const [pages, setPages] = useState<Page[]>(() => {
+    if (initialState?.pages?.length) {
+      return initialState.pages;
+    }
+    return [initialPageRef.current!];
+  });
+  const [currentPageId, setCurrentPageId] = useState<string>(() => {
+    if (initialState?.currentPageId) {
+      return initialState.currentPageId;
+    }
+    if (initialState?.pages?.length) {
+      return initialState.pages[0].id;
+    }
+    return initialPageRef.current!.id;
+  });
 
   const currentPage = useMemo(() => pages.find(p => p.id === currentPageId) || pages[0], [pages, currentPageId]);
 
