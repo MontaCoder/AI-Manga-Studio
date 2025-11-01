@@ -41,6 +41,10 @@ export function Header({
   const [isScrolled, setIsScrolled] = useState(false);
   const isApp = variant === 'app';
 
+  const handleLogoClick = () => {
+    navigate('/');
+  };
+
   useEffect(() => {
     if (!isTransparentOnTop) return;
 
@@ -75,13 +79,18 @@ export function Header({
                 </button>
             ) : null}
 
-            <div className="header-brand__logo">
+            <button
+                type="button"
+                onClick={handleLogoClick}
+                className="header-brand__logo"
+                aria-label={t('AIMangaStudio')}
+            >
                 {isApp && currentView === 'video-producer' ? (
                     <VideoIcon className="w-8 h-8 text-indigo-500" />
                 ) : (
                     <img src="/logo.svg" alt="Logo" className="w-9 h-9" />
                 )}
-            </div>
+            </button>
             <div className="header-title">
                 <span className="header-title__primary">
                     {isApp && currentView === 'video-producer' ? t('aiVideoProducer') : t('AIMangaStudio')}
