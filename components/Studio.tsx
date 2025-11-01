@@ -19,6 +19,22 @@ import { useLocalization } from '../hooks/useLocalization';
 import { useApiKey } from '../hooks/useApiKey';
 import { usePagesState, createPage } from '../hooks/usePagesState';
 
+const STUDIO_STORAGE_KEY = 'aims_studio_state_v1';
+
+interface PersistedStudioState {
+  pagesState?: {
+    pages: Page[];
+    currentPageId?: string;
+  };
+  characters?: Character[];
+  colorMode?: 'color' | 'monochrome';
+  viewMode?: 'editor' | 'result';
+  generateEmptyBubbles?: boolean;
+  worldview?: string;
+  currentView?: 'manga-editor' | 'video-producer';
+  isSidebarOpen?: boolean;
+}
+
 const aspectRatios: { [key: string]: { name: string, value: string, w: number, h: number } } = {
     'A4': { name: 'a4', value: '210:297', w: 595, h: 842 },
     'portrait34': { name: 'portrait34', value: '3:4', w: 600, h: 800 },
@@ -31,6 +47,22 @@ export function Studio(): React.ReactElement {
   const { apiKey, isApiKeyModalOpen, setIsApiKeyModalOpen, saveApiKey, clearApiKey, hasApiKey } = useApiKey();
 
   const createPageName = useCallback((index: number) => `${t('pages')} ${index}`, [t]);
+
+  const [persistedState] = useState<PersistedStudioState | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = window.localStorage.getItem(STUDIO_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as PersistedStudioState;
+      if (parsed?.pagesState?.pages?.length) {
+        return parsed;
+      }
+      return null;
+    } catch (error) {
+      console.warn('Failed to parse stored studio state', error);
+      return null;
+    }
+  });
 
   const {
     pages,
@@ -48,11 +80,11 @@ export function Studio(): React.ReactElement {
     handleAddPage,
     handleDeletePage,
     handleToggleReferencePrevious,
-  } = usePagesState({ createPageName });
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [characters, setCharacters] = useState<Character[]>([]);
+  } = usePagesState({ createPageName, initialState: persistedState?.pagesState });
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(() => persistedState?.isSidebarOpen ?? true);
+  const [characters, setCharacters] = useState<Character[]>(() => persistedState?.characters ?? []);
   const [showCharacterModal, setShowCharacterModal] = useState<boolean>(false);
-  const [colorMode, setColorMode] = useState<'color' | 'monochrome'>('monochrome');
+  const [colorMode, setColorMode] = useState<'color' | 'monochrome'>(() => persistedState?.colorMode ?? 'monochrome');
   
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isColoring, setIsColoring] = useState<boolean>(false);
@@ -67,14 +99,14 @@ export function Studio(): React.ReactElement {
   const [showMangaViewer, setShowMangaViewer] = useState(false);
   const [isMasking, setIsMasking] = useState(false);
   const [currentMask, setCurrentMask] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'editor' | 'result'>('editor');
+  const [viewMode, setViewMode] = useState<'editor' | 'result'>(() => persistedState?.viewMode ?? 'editor');
   const [isFullscreen, setIsFullscreen] = useState(false);
   
-  const [worldview, setWorldview] = useState<string>('');
+  const [worldview, setWorldview] = useState<string>(() => persistedState?.worldview ?? '');
   const [showWorldviewModal, setShowWorldviewModal] = useState<boolean>(false);
   const [showStorySuggestionModal, setShowStorySuggestionModal] = useState<boolean>(false);
   const [storySuggestion, setStorySuggestion] = useState<StorySuggestion | null>(null);
-  const [generateEmptyBubbles, setGenerateEmptyBubbles] = useState<boolean>(false);
+  const [generateEmptyBubbles, setGenerateEmptyBubbles] = useState<boolean>(() => persistedState?.generateEmptyBubbles ?? false);
 
   const [assistantModeState, setAssistantModeState] = useState<{
     isActive: boolean;
@@ -90,7 +122,7 @@ export function Studio(): React.ReactElement {
   const sidebarCloseButtonRef = useRef<HTMLButtonElement>(null);
   const stopAutoGenerationRef = useRef(false);
 
-  const [currentView, setCurrentView] = useState<'manga-editor' | 'video-producer'>('manga-editor');
+  const [currentView, setCurrentView] = useState<'manga-editor' | 'video-producer'>(() => persistedState?.currentView ?? 'manga-editor');
 
   const toggleFullscreen = useCallback(() => {
     const elem = workspaceCanvasRef.current;
@@ -158,6 +190,25 @@ export function Studio(): React.ReactElement {
     setViewMode(currentPage.generatedImage ? 'result' : 'editor');
     setAnalysisResult(null);
   }, [currentPage.id, currentPage.generatedImage]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const stateToPersist: PersistedStudioState = {
+        pagesState: { pages, currentPageId },
+        characters,
+        colorMode,
+        viewMode,
+        generateEmptyBubbles,
+        worldview,
+        currentView,
+        isSidebarOpen,
+      };
+      window.localStorage.setItem(STUDIO_STORAGE_KEY, JSON.stringify(stateToPersist));
+    } catch (error) {
+      console.warn('Failed to persist studio state', error);
+    }
+  }, [pages, currentPageId, characters, colorMode, viewMode, generateEmptyBubbles, worldview, currentView, isSidebarOpen]);
 
   const handleGenerateImage = useCallback(async () => {
     setIsLoading(true);
