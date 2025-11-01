@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { useLocalization } from '../../hooks/useLocalization';
+import { useInView } from '../../hooks/useInView';
 import {
   SparklesIcon,
   UserGroupIcon,
@@ -17,45 +18,17 @@ interface FeatureCardProps {
 }
 
 function FeatureCard({ icon, title, description, index }: FeatureCardProps): React.ReactElement {
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setTimeout(() => {
-              entry.target.classList.add('animate-in');
-            }, index * 100);
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    if (cardRef.current) {
-      observer.observe(cardRef.current);
-    }
-
-    return () => {
-      if (cardRef.current) {
-        observer.unobserve(cardRef.current);
-      }
-    };
-  }, [index]);
+  const [cardRef] = useInView({ threshold: 0.1 });
 
   return (
     <div
       ref={cardRef}
-      className="feature-card surface-card"
+      className="feature-card surface-card animate-slide-up"
       style={{
         padding: 'clamp(1.5rem, 3vw, 2rem)',
         display: 'flex',
         flexDirection: 'column',
         gap: '1.25rem',
-        opacity: 0,
-        transform: 'translateY(30px)',
-        transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
       }}
     >
       <div
@@ -98,30 +71,7 @@ function FeatureCard({ icon, title, description, index }: FeatureCardProps): Rea
 
 export function Features(): React.ReactElement {
   const { t } = useLocalization();
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animate-in');
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
-      }
-    };
-  }, []);
+  const [sectionRef] = useInView({ threshold: 0.1 });
 
   const features = [
     {
@@ -160,27 +110,15 @@ export function Features(): React.ReactElement {
     <section
       id="features"
       ref={sectionRef}
-      className="landing-features"
-      style={{
-        padding: 'clamp(4rem, 10vw, 8rem) clamp(1.5rem, 5vw, 3rem)',
-        background: 'var(--surface-muted)',
-      }}
+      className="section section--muted"
     >
-      <div
-        style={{
-          maxWidth: '1400px',
-          margin: '0 auto',
-        }}
-      >
+      <div className="container">
         <div
+          className="section-header"
           style={{
             textAlign: 'center',
             marginBottom: 'clamp(3rem, 6vw, 5rem)',
-            opacity: 0,
-            transform: 'translateY(20px)',
-            transition: 'all 0.8s ease-out',
           }}
-          className="features-header"
         >
           <h2
             className="heading-xl"
@@ -201,14 +139,13 @@ export function Features(): React.ReactElement {
           }}
         >
           {features.map((feature, index) => (
-            <React.Fragment key={`feature-${index}`}>
-              <FeatureCard
-                icon={feature.icon}
-                title={feature.title}
-                description={feature.description}
-                index={index}
-              />
-            </React.Fragment>
+            <FeatureCard
+              key={`feature-${index}`}
+              icon={feature.icon}
+              title={feature.title}
+              description={feature.description}
+              index={index}
+            />
           ))}
         </div>
       </div>
