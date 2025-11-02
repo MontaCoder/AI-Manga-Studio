@@ -63,13 +63,21 @@ export function Gallery(): React.ReactElement {
   );
 }
 
-function GalleryItem({ image, index, hoveredIndex, onMouseEnter, onMouseLeave }: {
+interface GalleryItemProps {
   image: { src: string; alt: string };
   index: number;
   hoveredIndex: number | null;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
-}): React.ReactElement {
+}
+
+const GalleryItem: React.FC<GalleryItemProps> = ({
+  image,
+  index,
+  hoveredIndex,
+  onMouseEnter,
+  onMouseLeave,
+}) => {
   const [itemRef] = useInView({ threshold: 0.1 });
 
   return (
@@ -119,5 +127,5 @@ function GalleryItem({ image, index, hoveredIndex, onMouseEnter, onMouseLeave }:
       </div>
     </div>
   );
-}
+};
 

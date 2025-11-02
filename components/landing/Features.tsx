@@ -17,7 +17,7 @@ interface FeatureCardProps {
   index: number;
 }
 
-function FeatureCard({ icon, title, description, index }: FeatureCardProps): React.ReactElement {
+const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, index }) => {
   const [cardRef] = useInView({ threshold: 0.1 });
 
   return (
@@ -67,7 +67,7 @@ function FeatureCard({ icon, title, description, index }: FeatureCardProps): Rea
       </div>
     </div>
   );
-}
+};
 
 export function Features(): React.ReactElement {
   const { t } = useLocalization();
