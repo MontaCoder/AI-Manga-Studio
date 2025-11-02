@@ -353,13 +353,13 @@ textarea:hover, input:hover, select:hover { border-color: var(--border-muted); }
   padding: 0.625rem 1.25rem;
   border-radius: var(--radius-sm);
   color: var(--color-text);
-  background: var(--accent-12);
-  border: 1px solid var(--accent-20);
-  box-shadow: none;
+  background: var(--gradient-accent);
+  border: none;
+  box-shadow: var(--shadow-xs);
   transition: all 150ms ease;
   font-weight: 600;
 }
-.button-accent:hover { background: var(--accent-15); border-color: var(--accent-25); box-shadow: var(--shadow-xs); transform: translateY(-1px); }
+.button-accent:hover { filter: brightness(1.1); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
 .button-accent:active { transform: translateY(0); }
 
 .button-primary:disabled, .button-secondary:disabled, .button-ghost:disabled {
