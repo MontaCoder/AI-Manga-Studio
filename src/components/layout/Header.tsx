@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MenuIcon, XIcon, BookOpenIcon, GlobeIcon, VideoIcon, ArrowLeftIcon, KeyIcon } from '@/components/icons/icons';
 import { useLocalization } from '@/hooks/useLocalization';
@@ -21,7 +21,7 @@ interface HeaderProps {
     onSetView?: (view: 'manga-editor' | 'video-producer') => void;
 }
 
-export function Header({ 
+export function Header({
     variant = 'app',
     isTransparentOnTop = false,
     isSidebarOpen,
@@ -41,9 +41,14 @@ export function Header({
   const [isScrolled, setIsScrolled] = useState(false);
   const isApp = variant === 'app';
 
-  const handleLogoClick = () => {
+  const handleLogoClick = useCallback(() => {
     navigate('/');
-  };
+  }, [navigate]);
+
+  const handleLanguageChange = useCallback((lang: Language) => {
+    setLanguage(lang);
+    setIsLangOpen(false);
+  }, [setLanguage]);
 
   useEffect(() => {
     if (!isTransparentOnTop) return;
@@ -56,11 +61,11 @@ export function Header({
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isTransparentOnTop]);
 
-  const languages = useMemo(() => ([
+  const languages = [
       { key: 'zh' as Language, name: t('chinese') },
       { key: 'en' as Language, name: t('english') },
       { key: 'ja' as Language, name: t('japanese') },
-  ]), [t]);
+  ];
 
   const headerClassName = `header-bar ${isTransparentOnTop && !isScrolled ? 'landing-header--transparent' : ''} ${isTransparentOnTop && isScrolled ? 'landing-header--transparent scrolled' : ''}`;
 
@@ -133,7 +138,7 @@ export function Header({
                         {languages.map(({ key, name }) => (
                             <button
                                 key={key}
-                                onClick={() => { setLanguage(key); setIsLangOpen(false); }}
+                                onClick={() => handleLanguageChange(key)}
                                 className={`language-menu__item ${language === key ? 'is-active' : ''}`}
                             >
                                 {name}
