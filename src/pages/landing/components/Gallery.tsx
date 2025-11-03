@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocalization } from '@/hooks/useLocalization';
 import { useInView } from '@/hooks/useInView';
 
@@ -12,7 +12,16 @@ const galleryImages = [
 export function Gallery(): React.ReactElement {
   const { t } = useLocalization();
   const [sectionRef] = useInView({ threshold: 0.1 });
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  // Auto-advance carousel every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % galleryImages.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <section
@@ -41,91 +50,87 @@ export function Gallery(): React.ReactElement {
 
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
-            gap: 'clamp(1.5rem, 3vw, 2rem)',
-            alignItems: 'start',
+            position: 'relative',
+            maxWidth: '600px',
+            margin: '0 auto',
+            overflow: 'hidden',
+            borderRadius: 'var(--radius-lg)',
           }}
         >
-          {galleryImages.map((image, index) => (
-            <GalleryItem
-              key={index}
-              image={image}
-              index={index}
-              hoveredIndex={hoveredIndex}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
-            />
-          ))}
+          {/* Carousel Container */}
+          <div
+            style={{
+              display: 'flex',
+              transition: 'transform 0.5s ease-in-out',
+              transform: `translateX(-${currentIndex * 100}%)`,
+            }}
+          >
+            {galleryImages.map((image, index) => (
+              <div
+                key={index}
+                style={{
+                  minWidth: '100%',
+                  aspectRatio: '4/5',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+              >
+                <img
+                  src={image.src}
+                  alt={image.alt}
+                  loading="lazy"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transition: 'transform 0.4s ease-out',
+                    transform: hoveredIndex === index ? 'scale(1.05)' : 'scale(1)',
+                  }}
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'linear-gradient(to bottom, transparent 60%, rgba(44, 62, 80, 0.1) 100%)',
+                    opacity: hoveredIndex === index ? 1 : 0,
+                    transition: 'opacity 0.3s ease-out',
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Navigation Indicators */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              marginTop: '1.5rem',
+            }}
+          >
+            {galleryImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: currentIndex === index ? 'var(--color-primary)' : 'var(--border-subtle)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                }}
+                aria-label={`Go to image ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
   );
 }
-
-interface GalleryItemProps {
-  image: { src: string; alt: string };
-  index: number;
-  hoveredIndex: number | null;
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
-}
-
-const GalleryItem: React.FC<GalleryItemProps> = ({
-  image,
-  index,
-  hoveredIndex,
-  onMouseEnter,
-  onMouseLeave,
-}) => {
-  const [itemRef] = useInView({ threshold: 0.1 });
-
-  return (
-    <div
-      ref={itemRef}
-      className="gallery-item surface-card animate-scale-in"
-      style={{
-        padding: 0,
-        overflow: 'hidden',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border-subtle)',
-        background: 'var(--surface-primary)',
-      }}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    >
-      <div
-        style={{
-          width: '100%',
-          aspectRatio: '4/5',
-          position: 'relative',
-          overflow: 'hidden',
-          background: 'var(--surface-secondary)',
-        }}
-      >
-        <img
-          src={image.src}
-          alt={image.alt}
-          loading="lazy"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            transition: 'transform 0.4s ease-out',
-            transform: hoveredIndex === index ? 'scale(1.05)' : 'scale(1)',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(to bottom, transparent 60%, rgba(44, 62, 80, 0.1) 100%)',
-            opacity: hoveredIndex === index ? 1 : 0,
-            transition: 'opacity 0.3s ease-out',
-          }}
-        />
-      </div>
-    </div>
-  );
-};
 
