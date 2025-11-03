@@ -23,8 +23,8 @@ export function Hero(): React.ReactElement {
         playsInline
         preload="auto"
       >
-        <source src="/Website_Hero_Background_Video_Generation.webm" type="video/webm" />
-        <source src="/Website_Hero_Background_Video_Generation.mp4" type="video/mp4" />
+        <source src="/video/Website_Hero_Background_Video_Generation.webm" type="video/webm" />
+        <source src="/video/Website_Hero_Background_Video_Generation.mp4" type="video/mp4" />
       </video>
       
       <div className="hero__pattern" />
