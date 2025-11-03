@@ -15,7 +15,21 @@ export function Hero(): React.ReactElement {
 
   return (
     <section ref={heroRef} className="hero">
+      <video
+        className="hero__video"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+      >
+        <source src="/Website_Hero_Background_Video_Generation.webm" type="video/webm" />
+        <source src="/Website_Hero_Background_Video_Generation.mp4" type="video/mp4" />
+      </video>
+      
       <div className="hero__pattern" />
+      <div className="hero__overlay" />
+        
       <div className="hero__content">
         <h1 className="hero__title animate-fade-up">
           {t('landingHero')}
@@ -28,35 +42,18 @@ export function Hero(): React.ReactElement {
         <div className="hero__actions animate-fade-up-delayed-more">
           <button
             onClick={() => navigate('/studio')}
-            className="button-primary"
-            style={{
-              fontSize: '1.125rem',
-              padding: '1rem 2.5rem',
-              boxShadow: 'var(--shadow-lg)',
-              transition: 'all var(--transition-bounce)',
-            }}
+            className="button-primary button-lg"
+            aria-label={t('getStarted')}
           >
             {t('getStarted')}
           </button>
           <button
             onClick={scrollToFeatures}
-            className="button-secondary"
-            style={{
-              fontSize: '1.125rem',
-              padding: '0.9375rem 2.5rem',
-              transition: 'all var(--transition-soft)',
-            }}
+            className="button-secondary button-lg"
+            aria-label={t('learnMore')}
           >
             {t('learnMore')}
           </button>
-        </div>
-
-        <div className="hero__preview animate-scale-up">
-          <img
-            src="/images/og.webp"
-            alt="AI Manga Studio Preview"
-            loading="lazy"
-          />
         </div>
       </div>
     </section>
