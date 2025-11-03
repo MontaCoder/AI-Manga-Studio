@@ -24,44 +24,15 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, ind
     <div
       ref={cardRef}
       className="feature-card surface-card animate-slide-up"
-      style={{
-        padding: 'clamp(1.5rem, 3vw, 2rem)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1.25rem',
-      }}
     >
-      <div
-        style={{
-          width: '3.5rem',
-          height: '3.5rem',
-          borderRadius: 'var(--radius-md)',
-          background: 'var(--accent-12)',
-          border: '1px solid var(--accent-20)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--color-accent-strong)',
-        }}
-      >
+      <div className="feature-card__icon">
         {icon}
       </div>
-      <div>
-        <h3
-          className="heading-md"
-          style={{
-            marginBottom: '0.75rem',
-            color: 'var(--color-text)',
-          }}
-        >
+      <div className="feature-card__content">
+        <h3 className="feature-card__title">
           {title}
         </h3>
-        <p
-          className="text-subtle"
-          style={{
-            lineHeight: 1.7,
-          }}
-        >
+        <p className="feature-card__description">
           {description}
         </p>
       </div>
@@ -113,31 +84,13 @@ export function Features(): React.ReactElement {
       className="section section--muted"
     >
       <div className="container">
-        <div
-          className="section-header"
-          style={{
-            textAlign: 'center',
-            marginBottom: 'clamp(3rem, 6vw, 5rem)',
-          }}
-        >
-          <h2
-            className="heading-xl"
-            style={{
-              marginBottom: '1rem',
-              color: 'var(--color-text)',
-            }}
-          >
+        <div className="section-header">
+          <h2 className="heading-xl">
             {t('featuresTitle')}
           </h2>
         </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
-            gap: 'clamp(1.5rem, 3vw, 2.5rem)',
-          }}
-        >
+        <div className="features-grid">
           {features.map((feature, index) => (
             <FeatureCard
               key={`feature-${index}`}
