@@ -176,6 +176,20 @@ export const locales = {
     close: "关闭",
     pageIndicator: "第{currentPage}/{totalPages}页",
 
+    // Export Modal
+    exportModal: "导出漫画",
+    selectFormat: "选择格式",
+    selectPages: "选择页面",
+    selectAll: "全选",
+    deselectAll: "取消全选",
+    exportOptions: "导出选项",
+    singlePDF: "单个PDF文件",
+    separatePDFs: "分别导出PDF",
+    individualDownloads: "逐个下载",
+    zipArchive: "ZIP压缩包",
+    noGeneratedPages: "没有已生成的页面可以导出",
+    exporting: "导出中...",
+
     // Worldview Modal
     worldview: "世界观",
     worldviewModalTitle: "世界观设置",
@@ -462,6 +476,20 @@ export const locales = {
     downloadAll: "Download All",
     close: "Close",
     pageIndicator: "Page {currentPage}/{totalPages}",
+
+    // Export Modal
+    exportModal: "Export Manga",
+    selectFormat: "Select Format",
+    selectPages: "Select Pages",
+    selectAll: "Select All",
+    deselectAll: "Deselect All",
+    exportOptions: "Export Options",
+    singlePDF: "Single PDF file",
+    separatePDFs: "Separate PDF files",
+    individualDownloads: "Individual downloads",
+    zipArchive: "ZIP archive",
+    noGeneratedPages: "No generated pages to export",
+    exporting: "Exporting...",
     
     // Worldview Modal
     worldview: "Worldview",
@@ -749,6 +777,20 @@ export const locales = {
     downloadAll: "すべてダウンロード",
     close: "閉じる",
     pageIndicator: "{currentPage}/{totalPages} ページ",
+
+    // Export Modal
+    exportModal: "漫画をエクスポート",
+    selectFormat: "形式を選択",
+    selectPages: "ページを選択",
+    selectAll: "すべて選択",
+    deselectAll: "すべて解除",
+    exportOptions: "エクスポートオプション",
+    singlePDF: "単一のPDFファイル",
+    separatePDFs: "個別のPDFファイル",
+    individualDownloads: "個別ダウンロード",
+    zipArchive: "ZIPアーカイブ",
+    noGeneratedPages: "エクスポートする生成済みページがありません",
+    exporting: "エクスポート中...",
 
     // Worldview Modal
     worldview: "世界観",
