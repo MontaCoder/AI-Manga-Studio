@@ -19,6 +19,7 @@ interface HeaderProps {
     onShowWorldview?: () => void;
     currentView?: 'manga-editor' | 'video-producer';
     onSetView?: (view: 'manga-editor' | 'video-producer') => void;
+    onExport?: () => void;
 }
 
 export function Header({
@@ -33,7 +34,8 @@ export function Header({
     onShowMangaViewer,
     onShowWorldview,
     currentView,
-    onSetView
+    onSetView,
+    onExport
 }: HeaderProps): React.ReactElement {
   const { t } = useLocalization();
   const navigate = useNavigate();
@@ -163,7 +165,7 @@ export function Header({
             )}
 
             {isApp ? (
-                <button className="button-primary">
+                <button onClick={onExport} className="button-primary">
                     {t('export')}
                 </button>
             ) : (
