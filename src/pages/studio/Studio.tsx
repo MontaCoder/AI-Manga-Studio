@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { ApiKeyModal } from '@/components/modals/ApiKeyModal';
+import { ExportModal } from '@/components/modals/ExportModal';
 import { PanelEditor } from '@/features/panel-editor/PanelEditor';
 import { GenerationControls } from './components/GenerationControls';
 import { ResultDisplay } from './components/ResultDisplay';
@@ -84,6 +85,7 @@ export function Studio(): React.ReactElement {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(() => persistedState?.isSidebarOpen ?? true);
   const [characters, setCharacters] = useState<Character[]>(() => persistedState?.characters ?? []);
   const [showCharacterModal, setShowCharacterModal] = useState<boolean>(false);
+  const [showExportModal, setShowExportModal] = useState<boolean>(false);
   const [colorMode, setColorMode] = useState<'color' | 'monochrome'>(() => persistedState?.colorMode ?? 'monochrome');
   
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -559,6 +561,10 @@ export function Studio(): React.ReactElement {
     setViewMode('result');
   }, [currentPage.assistantProposalImage, handleUpdateCurrentPage]);
 
+  const handleOpenExport = useCallback(() => {
+    setShowExportModal(true);
+  }, []);
+
 
   const isReadyToGenerate = !!currentPage.sceneDescription;
   const isMonochromeResult = currentPage.generatedImage !== null && currentPage.generatedColorMode === 'monochrome';
@@ -578,6 +584,7 @@ export function Studio(): React.ReactElement {
         onShowWorldview={() => setShowWorldviewModal(true)}
         currentView={currentView}
         onSetView={setCurrentView}
+        onExport={handleOpenExport}
       />
       <ApiKeyModal
         isOpen={isApiKeyModalOpen}
@@ -625,6 +632,13 @@ export function Studio(): React.ReactElement {
         <MangaViewerModal 
             pages={pages}
             onClose={() => setShowMangaViewer(false)}
+        />
+      )}
+      {showExportModal && (
+        <ExportModal
+          isOpen={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          pages={pages}
         />
       )}
       {isMasking && currentPage.generatedImage && (
