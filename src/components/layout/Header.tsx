@@ -67,6 +67,7 @@ export function Header({
       { key: 'zh' as Language, name: t('chinese') },
       { key: 'en' as Language, name: t('english') },
       { key: 'ja' as Language, name: t('japanese') },
+      { key: 'ar' as Language, name: t('arabic') },
   ];
 
   const headerClassName = `header-bar ${isTransparentOnTop && !isScrolled ? 'landing-header--transparent' : ''} ${isTransparentOnTop && isScrolled ? 'landing-header--transparent scrolled' : ''}`;
