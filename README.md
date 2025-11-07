@@ -1,5 +1,7 @@
 # 🎨 AI Manga Studio
 
+![AI Manga Studio preview](/public/images/demo/ai-manga-studio-preview.png)
+
 > A powerful AI-driven tool for creating manga with intelligent script generation, dynamic storyboard layout, and precise character style control.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
