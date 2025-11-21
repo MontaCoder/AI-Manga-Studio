@@ -326,11 +326,9 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, rgba(55, 65, 81, 0.08) 0%, transparent 50%),
-              radial-gradient(circle at 40% 40%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+  background: none;
   z-index: 2;
-  opacity: 0.8;
+  opacity: 0;
 }
 
 .hero__overlay {
@@ -339,10 +337,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.9) 0%, 
-    rgba(249, 250, 251, 0.85) 50%, 
-    rgba(243, 244, 246, 0.8) 100%);
+  background: none;
   z-index: 3;
 }
 
@@ -366,6 +361,7 @@ body {
   line-height: 0.95;
   color: var(--color-text);
   margin-bottom: var(--space-lg);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .hero__subtitle {
@@ -375,6 +371,7 @@ body {
   color: var(--color-text-muted);
   max-width: 42rem;
   margin: 0 auto;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 .hero__actions {
