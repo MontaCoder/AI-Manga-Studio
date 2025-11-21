@@ -359,19 +359,24 @@ body {
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 0.95;
-  color: var(--color-text);
+  color: #FFFFFF;
   margin-bottom: var(--space-lg);
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  text-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.8),
+    0 4px 16px rgba(0, 0, 0, 0.6),
+    0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .hero__subtitle {
   font-size: clamp(1.25rem, 3vw, 1.75rem);
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.6;
-  color: var(--color-text-muted);
+  color: #F8FAFC;
   max-width: 42rem;
   margin: 0 auto;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 
+    0 1px 4px rgba(0, 0, 0, 0.8),
+    0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 .hero__actions {
@@ -380,6 +385,26 @@ body {
   justify-content: center;
   gap: var(--space-lg);
   flex-wrap: wrap;
+}
+
+.hero__actions .button-primary {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  color: #FFFFFF;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 8px 32px rgba(59, 130, 246, 0.4),
+    0 4px 16px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.hero__actions .button-secondary {
+  background: rgba(255, 255, 255, 0.95);
+  color: #1F2937;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(255, 255, 255, 0.3),
+    0 4px 16px rgba(0, 0, 0, 0.2);
+  font-weight: 600;
 }
 
 /* Typography System */
