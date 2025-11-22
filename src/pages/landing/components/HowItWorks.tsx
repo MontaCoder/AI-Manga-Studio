@@ -12,47 +12,62 @@ interface StepCardProps {
 function StepCard({ number, title, description, index }: StepCardProps): React.ReactElement {
   const [cardRef] = useInView({ threshold: 0.1 });
 
+  const getAnimationClass = () => {
+    switch (index % 2) {
+      case 0:
+        return 'animate-slide-left';
+      case 1:
+        return 'animate-slide-right';
+      default:
+        return 'animate-fade-up';
+    }
+  };
+
   return (
     <div
       ref={cardRef}
-      className="step-card animate-slide-up"
+      className={`step-card surface-card ${getAnimationClass()}`}
       style={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '1.5rem',
+        gap: '2rem',
         position: 'relative',
+        padding: 'clamp(2rem, 4vw, 3rem)',
+        textAlign: 'center',
+        animationDelay: `${index * 0.2}s`,
       }}
     >
       <div
+        className="step-number"
         style={{
-          width: '5rem',
-          height: '5rem',
+          width: '6rem',
+          height: '6rem',
           borderRadius: '50%',
           background: 'var(--gradient-primary)',
           color: '#fff',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '2rem',
+          fontSize: '2.5rem',
           fontWeight: 800,
-          boxShadow: 'var(--shadow-md)',
+          boxShadow: 'var(--shadow-lg), var(--shadow-glow)',
           position: 'relative',
           zIndex: 2,
+          transition: 'all var(--transition-smooth)',
         }}
       >
         {number}
       </div>
       <div
         style={{
-          textAlign: 'center',
-          maxWidth: '300px',
+          maxWidth: '320px',
         }}
       >
         <h3
           className="heading-md"
           style={{
-            marginBottom: '0.75rem',
+            marginBottom: '1rem',
             color: 'var(--color-text)',
           }}
         >
@@ -98,32 +113,71 @@ export function HowItWorks(): React.ReactElement {
     <section
       id="how-it-works"
       ref={sectionRef}
-      className="section section--gradient"
+      className="section"
+      style={{
+        background: 'var(--gradient-app)',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
     >
-      <div className="container">
+      {/* Background decorations */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '20%',
+          left: '10%',
+          width: '250px',
+          height: '250px',
+          background: 'radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%)',
+          borderRadius: '50%',
+          filter: 'blur(50px)',
+          zIndex: 0,
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '20%',
+          right: '10%',
+          width: '350px',
+          height: '350px',
+          background: 'radial-gradient(circle, rgba(236, 72, 153, 0.06) 0%, transparent 70%)',
+          borderRadius: '50%',
+          filter: 'blur(70px)',
+          zIndex: 0,
+        }}
+      />
+      
+      <div className="container" style={{ position: 'relative', zIndex: 1 }}>
         <div
           className="section-header"
           style={{
             textAlign: 'center',
-            marginBottom: 'clamp(3rem, 6vw, 5rem)',
+            marginBottom: 'clamp(4rem, 8vw, 6rem)',
           }}
         >
+          <span className="heading-eyebrow animate-scale-in">
+            Process
+          </span>
           <h2
-            className="heading-xl"
+            className="heading-xl animate-fade-up"
             style={{
-              marginBottom: '1rem',
+              marginBottom: '1.5rem',
               color: 'var(--color-text)',
             }}
           >
             {t('howItWorksTitle')}
           </h2>
+          <p className="text-lead animate-fade-up-delayed" style={{ maxWidth: '600px', margin: '0 auto' }}>
+            Create stunning manga in four simple steps with our AI-powered workflow
+          </p>
         </div>
 
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))',
-            gap: 'clamp(2.5rem, 5vw, 4rem)',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+            gap: 'clamp(3rem, 6vw, 4rem)',
             position: 'relative',
           }}
         >
@@ -135,20 +189,6 @@ export function HowItWorks(): React.ReactElement {
                 description={step.description}
                 index={index}
               />
-              {index < steps.length - 1 && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '2.5rem',
-                    left: `calc(${(index + 1) * 25}% - 2rem)`,
-                    width: 'calc(25% - 4rem)',
-                    height: '2px',
-                    background: 'var(--color-border)',
-                    display: window.innerWidth < 768 ? 'none' : 'block',
-                  }}
-                  className="step-connector"
-                />
-              )}
             </React.Fragment>
           ))}
         </div>
