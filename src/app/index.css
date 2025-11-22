@@ -401,19 +401,67 @@ body {
     0 4px 16px rgba(0, 0, 0, 0.8),
     0 8px 32px rgba(0, 0, 0, 0.6),
     0 16px 64px rgba(0, 0, 0, 0.4),
-    0 0 40px rgba(255, 255, 255, 0.3);
-  animation: titleGlow 3s ease-in-out infinite alternate;
+    0 0 40px rgba(255, 255, 255, 0.3),
+    0 0 80px rgba(59, 130, 246, 0.2);
+  animation: titleGlow 3s ease-in-out infinite alternate, titleFloat 6s ease-in-out infinite;
+  position: relative;
+}
+
+.hero__title::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.1) 0%, 
+    rgba(147, 51, 234, 0.1) 50%, 
+    rgba(236, 72, 153, 0.1) 100%);
+  z-index: -1;
+  filter: blur(20px);
+  opacity: 0.6;
+  animation: titlePulse 4s ease-in-out infinite;
 }
 
 @keyframes titleGlow {
-  0% { filter: brightness(1) drop-shadow(0 0 20px rgba(255, 255, 255, 0.3)); }
-  100% { filter: brightness(1.1) drop-shadow(0 0 40px rgba(255, 255, 255, 0.5)); }
+  0% { filter: brightness(1) drop-shadow(0 0 20px rgba(255, 255, 255, 0.3)) drop-shadow(0 0 40px rgba(59, 130, 246, 0.2)); }
+  100% { filter: brightness(1.1) drop-shadow(0 0 40px rgba(255, 255, 255, 0.5)) drop-shadow(0 0 80px rgba(147, 51, 234, 0.3)); }
+}
+
+@keyframes titleFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes titlePulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+@keyframes subtitleFade {
+  0% { opacity: 0.9; }
+  100% { opacity: 1; }
 }
 
 @keyframes gradientShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+@keyframes buttonPulse {
+  0%, 100% { box-shadow: 
+    0 12px 48px rgba(59, 130, 246, 0.4),
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset; }
+  50% { box-shadow: 
+    0 12px 48px rgba(59, 130, 246, 0.6),
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 0 20px rgba(59, 130, 246, 0.3); }
 }
 
 .hero__subtitle {
@@ -425,7 +473,9 @@ body {
   margin: 0 auto;
   text-shadow: 
     0 2px 8px rgba(0, 0, 0, 0.8),
-    0 4px 16px rgba(0, 0, 0, 0.6);
+    0 4px 16px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(59, 130, 246, 0.1);
+  animation: subtitleFade 2s ease-in-out infinite alternate;
 }
 
 .hero__actions {
@@ -444,10 +494,12 @@ body {
   box-shadow: 
     0 12px 48px rgba(59, 130, 246, 0.4),
     0 8px 24px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
+  animation: buttonPulse 3s ease-in-out infinite;
 }
 
 .hero__actions .button-primary::before {
@@ -470,7 +522,9 @@ body {
   box-shadow: 
     0 16px 64px rgba(59, 130, 246, 0.5),
     0 12px 32px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 30px rgba(59, 130, 246, 0.3);
+  animation: none;
 }
 
 .hero__actions .button-secondary {
@@ -480,9 +534,11 @@ body {
   box-shadow: 
     0 12px 48px rgba(255, 255, 255, 0.3),
     0 8px 24px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 0 0 1px rgba(59, 130, 246, 0.1) inset;
   font-weight: 600;
   backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hero__actions .button-secondary:hover {
@@ -491,7 +547,9 @@ body {
   box-shadow: 
     0 16px 64px rgba(255, 255, 255, 0.4),
     0 12px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 0 20px rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
 /* Premium Typography System */
