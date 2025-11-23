@@ -138,10 +138,10 @@ export function Features(): React.ReactElement {
             {t('featuresTitle') || 'Features'}
           </span>
           <h2 className="heading-xl animate-fade-up">
-            Powerful Creative Tools
+            {t('featuresHeadingTitle')}
           </h2>
           <p className="text-lead animate-fade-up-delayed" style={{ maxWidth: '600px', margin: '0 auto' }}>
-            Everything you need to bring your manga stories to life with AI-powered assistance
+            {t('featuresHeadingSubtitle')}
           </p>
         </div>
 
