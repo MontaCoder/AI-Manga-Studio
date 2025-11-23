@@ -138,10 +138,10 @@ export function Features(): React.ReactElement {
             {t('featuresTitle') || 'Features'}
           </span>
           <h2 className="heading-xl animate-fade-up">
-            {t('featuresHeadingTitle')}
+            {t('featuresHeading')}
           </h2>
           <p className="text-lead animate-fade-up-delayed" style={{ maxWidth: '600px', margin: '0 auto' }}>
-            {t('featuresHeadingSubtitle')}
+            {t('featuresDescription')}
           </p>
         </div>
 
