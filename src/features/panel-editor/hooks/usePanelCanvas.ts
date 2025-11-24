@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { RefObject, WheelEvent } from 'react';
 import type { ViewTransform } from '@/types';
 
@@ -26,6 +26,7 @@ interface UsePanelCanvasResult {
   zoomIn: () => void;
   zoomOut: () => void;
   clientToCanvasPoint: (clientX: number, clientY: number) => { x: number; y: number };
+  setViewTransform: (next: ViewTransform, options?: { immediate?: boolean }) => void;
 }
 
 export function usePanelCanvas({
@@ -34,10 +35,47 @@ export function usePanelCanvas({
   onViewTransformChange,
 }: UsePanelCanvasParams): UsePanelCanvasResult {
   const svgRef = useRef<SVGSVGElement>(null);
+  const pendingViewTransformRef = useRef<ViewTransform | null>(null);
+  const rafIdRef = useRef<number | null>(null);
 
   const canvasConfig = useMemo(() => {
     return ASPECT_RATIO_CONFIG[aspectRatio] || ASPECT_RATIO_CONFIG.A4;
   }, [aspectRatio]);
+
+  const setViewTransform = useCallback(
+    (next: ViewTransform, options?: { immediate?: boolean }) => {
+      if (options?.immediate) {
+        if (rafIdRef.current !== null) {
+          cancelAnimationFrame(rafIdRef.current);
+          rafIdRef.current = null;
+        }
+        pendingViewTransformRef.current = null;
+        onViewTransformChange(next);
+        return;
+      }
+
+      pendingViewTransformRef.current = next;
+      if (rafIdRef.current !== null) return;
+
+      rafIdRef.current = requestAnimationFrame(() => {
+        rafIdRef.current = null;
+        if (pendingViewTransformRef.current) {
+          onViewTransformChange(pendingViewTransformRef.current);
+          pendingViewTransformRef.current = null;
+        }
+      });
+    },
+    [onViewTransformChange],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+      pendingViewTransformRef.current = null;
+    };
+  }, []);
 
   const clientToCanvasPoint = useCallback(
     (clientX: number, clientY: number) => {
@@ -72,8 +110,8 @@ export function usePanelCanvas({
     const x = (viewWidth - pageWidth * scale) / 2;
     const y = (viewHeight - pageHeight * scale) / 2;
 
-    onViewTransformChange({ scale, x, y });
-  }, [canvasConfig, onViewTransformChange]);
+    setViewTransform({ scale, x, y }, { immediate: true });
+  }, [canvasConfig, setViewTransform]);
 
   const handleWheel = useCallback(
     (event: WheelEvent<SVGSVGElement>) => {
@@ -92,9 +130,9 @@ export function usePanelCanvas({
       const newX = mouseX - (mouseX - viewTransform.x) * (clampedScale / viewTransform.scale);
       const newY = mouseY - (mouseY - viewTransform.y) * (clampedScale / viewTransform.scale);
 
-      onViewTransformChange({ scale: clampedScale, x: newX, y: newY });
+      setViewTransform({ scale: clampedScale, x: newX, y: newY });
     },
-    [viewTransform.scale, viewTransform.x, viewTransform.y, onViewTransformChange],
+    [viewTransform.scale, viewTransform.x, viewTransform.y, setViewTransform],
   );
 
   const zoom = useCallback(
@@ -127,5 +165,6 @@ export function usePanelCanvas({
     zoomIn,
     zoomOut,
     clientToCanvasPoint,
+    setViewTransform,
   };
 }
