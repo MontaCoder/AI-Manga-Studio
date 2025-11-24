@@ -243,6 +243,7 @@ export const PanelEditor = forwardRef<
     zoomIn,
     zoomOut,
     clientToCanvasPoint,
+    setViewTransform,
   } = usePanelCanvas({ aspectRatio, viewTransform, onViewTransformChange });
 
   useEffect(() => {
@@ -404,7 +405,7 @@ export const PanelEditor = forwardRef<
         case 'panning': {
             const dx = e.clientX - action.startPos.x;
             const dy = e.clientY - action.startPos.y;
-            onViewTransformChange({ scale: action.startVT.scale, x: action.startVT.x + dx, y: action.startVT.y + dy });
+            setViewTransform({ scale: action.startVT.scale, x: action.startVT.x + dx, y: action.startVT.y + dy });
             return;
         }
         case 'creating': {
