@@ -525,15 +525,30 @@ textarea { min-height: 8rem; resize: vertical; }
   height: 100%;
   min-height: 0;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(30,41,59,0.2);
-  background: radial-gradient(circle at 45% 10%, #596380 0%, #38425E 55%, #1C2439 100%);
+  border: 1px solid rgba(30,41,59,0.25);
+  background: 
+    radial-gradient(circle at 50% 0%, rgba(100,116,139,0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%);
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(1rem, 2vw, 1.5rem);
+  touch-action: none; /* Prevent browser gestures */
+  user-select: none;
 }
-.editor-canvas { display: block; background: radial-gradient(circle at 45% 22%, #677393 0%, #303A56 68%, #181F32 100%); border-radius: var(--radius); }
+.editor-canvas { 
+  display: block; 
+  background: transparent;
+  touch-action: none;
+}
+
+/* Canvas page shadow and styling */
+.canvas-page-shadow {
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.4)) drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+}
+.canvas-background-rect {
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+}
 
 /* Floating Elements */
 .floating-pill {
