@@ -121,6 +121,29 @@ const getShapeBBox = (shape: CanvasShape) => {
     return { x: shape.x, y: shape.y, width: shape.width || 0, height: shape.height || 0 };
 }
 
+// Smart guides: find alignment with other shapes and canvas
+const SNAP_THRESHOLD = 8;
+const getSmartGuides = (movingBBox: {x:number,y:number,width:number,height:number}, shapes: CanvasShape[], excludeId: string, canvasW: number, canvasH: number) => {
+    const guides: {type: 'h'|'v', pos: number}[] = [];
+    const mc = { x: movingBBox.x + movingBBox.width/2, y: movingBBox.y + movingBBox.height/2 };
+    const targets = [
+        { cx: canvasW/2, cy: canvasH/2, edges: [{v: 0}, {v: canvasW}, {h: 0}, {h: canvasH}] }, // canvas
+        ...shapes.filter(s => s.id !== excludeId).map(s => {
+            const b = getShapeBBox(s);
+            return { cx: b.x + b.width/2, cy: b.y + b.height/2, edges: [{v: b.x}, {v: b.x + b.width}, {h: b.y}, {h: b.y + b.height}] };
+        })
+    ];
+    targets.forEach(t => {
+        if (Math.abs(mc.x - t.cx) < SNAP_THRESHOLD) guides.push({type: 'v', pos: t.cx});
+        if (Math.abs(mc.y - t.cy) < SNAP_THRESHOLD) guides.push({type: 'h', pos: t.cy});
+        t.edges.forEach(e => {
+            if ('v' in e && (Math.abs(movingBBox.x - e.v) < SNAP_THRESHOLD || Math.abs(movingBBox.x + movingBBox.width - e.v) < SNAP_THRESHOLD)) guides.push({type: 'v', pos: e.v});
+            if ('h' in e && (Math.abs(movingBBox.y - e.h) < SNAP_THRESHOLD || Math.abs(movingBBox.y + movingBBox.height - e.h) < SNAP_THRESHOLD)) guides.push({type: 'h', pos: e.h});
+        });
+    });
+    return [...new Map(guides.map(g => [`${g.type}-${g.pos}`, g])).values()];
+};
+
 const getPolygonCentroid = (points: { x: number; y: number }[]) => {
     const getBBoxCenter = () => {
         if (points.length === 0) return { x: 0, y: 0 };
@@ -230,8 +253,11 @@ export const PanelEditor = forwardRef<
   const [brushSize, setBrushSize] = useState(5);
   const [cursorPreview, setCursorPreview] = useState<{ x: number; y: number } | null>(null);
   const [drawingGuideRect, setDrawingGuideRect] = useState<{x: number, y: number, width: number, height: number} | null>(null);
+  const [guides, setGuides] = useState<{type: 'h'|'v', pos: number}[]>([]);
   
   const isSpacePressed = useRef(false);
+  const lastTouchDist = useRef<number | null>(null);
+  const lastTouchCenter = useRef<{x: number, y: number} | null>(null);
 
   const textEditRef = useRef<HTMLTextAreaElement>(null);
   const imageUploadRef = useRef<HTMLInputElement>(null);
@@ -286,31 +312,57 @@ export const PanelEditor = forwardRef<
       };
 
       const handleKeyDown = (e: KeyboardEvent) => {
-          if (isEditableTarget(e.target)) {
+          if (isEditableTarget(e.target)) return;
+          
+          const key = e.key.toLowerCase();
+          
+          // Ctrl/Cmd shortcuts
+          if (e.metaKey || e.ctrlKey) {
+              if (key === 'z') { e.preventDefault(); e.shiftKey ? (canRedo && onRedo()) : (canUndo && onUndo()); }
+              if (key === 'y') { e.preventDefault(); canRedo && onRedo(); }
+              if (key === 'd' && selectedShapeId) {
+                  e.preventDefault();
+                  const shape = shapes.find(s => s.id === selectedShapeId);
+                  if (shape) {
+                      const clone = { ...JSON.parse(JSON.stringify(shape)), id: Date.now().toString() };
+                      if ('x' in clone) { clone.x += 20; clone.y += 20; }
+                      if (clone.type === 'panel') clone.points = clone.points.map((p: {x:number,y:number}) => ({x: p.x + 20, y: p.y + 20}));
+                      onShapesChange([...shapes, clone]);
+                      setSelectedShapeId(clone.id);
+                  }
+              }
               return;
           }
-          if (e.metaKey || e.ctrlKey) {
-                if (e.key === 'z') {
-                    e.preventDefault();
-                    if (e.shiftKey) {
-                        canRedo && onRedo();
-                    } else {
-                        canUndo && onUndo();
-                    }
-                }
-                if (e.key === 'y') {
-                    e.preventDefault();
-                    canRedo && onRedo();
-                }
+          
+          // Tool shortcuts (single keys)
+          if (!editingShapeId && !posingCharacter) {
+              const toolMap: Record<string, Tool> = { v: 'select', h: 'pan', p: 'panel', t: 'text', b: 'bubble', d: 'draw', a: 'arrow' };
+              if (toolMap[key]) { setActiveTool(toolMap[key]); return; }
+              if (key === '=' || key === '+') { zoomIn(); return; }
+              if (key === '-') { zoomOut(); return; }
+              if (key === '0') { fitAndCenterCanvas(); return; }
           }
+          
+          // Arrow key nudging
+          if (selectedShapeId && ['arrowup','arrowdown','arrowleft','arrowright'].includes(key)) {
+              e.preventDefault();
+              const delta = e.shiftKey ? 10 : 1;
+              const dx = key === 'arrowleft' ? -delta : key === 'arrowright' ? delta : 0;
+              const dy = key === 'arrowup' ? -delta : key === 'arrowdown' ? delta : 0;
+              onShapesChange(shapes.map(s => {
+                  if (s.id !== selectedShapeId) return s;
+                  if (s.type === 'panel') return { ...s, x: s.x + dx, y: s.y + dy, points: s.points.map(p => ({x: p.x + dx, y: p.y + dy})) };
+                  if (s.type === 'arrow') return { ...s, x: s.x + dx, y: s.y + dy, points: s.points.map(p => ({x: p.x + dx, y: p.y + dy})) as any };
+                  return { ...s, x: s.x + dx, y: s.y + dy } as CanvasShape;
+              }));
+              return;
+          }
+          
           if (e.key === ' ' && !isSpacePressed.current && !editingShapeId && !posingCharacter) {
               isSpacePressed.current = true;
               e.preventDefault();
           }
-          if (e.key === 'Escape') {
-            setEditingShapeId(null);
-            setPosingCharacter(null);
-          }
+          if (e.key === 'Escape') { setEditingShapeId(null); setPosingCharacter(null); setSelectedShapeId(null); }
           if ((e.key === 'Delete' || e.key === 'Backspace') && selectedShapeId && !editingShapeId && !posingCharacter) {
               deleteShape(selectedShapeId);
               setSelectedShapeId(null);
@@ -329,7 +381,7 @@ export const PanelEditor = forwardRef<
           window.removeEventListener('keydown', handleKeyDown);
           window.removeEventListener('keyup', handleKeyUp);
       };
-  }, [selectedShapeId, editingShapeId, posingCharacter, onUndo, onRedo, canUndo, canRedo]);
+  }, [selectedShapeId, editingShapeId, posingCharacter, onUndo, onRedo, canUndo, canRedo, shapes, onShapesChange, zoomIn, zoomOut, fitAndCenterCanvas]);
 
   const getMousePos = useCallback((e: React.MouseEvent | MouseEvent | TouchEvent) => {
     const clientX = 'touches' in e ? e.touches[0]?.clientX ?? 0 : (e as MouseEvent).clientX;
@@ -451,6 +503,13 @@ export const PanelEditor = forwardRef<
             break;
         }
         case 'dragging': {
+            const draggedShape = shapes.find(s => s.id === action.shapeId);
+            if (draggedShape) {
+                const newX = pos.x - action.startOffset.x;
+                const newY = pos.y - action.startOffset.y;
+                const tempBBox = { x: newX, y: newY, width: draggedShape.width || 0, height: draggedShape.height || 0 };
+                setGuides(getSmartGuides(tempBBox, shapes, action.shapeId, canvasConfig.w, canvasConfig.h));
+            }
             newShapes = shapes.map(s => {
                 if (s.id !== action.shapeId) return s;
                 
@@ -579,8 +638,9 @@ export const PanelEditor = forwardRef<
     if (newShapes) onShapesChange(newShapes, false);
   };
   
-  const handleMouseUp = (e: React.MouseEvent) => {
+  const handleMouseUp = () => {
     setDrawingGuideRect(null);
+    setGuides([]);
     if (action.type === 'creating' && (action.shape.type === 'panel' || action.shape.type === 'bubble' || action.shape.type === 'arrow')) {
       setActiveTool('select');
       setSelectedShapeId(action.shape.id);
@@ -594,6 +654,65 @@ export const PanelEditor = forwardRef<
         }
     }
     setAction({type: 'none'});
+  };
+  
+  // Touch handlers for pinch-to-zoom and two-finger pan
+  const handleTouchStart = (e: React.TouchEvent<SVGSVGElement>) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const t1 = e.touches[0], t2 = e.touches[1];
+      lastTouchDist.current = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      lastTouchCenter.current = { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+    } else if (e.touches.length === 1) {
+      const pos = getMousePos(e.nativeEvent as unknown as TouchEvent);
+      if (activeTool === 'draw') {
+        const id = Date.now().toString();
+        const newShape: CanvasShape = { id, type: 'drawing', points: [[pos]], x: pos.x, y: pos.y, strokeColor: brushColor, strokeWidth: brushSize };
+        setAction({ type: 'drawing', shapeId: id, currentStroke: [pos] });
+        onShapesChange([...shapes, newShape], false);
+      }
+    }
+  };
+  
+  const handleTouchMove = (e: React.TouchEvent<SVGSVGElement>) => {
+    if (e.touches.length === 2 && lastTouchDist.current && lastTouchCenter.current) {
+      e.preventDefault();
+      const t1 = e.touches[0], t2 = e.touches[1];
+      const newDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      const newCenter = { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+      const scaleFactor = newDist / lastTouchDist.current;
+      const newScale = Math.max(0.1, Math.min(10, viewTransform.scale * scaleFactor));
+      const dx = newCenter.x - lastTouchCenter.current.x;
+      const dy = newCenter.y - lastTouchCenter.current.y;
+      setViewTransform({
+        scale: newScale,
+        x: viewTransform.x + dx + (lastTouchCenter.current.x - viewTransform.x) * (1 - scaleFactor),
+        y: viewTransform.y + dy + (lastTouchCenter.current.y - viewTransform.y) * (1 - scaleFactor),
+      });
+      lastTouchDist.current = newDist;
+      lastTouchCenter.current = newCenter;
+    } else if (e.touches.length === 1 && action.type === 'drawing') {
+      const pos = getMousePos(e.nativeEvent as unknown as TouchEvent);
+      const newCurrentStroke = [...(action as any).currentStroke, pos];
+      onShapesChange(shapes.map(s => {
+        if (s.id === (action as any).shapeId && s.type === 'drawing') {
+          const pointsCopy = [...s.points];
+          pointsCopy[pointsCopy.length - 1] = newCurrentStroke;
+          return { ...s, points: pointsCopy };
+        }
+        return s;
+      }), false);
+      setAction({ ...action, currentStroke: newCurrentStroke } as any);
+    }
+  };
+  
+  const handleTouchEnd = () => {
+    lastTouchDist.current = null;
+    lastTouchCenter.current = null;
+    if (action.type === 'drawing') {
+      onShapesChange(shapes, true);
+      setAction({ type: 'none' });
+    }
   };
   
   const handleShapeInteraction = (e: React.MouseEvent, shape: CanvasShape, type: 'shape' | 'resize' | 'tail' | 'panelVertex' | 'arrowHandle', handle?: string | number) => {
@@ -1349,7 +1468,8 @@ export const PanelEditor = forwardRef<
                 ref={svgRef} width="100%" height="100%"
                 className="editor-canvas"
                 style={{ cursor: (activeTool === 'draw' || activeTool === 'arrow') ? 'none' : (isSpacePressed.current || action.type === 'panning' ? 'grabbing' : activeTool === 'pan' ? 'grab' : activeTool === 'select' ? 'default' : 'crosshair')}}
-                onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={() => { handleMouseUp(null as any); setCursorPreview(null); }}
+                onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={() => { handleMouseUp(); setCursorPreview(null); }}
+                onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
             >
                 <defs>
                   <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -1582,6 +1702,16 @@ export const PanelEditor = forwardRef<
                     )
                 })}
                 </g>
+                {/* Smart alignment guides */}
+                {guides.map((g, i) => (
+                    <line key={i}
+                        x1={g.type === 'v' ? g.pos * viewTransform.scale + viewTransform.x : 0}
+                        y1={g.type === 'h' ? g.pos * viewTransform.scale + viewTransform.y : 0}
+                        x2={g.type === 'v' ? g.pos * viewTransform.scale + viewTransform.x : '100%'}
+                        y2={g.type === 'h' ? g.pos * viewTransform.scale + viewTransform.y : '100%'}
+                        stroke="#3B82F6" strokeWidth="1" strokeDasharray="4 4" pointerEvents="none"
+                    />
+                ))}
                 {cursorPreview && (activeTool === 'draw' || activeTool === 'arrow') && (
                     <circle 
                         cx={cursorPreview.x * viewTransform.scale + viewTransform.x} 
