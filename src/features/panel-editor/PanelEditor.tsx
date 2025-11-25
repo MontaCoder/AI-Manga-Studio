@@ -301,6 +301,22 @@ export const PanelEditor = forwardRef<
         textEditRef.current.select();
     }
   }, [editingShapeId]);
+
+  // Fix scroll bug: prevent page scroll when wheeling over canvas
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const parent = svg.parentElement;
+    if (!parent) return;
+    
+    const preventScroll = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    
+    parent.addEventListener('wheel', preventScroll, { passive: false });
+    return () => parent.removeEventListener('wheel', preventScroll);
+  }, []);
   
     const deleteShape = (id: string) => onShapesChange(shapes.filter(s => s.id !== id));
 
@@ -1475,11 +1491,25 @@ export const PanelEditor = forwardRef<
                   <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                     <path d="M 0 0 L 10 5 L 0 10 z" fill="#FF0000" />
                   </marker>
-                   <marker id="arrowhead-selected" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <marker id="arrowhead-selected" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                     <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(128, 90, 213, 1)" />
                   </marker>
+                  {/* Subtle grid pattern for workspace */}
+                  <pattern id="workspace-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <circle cx="10" cy="10" r="0.5" fill="rgba(148,163,184,0.15)" />
+                  </pattern>
                 </defs>
-                <g className="canvas-content" transform={`translate(${viewTransform.x}, ${viewTransform.y}) scale(${viewTransform.scale})`}>
+                {/* Workspace background with subtle grid */}
+                <rect width="100%" height="100%" fill="url(#workspace-grid)" />
+                <g className="canvas-content canvas-page-shadow" transform={`translate(${viewTransform.x}, ${viewTransform.y}) scale(${viewTransform.scale})`}>
+                    {/* Page shadow effect */}
+                    <rect 
+                        x="-2" y="-2" 
+                        width={canvasConfig.w + 4} height={canvasConfig.h + 4} 
+                        fill="none"
+                        rx={6} ry={6}
+                        style={{ filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.5))' }}
+                    />
                     {proposalImage && (
                          <image 
                             href={proposalImage}
@@ -1487,6 +1517,7 @@ export const PanelEditor = forwardRef<
                             width={canvasConfig.w} height={canvasConfig.h}
                             opacity={isProposalVisible ? proposalOpacity : 0}
                             style={{ pointerEvents: 'none' }}
+                            clipPath="inset(0 round 4px)"
                          />
                     )}
                     <rect 
@@ -1495,13 +1526,14 @@ export const PanelEditor = forwardRef<
                         x="0" y="0" 
                         width={canvasConfig.w} height={canvasConfig.h} 
                         fill={proposalImage ? 'transparent' : 'white'}
-                        stroke="none"
+                        stroke="rgba(0,0,0,0.08)"
+                        strokeWidth={1 / viewTransform.scale}
                         vectorEffect="non-scaling-stroke"
-                        rx={0}
-                        ry={0}
+                        rx={4}
+                        ry={4}
                         shapeRendering="geometricPrecision"
                         style={{
-                            transition: 'fill 220ms ease, stroke 220ms ease'
+                            transition: 'fill 220ms ease'
                         }}
                     />
                      {drawingGuideRect && (
