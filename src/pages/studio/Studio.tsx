@@ -591,66 +591,12 @@ export function Studio(): React.ReactElement {
         onClose={() => setIsApiKeyModalOpen(false)}
         onSave={(key) => saveApiKey(key)}
       />
-      {showCharacterModal && (
-        <CharacterGenerationModal
-          onClose={() => setShowCharacterModal(false)}
-          onSave={handleCharacterSave}
-          characters={characters}
-        />
-      )}
-      {showWorldviewModal && (
-        <WorldviewModal
-          initialWorldview={worldview}
-          onSave={(newWorldview) => {
-            setWorldview(newWorldview);
-            setShowWorldviewModal(false);
-          }}
-          onClose={() => setShowWorldviewModal(false)}
-          onAutoGenerate={handleStartAutoGeneration}
-          isGenerating={!!assistantModeState?.isActive}
-          characters={characters}
-        />
-      )}
-      {showStorySuggestionModal && (
-        <StorySuggestionModal
-          onClose={() => {
-            setShowStorySuggestionModal(false);
-            setStorySuggestion(null);
-            setError(null);
-          }}
-          onGenerate={handleGenerateDetailedStory}
-          isLoading={isSuggestingStory}
-          suggestion={storySuggestion}
-          onApply={(script) => {
-            handleUpdateCurrentPage({ sceneDescription: script });
-            setShowStorySuggestionModal(false);
-            setStorySuggestion(null);
-          }}
-        />
-      )}
-      {showMangaViewer && (
-        <MangaViewerModal 
-            pages={pages}
-            onClose={() => setShowMangaViewer(false)}
-        />
-      )}
-      {showExportModal && (
-        <ExportModal
-          isOpen={showExportModal}
-          onClose={() => setShowExportModal(false)}
-          pages={pages}
-        />
-      )}
-      {isMasking && currentPage.generatedImage && (
-        <MaskingModal
-            baseImage={currentPage.generatedImage}
-            onClose={() => setIsMasking(false)}
-            onSave={(maskDataUrl) => {
-                setCurrentMask(maskDataUrl);
-                setIsMasking(false);
-            }}
-        />
-      )}
+      {showCharacterModal && <CharacterGenerationModal onClose={() => setShowCharacterModal(false)} onSave={handleCharacterSave} characters={characters} />}
+      {showWorldviewModal && <WorldviewModal initialWorldview={worldview} onSave={(v) => { setWorldview(v); setShowWorldviewModal(false); }} onClose={() => setShowWorldviewModal(false)} onAutoGenerate={handleStartAutoGeneration} isGenerating={!!assistantModeState?.isActive} characters={characters} />}
+      {showStorySuggestionModal && <StorySuggestionModal onClose={() => { setShowStorySuggestionModal(false); setStorySuggestion(null); setError(null); }} onGenerate={handleGenerateDetailedStory} isLoading={isSuggestingStory} suggestion={storySuggestion} onApply={(script) => { handleUpdateCurrentPage({ sceneDescription: script }); setShowStorySuggestionModal(false); setStorySuggestion(null); }} />}
+      {showMangaViewer && <MangaViewerModal pages={pages} onClose={() => setShowMangaViewer(false)} />}
+      {showExportModal && <ExportModal isOpen={showExportModal} onClose={() => setShowExportModal(false)} pages={pages} />}
+      {isMasking && currentPage.generatedImage && <MaskingModal baseImage={currentPage.generatedImage} onClose={() => setIsMasking(false)} onSave={(maskDataUrl) => { setCurrentMask(maskDataUrl); setIsMasking(false); }} />}
       <div className="layout-main" id="main-content" tabIndex={-1}>
         {currentView === 'video-producer' ? (
           <div className="shell-scroll">
@@ -683,21 +629,15 @@ export function Studio(): React.ReactElement {
                 <div className="stagger-grid">
                   <div className="relative">
                     <label htmlFor="aspect-ratio-select" className="input-help">{t('aspectRatio')}</label>
-                    <button
-                        onClick={() => setIsAspectRatioOpen(prev => !prev)}
-                        className="button-secondary w-full justify-between"
-                    >
+                    <button onClick={() => setIsAspectRatioOpen(p => !p)} className="button-secondary w-full justify-between">
                         <span>{t(aspectRatios[currentPage.aspectRatio].name)} ({aspectRatios[currentPage.aspectRatio].value})</span>
-                        <svg className={`w-4 h-4 transition-transform ${isAspectRatioOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                        <svg className={`w-4 h-4 transition-transform ${isAspectRatioOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                     </button>
                     {isAspectRatioOpen && (
                         <div className="language-menu__list mt-3">
-                            {Object.entries(aspectRatios).map(([key, {name, value, w, h}]) => (
-                                <button key={key} onClick={() => { handleUpdateCurrentPage({ aspectRatio: key }); setIsAspectRatioOpen(false); }} className="language-menu__item text-left flex items-center gap-3">
-                                    <span className="flex items-center justify-center w-6 h-6">
-                                      <span className="inline-block bg-slate-200 border border-slate-400" style={{ width: `${w/Math.max(w,h)*20}px`, height: `${h/Math.max(w,h)*20}px`}}></span>
-                                    </span>
-                                    <span>{t(name)} ({value})</span>
+                            {Object.entries(aspectRatios).map(([key, {name, value}]) => (
+                                <button key={key} onClick={() => { handleUpdateCurrentPage({ aspectRatio: key }); setIsAspectRatioOpen(false); }} className="language-menu__item text-left">
+                                    {t(name)} ({value})
                                 </button>
                             ))}
                         </div>
@@ -706,12 +646,8 @@ export function Studio(): React.ReactElement {
                   {assistantModeState?.isActive ? (
                     <div className="card-thumbnail-list max-h-96 overflow-y-auto">
                         {pages.filter(p => p.assistantProposalImage).map(page => (
-                            <div key={`thumb-${page.id}`} onClick={() => setCurrentPageId(page.id)} className={`relative surface-card cursor-pointer overflow-hidden ${currentPageId === page.id ? 'border-[var(--color-border-strong)]' : ''}`}>
-                                <img 
-                                    src={page.assistantProposalImage!} 
-                                    alt={page.name}
-                                    className="w-full h-full object-cover"
-                                />
+                            <div key={`thumb-${page.id}`} onClick={() => setCurrentPageId(page.id)} className={`surface-card cursor-pointer overflow-hidden ${currentPageId === page.id ? 'border-[var(--color-border-strong)]' : ''}`}>
+                                <img src={page.assistantProposalImage!} alt={page.name} className="w-full h-full object-cover" />
                                 <div className="absolute inset-x-0 bottom-0 bg-black/45 text-white text-xs font-semibold text-center py-1">{page.name}</div>
                             </div>
                         ))}
@@ -722,32 +658,12 @@ export function Studio(): React.ReactElement {
                           <div key={page.id} className={`page-card ${currentPageId === page.id ? 'is-active' : ''}`}>
                               <span onClick={() => setCurrentPageId(page.id)} className="page-card__name cursor-pointer">{page.name}</span>
                               <div className="page-card__actions">
-                                  {index > 0 && (
-                                    <button
-                                      onClick={() => handleToggleReferencePrevious(page.id)}
-                                      className={`icon-button ${page.shouldReferencePrevious ? 'is-active' : ''}`}
-                                      title={t('referencePreviousPage')}
-                                      aria-label={t('referencePreviousPage')}
-                                    >
-                                        <LinkIcon className="w-4 h-4" />
-                                    </button>
-                                  )}
-                                  <button
-                                    onClick={() => handleDeletePage(page.id)}
-                                    className="icon-button is-critical"
-                                    title={t('delete')}
-                                    aria-label={t('delete')}
-                                    disabled={pages.length <= 1}
-                                  >
-                                      <TrashIcon className="w-4 h-4" />
-                                  </button>
+                                  {index > 0 && <button onClick={() => handleToggleReferencePrevious(page.id)} className={`icon-button ${page.shouldReferencePrevious ? 'is-active' : ''}`} title={t('referencePreviousPage')}><LinkIcon className="w-4 h-4" /></button>}
+                                  <button onClick={() => handleDeletePage(page.id)} className="icon-button is-critical" title={t('delete')} disabled={pages.length <= 1}><TrashIcon className="w-4 h-4" /></button>
                               </div>
                           </div>
                       ))}
-                      <button onClick={() => handleAddPage()} className="button-secondary justify-center text-sm">
-                        <AddUserIcon className="w-4 h-4" />
-                        {t('addPage')}
-                      </button>
+                      <button onClick={() => handleAddPage()} className="button-secondary justify-center text-sm"><AddUserIcon className="w-4 h-4" />{t('addPage')}</button>
                     </div>
                   )}
                 </div>
@@ -766,21 +682,11 @@ export function Studio(): React.ReactElement {
                                 <img src={char.sheetImage} alt={char.name} className="w-12 h-12 rounded-md object-cover" />
                                 <span>{char.name}</span>
                             </div>
-                            <button
-                              onClick={() => handleDeleteCharacter(char.id)}
-                              className="icon-button is-critical opacity-0 group-hover:opacity-100 transition-opacity"
-                              title={t('delete')}
-                              aria-label={t('delete')}
-                            >
-                                <TrashIcon className="w-4 h-4" />
-                            </button>
+                            <button onClick={() => handleDeleteCharacter(char.id)} className="icon-button is-critical opacity-0 group-hover:opacity-100" title={t('delete')}><TrashIcon className="w-4 h-4" /></button>
                         </div>
                     ))}
                 </div>
-                <button onClick={() => setShowCharacterModal(true)} className="button-secondary justify-center">
-                  <AddUserIcon className="w-4 h-4" />
-                  {t('addCharacter')}
-                </button>
+                <button onClick={() => setShowCharacterModal(true)} className="button-secondary justify-center"><AddUserIcon className="w-4 h-4" />{t('addCharacter')}</button>
               </section>
             </aside>
 
@@ -865,35 +771,15 @@ export function Studio(): React.ReactElement {
                       <div className="status-card">
                           {assistantModeState?.hasError ? (
                               <>
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-10 w-10 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                  </svg>
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-10 w-10 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
                                   <p className="status-card__title">{assistantModeState.statusMessage}</p>
-                                  <button 
-                                      onClick={() => handleStartAutoGeneration(assistantModeState.totalPages, assistantModeState.failedPageNumber)}
-                                      className="button-primary justify-center text-sm"
-                                  >
-                                      {t('retryGeneration')}
-                                  </button>
+                                  <button onClick={() => handleStartAutoGeneration(assistantModeState.totalPages, assistantModeState.failedPageNumber)} className="button-primary justify-center text-sm">{t('retryGeneration')}</button>
                               </>
                           ) : (
                               <>
                                   <div className="loader-ring" aria-hidden />
-                                  <p className="status-card__body">
-                                     {assistantModeState?.isActive ? assistantModeState.statusMessage :
-                                      isAnalyzing ? t('analyzing') :
-                                      isSuggestingStory ? t('storySuggesting') : 
-                                      isSuggestingLayout ? t('layoutSuggesting') : 
-                                      isColoring ? t('coloringPage') : t('generating')}
-                                  </p>
-                                  {assistantModeState?.isActive && !assistantModeState?.hasError && (
-                                      <button
-                                          onClick={handleStopAutoGeneration}
-                                          className="button-secondary justify-center text-sm"
-                                      >
-                                          {t('stopGeneration')}
-                                      </button>
-                                  )}
+                                  <p className="status-card__body">{assistantModeState?.isActive ? assistantModeState.statusMessage : isAnalyzing ? t('analyzing') : isSuggestingStory ? t('storySuggesting') : isSuggestingLayout ? t('layoutSuggesting') : isColoring ? t('coloringPage') : t('generating')}</p>
+                                  {assistantModeState?.isActive && !assistantModeState?.hasError && <button onClick={handleStopAutoGeneration} className="button-secondary justify-center text-sm">{t('stopGeneration')}</button>}
                               </>
                           )}
                       </div>
@@ -923,14 +809,7 @@ export function Studio(): React.ReactElement {
               </aside>
             </div>
           </div>
-          {isSidebarOpen && (
-            <button
-              type="button"
-              className="sidebar-backdrop"
-              aria-label={t('toggleSidebar')}
-              onClick={() => setIsSidebarOpen(false)}
-            />
-          )}
+          {isSidebarOpen && <button type="button" className="sidebar-backdrop" aria-label={t('toggleSidebar')} onClick={() => setIsSidebarOpen(false)} />}
           </>
         )}
       </div>
