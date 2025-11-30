@@ -74,9 +74,24 @@ export function ExportModal({ isOpen, onClose, pages }: ExportModalProps): React
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">
+    <div 
+      className="fixed inset-0 flex items-center justify-center z-50"
+      style={{
+        background: 'rgba(15, 23, 42, 0.6)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div 
+        className="rounded-2xl p-8 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"
+        style={{
+          background: 'var(--bg-elevated)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.25rem', color: 'var(--text)' }}>
           {t('exportModal')}
         </h2>
 
@@ -244,7 +259,7 @@ export function ExportModal({ isOpen, onClose, pages }: ExportModalProps): React
         <div className="flex gap-3 justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+            className="button-secondary"
             disabled={isExporting}
           >
             {t('cancel')}
@@ -252,7 +267,7 @@ export function ExportModal({ isOpen, onClose, pages }: ExportModalProps): React
           <button
             onClick={handleExport}
             disabled={selectedPageIds.size === 0 || isExporting || pagesWithImages.length === 0}
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="button-primary"
           >
             {isExporting ? t('exporting') : t('export')}
           </button>
