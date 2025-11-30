@@ -3,19 +3,27 @@ import { useState, useEffect } from 'react';
 export const useApiKey = () => {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check localStorage for API key
-    const storedKey = localStorage.getItem('gemini_api_key');
-    if (storedKey) {
-      setApiKey(storedKey);
-    } else {
-      // Check environment variable (via Vite define)
-      const envKey = (typeof process !== 'undefined' && process.env.GEMINI_API_KEY) || '';
-      if (envKey && envKey !== '""' && envKey !== 'undefined') {
-        setApiKey(envKey);
+    setIsLoading(true);
+    try {
+      // Check localStorage for API key
+      const storedKey = localStorage.getItem('gemini_api_key');
+      if (storedKey) {
+        setApiKey(storedKey);
+      } else {
+        // Check environment variable (via Vite define)
+        const envKey = (typeof process !== 'undefined' && process.env.GEMINI_API_KEY) || '';
+        if (envKey && envKey !== '""' && envKey !== 'undefined') {
+          setApiKey(envKey);
+        }
+        // Do not automatically open modal - let user trigger it
       }
-      // Do not automatically open modal - let user trigger it
+    } catch (error) {
+      console.error('Error loading API key:', error);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -37,5 +45,6 @@ export const useApiKey = () => {
     saveApiKey,
     clearApiKey,
     hasApiKey: !!apiKey,
+    isLoading,
   };
 };

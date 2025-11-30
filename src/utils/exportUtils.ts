@@ -64,7 +64,7 @@ export async function exportAsPNG(pages: Page[], useZip: boolean = false): Promi
     const pagesWithImages = pages.filter(p => p.generatedImage);
     
     if (pagesWithImages.length === 0) {
-        throw new Error('No pages with generated images to export');
+        throw new Error('Please generate at least one manga page before exporting.');
     }
 
     if (useZip) {
@@ -94,7 +94,7 @@ export async function exportAsWEBP(pages: Page[], useZip: boolean = false): Prom
     const pagesWithImages = pages.filter(p => p.generatedImage);
     
     if (pagesWithImages.length === 0) {
-        throw new Error('No pages with generated images to export');
+        throw new Error('Please generate at least one manga page before exporting.');
     }
 
     if (useZip) {
@@ -124,7 +124,7 @@ export async function exportAsPDF(pages: Page[], singleFile: boolean = true): Pr
     const pagesWithImages = pages.filter(p => p.generatedImage);
     
     if (pagesWithImages.length === 0) {
-        throw new Error('No pages with generated images to export');
+        throw new Error('Please generate at least one manga page before exporting.');
     }
 
     if (singleFile) {

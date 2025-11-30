@@ -30,6 +30,8 @@ export const LocalizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('preferredLanguage', language);
       window.document.documentElement.lang = language;
+      // Set RTL direction for Arabic
+      window.document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
     }
   }, [language]);
 

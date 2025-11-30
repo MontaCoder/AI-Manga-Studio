@@ -1,5 +1,8 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Page, CanvasShape, ViewTransform } from '../types';
+
+const STORAGE_KEY = 'manga_pages_draft';
+const SAVE_DEBOUNCE_MS = 1000;
 
 const basePageState: Omit<Page, 'id' | 'name'> = {
   shapes: [],
@@ -173,6 +176,33 @@ export function usePagesState({ createPageName, initialAspectRatio = 'A4', initi
   const canUndo = currentPage.shapesHistoryIndex > 0;
   const canRedo = currentPage.shapesHistoryIndex < currentPage.shapesHistory.length - 1;
 
+  // Auto-save to localStorage with debounce
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      try {
+        const dataToSave = {
+          pages,
+          currentPageId,
+          savedAt: Date.now(),
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+      } catch (error) {
+        console.warn('Failed to save pages to localStorage:', error);
+      }
+    }, SAVE_DEBOUNCE_MS);
+
+    return () => clearTimeout(timeout);
+  }, [pages, currentPageId]);
+
+  // Function to clear saved draft
+  const clearSavedDraft = useCallback(() => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+      console.warn('Failed to clear saved draft:', error);
+    }
+  }, []);
+
   return {
     pages,
     setPages,
@@ -189,5 +219,22 @@ export function usePagesState({ createPageName, initialAspectRatio = 'A4', initi
     handleAddPage,
     handleDeletePage,
     handleToggleReferencePrevious,
+    clearSavedDraft,
   };
+}
+
+// Helper function to load saved draft from localStorage
+export function loadSavedDraft(): { pages: Page[]; currentPageId: string; savedAt: number } | null {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.pages && Array.isArray(parsed.pages) && parsed.pages.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to load saved draft:', error);
+  }
+  return null;
 }
