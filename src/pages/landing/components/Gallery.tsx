@@ -25,15 +25,57 @@ export function Gallery(): React.ReactElement {
         <div className="section-header">
           <h2 className="heading-xl">{t('galleryTitle')}</h2>
         </div>
-        <div style={{ maxWidth: '600px', margin: '0 auto', overflow: 'hidden', borderRadius: 'var(--radius-lg)' }}>
-          <div style={{ display: 'flex', transition: 'transform 0.5s ease', transform: `translateX(-${idx * 100}%)` }}>
+        <div style={{ 
+          maxWidth: '600px', 
+          margin: '0 auto', 
+          overflow: 'hidden', 
+          borderRadius: '1rem',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
+          border: '1px solid var(--border)'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)', 
+            transform: `translateX(-${idx * 100}%)` 
+          }}>
             {IMAGES.map((src, i) => (
-              <img key={i} src={src} alt={`Demo ${i + 1}`} loading="lazy" style={{ minWidth: '100%', aspectRatio: '4/5', objectFit: 'cover' }} />
+              <img 
+                key={i} 
+                src={src} 
+                alt={`Demo ${i + 1}`} 
+                loading="lazy" 
+                style={{ 
+                  minWidth: '100%', 
+                  aspectRatio: '4/5', 
+                  objectFit: 'cover',
+                  transition: 'transform 0.4s ease',
+                  transform: idx === i ? 'scale(1)' : 'scale(0.98)'
+                }} 
+              />
             ))}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem' }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            gap: '0.75rem', 
+            marginTop: '1.5rem' 
+          }}>
             {IMAGES.map((_, i) => (
-              <button key={i} onClick={() => setIdx(i)} style={{ width: 10, height: 10, borderRadius: '50%', border: 'none', background: idx === i ? 'var(--accent)' : 'var(--border)', cursor: 'pointer', transition: 'background 0.2s' }} />
+              <button 
+                key={i} 
+                onClick={() => setIdx(i)} 
+                aria-label={`Go to slide ${i + 1}`}
+                style={{ 
+                  width: idx === i ? 24 : 10, 
+                  height: 10, 
+                  borderRadius: '5px', 
+                  border: 'none', 
+                  background: idx === i ? 'var(--accent)' : 'var(--border)', 
+                  cursor: 'pointer', 
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: idx === i ? '0 0 12px rgba(59, 130, 246, 0.4)' : 'none'
+                }} 
+              />
             ))}
           </div>
         </div>
