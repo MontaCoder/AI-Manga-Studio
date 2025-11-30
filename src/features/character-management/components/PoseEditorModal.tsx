@@ -222,7 +222,7 @@ export function PoseEditorModal({ character, onSave, onClose }: PoseEditorModalP
                         )}
                         {activeTab === 'upload' && (
                             <div className="w-full h-full flex items-center justify-center">
-                                {uploadedImage ? <img src={uploadedImage} className="max-w-full max-h-full object-contain" /> : <p className="text-gray-500">{t('uploadPosePrompt')}</p>}
+                                {uploadedImage ? <img src={uploadedImage} alt="Uploaded pose reference" className="max-w-full max-h-full object-contain" /> : <p className="text-gray-500">{t('uploadPosePrompt')}</p>}
                             </div>
                         )}
                         {activeTab === 'draw' && (
