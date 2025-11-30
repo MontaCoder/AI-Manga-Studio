@@ -1371,3 +1371,238 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   :root { --border: rgba(0,0,0,0.5); --text: #000; --bg: #fff; }
   .surface-card, .button-primary, .button-secondary { border-width: 2px; }
 }
+
+/* ============================================
+   NEW COMPONENTS - Enhancements
+   ============================================ */
+
+/* Error Boundary Fallback */
+.error-boundary-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 2rem;
+}
+
+/* Confirm Dialog */
+.confirm-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn var(--duration) var(--ease);
+}
+
+.confirm-dialog {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--shadow-xl);
+  animation: dialogSlideIn var(--duration) var(--ease-out);
+}
+
+@keyframes dialogSlideIn {
+  from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.confirm-dialog__title {
+  font: 600 1.125rem var(--font-sans);
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.confirm-dialog__message {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+.confirm-dialog__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.button-danger {
+  background: linear-gradient(135deg, var(--danger) 0%, #DC2626 100%);
+  color: #fff;
+  box-shadow: var(--shadow-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font: 600 0.875rem var(--font-sans);
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+}
+
+.button-danger:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+/* Keyboard Shortcuts Help */
+.keyboard-shortcuts-help {
+  position: relative;
+}
+
+.keyboard-shortcuts-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.keyboard-shortcuts-panel {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 220px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  z-index: 50;
+  animation: menuSlideIn var(--duration) var(--ease-out);
+}
+
+.keyboard-shortcuts-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.keyboard-shortcuts-panel__header h4 {
+  font: 600 0.875rem var(--font-sans);
+  color: var(--text);
+}
+
+.keyboard-shortcuts-list {
+  list-style: none;
+  padding: 0.5rem;
+  margin: 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.keyboard-shortcut-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.keyboard-shortcut-item:hover {
+  background: var(--bg-muted);
+}
+
+.keyboard-shortcut-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  padding: 0.25rem 0.5rem;
+  font: 600 0.75rem var(--font-sans);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+}
+
+.keyboard-shortcut-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-left: 1rem;
+}
+
+/* ============================================
+   RTL (Right-to-Left) Support for Arabic
+   ============================================ */
+
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] .sidebar-pane {
+  border-right: none;
+  border-left: 1px solid var(--border);
+}
+
+[dir="rtl"] .utility-pane {
+  border-left: none;
+  border-right: 1px solid var(--border);
+}
+
+[dir="rtl"] .page-card::before {
+  left: auto;
+  right: 0;
+  border-radius: 2px 0 0 2px;
+}
+
+[dir="rtl"] .page-card:hover {
+  transform: translateX(-2px);
+}
+
+[dir="rtl"] .utility-pane__group-title::before {
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+
+[dir="rtl"] .language-menu__list {
+  right: auto;
+  left: 0;
+}
+
+[dir="rtl"] .language-menu__item:hover {
+  transform: translateX(-2px);
+}
+
+[dir="rtl"] .keyboard-shortcuts-panel {
+  right: auto;
+  left: 0;
+}
+
+[dir="rtl"] .confirm-dialog__actions {
+  justify-content: flex-start;
+}
+
+[dir="rtl"] .keyboard-shortcut-desc {
+  margin-left: 0;
+  margin-right: 1rem;
+}
+
+/* RTL responsive adjustments */
+@media (max-width: 1024px) {
+  [dir="rtl"] .sidebar-pane {
+    left: auto;
+    right: 0;
+    transform: translateX(105%);
+  }
+  
+  [dir="rtl"] .sidebar-pane.is-visible {
+    transform: translateX(0);
+  }
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

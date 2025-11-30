@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { LocalizationProvider } from '@/contexts/LocalizationContext';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import './index.css';
 
 const rootElement = document.getElementById('root');
@@ -13,10 +14,12 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <LocalizationProvider>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <LocalizationProvider>
           <App />
-      </LocalizationProvider>
-    </BrowserRouter>
+        </LocalizationProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   </React.StrictMode>
 );
