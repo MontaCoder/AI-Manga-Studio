@@ -1,4 +1,5 @@
 import { Modality, Type } from "@google/genai";
+import { ASPECT_RATIOS, type AspectRatioKey } from '@/constants/aspectRatios';
 import type { GeneratedContent, Character, Page, StorySuggestion, PanelShape, ImageShape, CanvasShape, Pose, AnalysisResult } from '@/types';
 import { SkeletonPose, SkeletonData } from '@/types';
 import { getAiClient, base64ToGeminiPart } from '@/services/geminiClient';
@@ -128,22 +129,14 @@ export async function generateDetailedStorySuggestion(
     }
 }
 
-
-const ASPECT_RATIO_CONFIG: { [key: string]: { w: number, h: number, value: string } } = {
-    'A4': { w: 595, h: 842, value: '210:297' },
-    '竖版': { w: 600, h: 800, value: '3:4' },
-    '正方形': { w: 800, h: 800, value: '1:1' },
-    '横版': { w: 1280, h: 720, value: '16:9' }
-};
-
 export async function generateLayoutProposal(
     story: string,
     characters: Character[],
-    aspectRatioKey: string,
+    aspectRatioKey: AspectRatioKey,
     previousPage?: { proposalImage: string, sceneDescription: string },
     currentCanvasImage?: string
 ): Promise<{ proposalImage: string }> {
-    const config = ASPECT_RATIO_CONFIG[aspectRatioKey] || ASPECT_RATIO_CONFIG['A4'];
+    const config = ASPECT_RATIOS[aspectRatioKey] || ASPECT_RATIOS.A4;
     const aspectRatioValue = config.value;
     const hasCharacters = characters.length > 0;
 
