@@ -1,14 +1,8 @@
 import { jsPDF } from 'jspdf';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { ASPECT_RATIOS } from '@/constants/aspectRatios';
 import type { Page } from '@/types';
-
-const aspectRatios: { [key: string]: { w: number; h: number } } = {
-    'A4': { w: 595, h: 842 },
-    'portrait34': { w: 600, h: 800 },
-    'square': { w: 800, h: 800 },
-    'landscape169': { w: 1280, h: 720 }
-};
 
 function dataURLtoBlob(dataURL: string): Blob {
     const arr = dataURL.split(',');
@@ -136,7 +130,7 @@ export async function exportAsPDF(pages: Page[], singleFile: boolean = true): Pr
 
         for (let i = 0; i < pagesWithImages.length; i++) {
             const page = pagesWithImages[i];
-            const aspectRatio = aspectRatios[page.aspectRatio] || aspectRatios['A4'];
+            const aspectRatio = ASPECT_RATIOS[page.aspectRatio] || ASPECT_RATIOS.A4;
             
             if (i > 0) {
                 pdf.addPage([aspectRatio.w, aspectRatio.h]);
@@ -169,7 +163,7 @@ export async function exportAsPDF(pages: Page[], singleFile: boolean = true): Pr
     } else {
         for (let i = 0; i < pagesWithImages.length; i++) {
             const page = pagesWithImages[i];
-            const aspectRatio = aspectRatios[page.aspectRatio] || aspectRatios['A4'];
+            const aspectRatio = ASPECT_RATIOS[page.aspectRatio] || ASPECT_RATIOS.A4;
             
             const pdf = new jsPDF({
                 orientation: aspectRatio.h > aspectRatio.w ? 'portrait' : 'landscape',
