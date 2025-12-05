@@ -4,13 +4,14 @@ import { PolygonIcon, TextToolIcon, BubbleToolIcon, TrashIcon, SelectIcon, Circl
 import { useLocalization } from '@/hooks/useLocalization';
 import type { LocaleKeys } from '@/i18n/locales';
 import { PoseEditorModal } from '@/features/character-management/components/PoseEditorModal';
-import { usePanelCanvas } from './hooks/usePanelCanvas';
+import { usePanelCanvas } from '@/hooks/usePanelCanvas';
+import type { AspectRatioKey } from '@/constants/aspectRatios';
 
 interface PanelEditorProps {
   shapes: CanvasShape[];
   onShapesChange: (shapes: CanvasShape[], recordHistory?: boolean) => void;
   characters: Character[];
-  aspectRatio: string;
+  aspectRatio: AspectRatioKey;
   viewTransform: ViewTransform;
   onViewTransformChange: (vt: ViewTransform) => void;
   isDraggingCharacter: boolean;
