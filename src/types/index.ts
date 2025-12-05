@@ -1,3 +1,5 @@
+import type { AspectRatioKey } from '@/constants/aspectRatios';
+
 export interface Shape {
   id: string;
   type: 'panel' | 'text' | 'bubble' | 'drawing' | 'image' | 'arrow';
@@ -103,24 +105,24 @@ export interface ViewTransform {
 }
 
 export interface Page {
-    id:string;
-    name: string;
-    shapes: CanvasShape[];
-    shapesHistory: CanvasShape[][];
-    shapesHistoryIndex: number;
-    panelLayoutImage: string | null;
-    sceneDescription: string; // AI-generated, user-editable script. No longer nullable.
-    panelCharacterMap: { [panelIndex: number]: string }; // Kept for reference, but image shapes are primary
-    generatedImage: string | null;
-    generatedText: string | null;
-    generatedColorMode: 'color' | 'monochrome' | null;
-    aspectRatio: string;
-    viewTransform: ViewTransform;
-    shouldReferencePrevious: boolean;
-    assistantProposalImage: string | null;
-    proposalOpacity: number;
-    isProposalVisible: boolean;
-    proposedShapes: CanvasShape[] | null;
+  id: string;
+  name: string;
+  shapes: CanvasShape[];
+  shapesHistory: CanvasShape[][];
+  shapesHistoryIndex: number;
+  panelLayoutImage: string | null;
+  sceneDescription: string; // AI-generated, user-editable script. No longer nullable.
+  panelCharacterMap: { [panelIndex: number]: string }; // Kept for reference, but image shapes are primary
+  generatedImage: string | null;
+  generatedText: string | null;
+  generatedColorMode: 'color' | 'monochrome' | null;
+  aspectRatio: AspectRatioKey;
+  viewTransform: ViewTransform;
+  shouldReferencePrevious: boolean;
+  assistantProposalImage: string | null;
+  proposalOpacity: number;
+  isProposalVisible: boolean;
+  proposedShapes: CanvasShape[] | null;
 }
 
 export interface StorySuggestion {
