@@ -18,7 +18,8 @@ import { AddUserIcon, TrashIcon, LinkIcon, XIcon } from '@/components/icons/icon
 
 import { useLocalization } from '@/hooks/useLocalization';
 import { useApiKey } from '@/hooks/useApiKey';
-import { usePagesState, createPage } from './hooks/usePagesState';
+import { usePagesState, createPage } from '@/hooks/usePagesState';
+import { ASPECT_RATIOS, type AspectRatioKey } from '@/constants/aspectRatios';
 
 const STUDIO_STORAGE_KEY = 'aims_studio_state_v1';
 
@@ -35,13 +36,6 @@ interface PersistedStudioState {
   currentView?: 'manga-editor' | 'video-producer';
   isSidebarOpen?: boolean;
 }
-
-const aspectRatios: { [key: string]: { name: string, value: string, w: number, h: number } } = {
-    'A4': { name: 'a4', value: '210:297', w: 595, h: 842 },
-    'portrait34': { name: 'portrait34', value: '3:4', w: 600, h: 800 },
-    'square': { name: 'square', value: '1:1', w: 800, h: 800 },
-    'landscape169': { name: 'landscape169', value: '16:9', w: 1280, h: 720 }
-};
 
 export function Studio(): React.ReactElement {
   const { t, language, setLanguage } = useLocalization();
@@ -347,7 +341,7 @@ export function Studio(): React.ReactElement {
             }
             canvasImageForProposal = await panelEditorRef.current.getLayoutAsImage(true, characters);
         } else {
-            const config = aspectRatios[currentPage.aspectRatio];
+            const config = ASPECT_RATIOS[currentPage.aspectRatio];
             const canvas = document.createElement('canvas');
             canvas.width = config.w;
             canvas.height = config.h;
@@ -630,13 +624,13 @@ export function Studio(): React.ReactElement {
                   <div className="relative">
                     <label htmlFor="aspect-ratio-select" className="input-help">{t('aspectRatio')}</label>
                     <button onClick={() => setIsAspectRatioOpen(p => !p)} className="button-secondary w-full justify-between">
-                        <span>{t(aspectRatios[currentPage.aspectRatio].name)} ({aspectRatios[currentPage.aspectRatio].value})</span>
+                        <span>{t(ASPECT_RATIOS[currentPage.aspectRatio].name)} ({ASPECT_RATIOS[currentPage.aspectRatio].value})</span>
                         <svg className={`w-4 h-4 transition-transform ${isAspectRatioOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                     </button>
                     {isAspectRatioOpen && (
                         <div className="language-menu__list mt-3">
-                            {Object.entries(aspectRatios).map(([key, {name, value}]) => (
-                                <button key={key} onClick={() => { handleUpdateCurrentPage({ aspectRatio: key }); setIsAspectRatioOpen(false); }} className="language-menu__item text-left">
+                            {Object.entries(ASPECT_RATIOS).map(([key, {name, value}]) => (
+                                <button key={key} onClick={() => { handleUpdateCurrentPage({ aspectRatio: key as AspectRatioKey }); setIsAspectRatioOpen(false); }} className="language-menu__item text-left">
                                     {t(name)} ({value})
                                 </button>
                             ))}
