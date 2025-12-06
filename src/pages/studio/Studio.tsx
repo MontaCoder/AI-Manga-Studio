@@ -20,6 +20,7 @@ import { useLocalization } from '@/hooks/useLocalization';
 import { useApiKey } from '@/hooks/useApiKey';
 import { usePagesState, createPage } from '@/hooks/usePagesState';
 import { ASPECT_RATIOS, type AspectRatioKey } from '@/constants/aspectRatios';
+import type { LocaleKeys } from '@/i18n/locales';
 
 const STUDIO_STORAGE_KEY = 'aims_studio_state_v1';
 
@@ -75,6 +76,7 @@ export function Studio(): React.ReactElement {
     handleAddPage,
     handleDeletePage,
     handleToggleReferencePrevious,
+    clearSavedDraft,
   } = usePagesState({ createPageName, initialState: persistedState?.pagesState });
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(() => persistedState?.isSidebarOpen ?? true);
   const [characters, setCharacters] = useState<Character[]>(() => persistedState?.characters ?? []);
@@ -112,13 +114,40 @@ export function Studio(): React.ReactElement {
     hasError?: boolean;
     failedPageNumber?: number;
   } | null>(null);
+  const [persistError, setPersistError] = useState<string | null>(null);
 
   const workspaceCanvasRef = useRef<HTMLElement | null>(null);
   const sidebarRef = useRef<HTMLElement>(null);
   const sidebarCloseButtonRef = useRef<HTMLButtonElement>(null);
   const stopAutoGenerationRef = useRef(false);
+  const currentPageIdRef = useRef(currentPageId);
 
   const [currentView, setCurrentView] = useState<'manga-editor' | 'video-producer'>(() => persistedState?.currentView ?? 'manga-editor');
+
+  const ensureApiKey = useCallback(() => {
+    if (hasApiKey) return true;
+    setError(t('apiKeyRequired'));
+    setIsApiKeyModalOpen(true);
+    return false;
+  }, [hasApiKey, setIsApiKeyModalOpen, t]);
+
+  const handleResetWorkspace = useCallback(() => {
+    clearSavedDraft();
+    if (typeof window !== 'undefined') {
+        window.localStorage.removeItem(STUDIO_STORAGE_KEY);
+    }
+    const freshPage = createPage(createPageName(1));
+    setPages([freshPage]);
+    setCurrentPageId(freshPage.id);
+    setCharacters([]);
+    setWorldview('');
+    setColorMode('monochrome');
+    setViewMode('editor');
+    setCurrentMask(null);
+    setAnalysisResult(null);
+    setAssistantModeState(null);
+    setError(null);
+  }, [clearSavedDraft, createPageName, setPages, setCurrentPageId, setCharacters, setWorldview, setColorMode, setViewMode, setCurrentMask, setAnalysisResult, setAssistantModeState, setError]);
 
   const toggleFullscreen = useCallback(() => {
     const elem = workspaceCanvasRef.current;
@@ -188,6 +217,14 @@ export function Studio(): React.ReactElement {
   }, [currentPage.id, currentPage.generatedImage]);
 
   useEffect(() => {
+    currentPageIdRef.current = currentPageId;
+  }, [currentPageId]);
+
+  useEffect(() => {
+    setPages(prev => [...prev]);
+  }, [createPageName, setPages]);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
       const stateToPersist: PersistedStudioState = {
@@ -201,12 +238,16 @@ export function Studio(): React.ReactElement {
         isSidebarOpen,
       };
       window.localStorage.setItem(STUDIO_STORAGE_KEY, JSON.stringify(stateToPersist));
+      setPersistError(null);
     } catch (error) {
       console.warn('Failed to persist studio state', error);
+      setPersistError('Unable to save draft locally. Changes may not persist.');
     }
   }, [pages, currentPageId, characters, colorMode, viewMode, generateEmptyBubbles, worldview, currentView, isSidebarOpen]);
 
   const handleGenerateImage = useCallback(async () => {
+    if (!ensureApiKey()) return;
+    const targetPageId = currentPageId;
     setIsLoading(true);
     setError(null);
     try {
@@ -246,6 +287,7 @@ export function Studio(): React.ReactElement {
         }
         
         const result = await generateMangaPage(relevantCharacters, panelLayoutImage, currentPage.sceneDescription, colorMode, previousPageData, generateEmptyBubbles);
+        if (currentPageIdRef.current !== targetPageId) return;
         pageUpdates.generatedImage = result.image;
         pageUpdates.generatedText = result.text;
         pageUpdates.generatedColorMode = colorMode;
@@ -259,9 +301,11 @@ export function Studio(): React.ReactElement {
     } finally {
         setIsLoading(false);
     }
-  }, [currentPage, pages, currentPageId, characters, colorMode, handleUpdateCurrentPage, viewMode, generateEmptyBubbles]);
+  }, [currentPage, pages, currentPageId, characters, colorMode, handleUpdateCurrentPage, viewMode, generateEmptyBubbles, ensureApiKey]);
 
   const handleColorize = useCallback(async () => {
+      if (!ensureApiKey()) return;
+      const targetPageId = currentPageId;
       if (!currentPage.generatedImage) {
           setError("No generated image to colorize.");
           return;
@@ -273,6 +317,7 @@ export function Studio(): React.ReactElement {
           const relevantCharacters = characters.filter(c => characterIdsInScene.has(c.id));
           
           const coloredImage = await colorizeMangaPage(currentPage.generatedImage, relevantCharacters);
+          if (currentPageIdRef.current !== targetPageId) return;
           handleUpdateCurrentPage({ generatedImage: coloredImage, generatedColorMode: 'color' });
           setAnalysisResult(null);
       } catch (e: unknown) {
@@ -280,9 +325,11 @@ export function Studio(): React.ReactElement {
       } finally {
           setIsColoring(false);
       }
-  }, [currentPage, characters, handleUpdateCurrentPage]);
+  }, [currentPage, characters, handleUpdateCurrentPage, ensureApiKey, currentPageId]);
 
  const handleEditImage = useCallback(async (editPrompt: string, editReferenceImages: string[] | null) => {
+    if (!ensureApiKey()) return;
+    const targetPageId = currentPageId;
     if (!currentPage.generatedImage) {
         setError("No generated image to edit.");
         return;
@@ -291,6 +338,7 @@ export function Studio(): React.ReactElement {
     setError(null);
     try {
         const editedImage = await editMangaPage(currentPage.generatedImage, editPrompt, currentMask || undefined, editReferenceImages || undefined);
+        if (currentPageIdRef.current !== targetPageId) return;
         handleUpdateCurrentPage({ generatedImage: editedImage });
         setCurrentMask(null);
         setAnalysisResult(null);
@@ -299,9 +347,10 @@ export function Studio(): React.ReactElement {
     } finally {
         setIsLoading(false);
     }
-  }, [currentPage.generatedImage, currentMask, handleUpdateCurrentPage]);
+  }, [currentPage.generatedImage, currentMask, handleUpdateCurrentPage, ensureApiKey, currentPageId]);
 
   const handleGenerateDetailedStory = async (premise: string, shouldContinue: boolean) => {
+      if (!ensureApiKey()) return;
       setIsSuggestingStory(true);
       setError(null);
       setStorySuggestion(null);
@@ -326,6 +375,8 @@ export function Studio(): React.ReactElement {
   };
 
     const handleGenerateLayoutProposal = async () => {
+        if (!ensureApiKey()) return;
+        const targetPageId = currentPageId;
         setIsSuggestingLayout(true);
         setError(null);
         handleUpdateCurrentPage({ proposedShapes: null, assistantProposalImage: null });
@@ -373,6 +424,7 @@ export function Studio(): React.ReactElement {
                 previousPageLayout,
                 canvasImageForProposal
             );
+            if (currentPageIdRef.current !== targetPageId) return;
             handleUpdateCurrentPage({ assistantProposalImage: proposalImage, proposedShapes: null });
         } catch (e) {
             setError(e instanceof Error ? `Layout proposal failed: ${e.message}` : "An unknown error occurred.");
@@ -384,6 +436,7 @@ export function Studio(): React.ReactElement {
   const handleStartAutoGeneration = async (numPages: number, startFromPage: number = 1) => {
       setShowWorldviewModal(false);
       setError(null);
+      if (!ensureApiKey()) return;
       if (characters.length === 0 && worldview === '') {
           setError(t('autoGenCharacterWarning'));
           return;
@@ -513,6 +566,7 @@ export function Studio(): React.ReactElement {
   };
 
   const handleAnalyzeResult = useCallback(async () => {
+    if (!ensureApiKey()) return;
     if (!currentPage.panelLayoutImage || !currentPage.generatedImage) {
         setError(t('analysisError'));
         return;
@@ -530,13 +584,14 @@ export function Studio(): React.ReactElement {
             currentPage.sceneDescription,
             relevantCharacters
         );
+        if (currentPageIdRef.current !== currentPageId) return;
         setAnalysisResult(result);
     } catch (e) {
         setError(e instanceof Error ? `Analysis failed: ${e.message}` : "An unknown error occurred during analysis.");
     } finally {
         setIsAnalyzing(false);
     }
-  }, [currentPage, characters]);
+  }, [currentPage, characters, ensureApiKey, currentPageId]);
 
   const handleApplyCorrection = useCallback(async () => {
     if (!analysisResult || !analysisResult.has_discrepancies || !analysisResult.correction_prompt) return;
@@ -577,7 +632,13 @@ export function Studio(): React.ReactElement {
         onShowMangaViewer={() => setShowMangaViewer(true)}
         onShowWorldview={() => setShowWorldviewModal(true)}
         currentView={currentView}
-        onSetView={setCurrentView}
+        onSetView={(view) => {
+          if (view === 'video-producer' && !hasApiKey) {
+            setIsApiKeyModalOpen(true);
+            return;
+          }
+          setCurrentView(view);
+        }}
         onExport={handleOpenExport}
       />
       <ApiKeyModal
@@ -585,6 +646,7 @@ export function Studio(): React.ReactElement {
         onClose={() => setIsApiKeyModalOpen(false)}
         onSave={(key) => saveApiKey(key)}
       />
+      {persistError && <div className="status-card status-card--error mx-4 my-3" role="alert">{persistError}</div>}
       {showCharacterModal && <CharacterGenerationModal onClose={() => setShowCharacterModal(false)} onSave={handleCharacterSave} characters={characters} />}
       {showWorldviewModal && <WorldviewModal initialWorldview={worldview} onSave={(v) => { setWorldview(v); setShowWorldviewModal(false); }} onClose={() => setShowWorldviewModal(false)} onAutoGenerate={handleStartAutoGeneration} isGenerating={!!assistantModeState?.isActive} characters={characters} />}
       {showStorySuggestionModal && <StorySuggestionModal onClose={() => { setShowStorySuggestionModal(false); setStorySuggestion(null); setError(null); }} onGenerate={handleGenerateDetailedStory} isLoading={isSuggestingStory} suggestion={storySuggestion} onApply={(script) => { handleUpdateCurrentPage({ sceneDescription: script }); setShowStorySuggestionModal(false); setStorySuggestion(null); }} />}
@@ -613,7 +675,7 @@ export function Studio(): React.ReactElement {
                   <button
                     type="button"
                     className="icon-button sidebar-pane__close"
-                    aria-label={t('toggleSidebar')}
+                    aria-label="Toggle sidebar"
                     ref={sidebarCloseButtonRef}
                     onClick={() => setIsSidebarOpen(false)}
                   >
@@ -624,19 +686,22 @@ export function Studio(): React.ReactElement {
                   <div className="relative">
                     <label htmlFor="aspect-ratio-select" className="input-help">{t('aspectRatio')}</label>
                     <button onClick={() => setIsAspectRatioOpen(p => !p)} className="button-secondary w-full justify-between">
-                        <span>{t(ASPECT_RATIOS[currentPage.aspectRatio].name)} ({ASPECT_RATIOS[currentPage.aspectRatio].value})</span>
+                        <span>{t(ASPECT_RATIOS[currentPage.aspectRatio].name as LocaleKeys)} ({ASPECT_RATIOS[currentPage.aspectRatio].value})</span>
                         <svg className={`w-4 h-4 transition-transform ${isAspectRatioOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                     </button>
                     {isAspectRatioOpen && (
                         <div className="language-menu__list mt-3">
                             {Object.entries(ASPECT_RATIOS).map(([key, {name, value}]) => (
                                 <button key={key} onClick={() => { handleUpdateCurrentPage({ aspectRatio: key as AspectRatioKey }); setIsAspectRatioOpen(false); }} className="language-menu__item text-left">
-                                    {t(name)} ({value})
+                                    {t(name as LocaleKeys)} ({value})
                                 </button>
                             ))}
                         </div>
                     )}
                   </div>
+                  <button type="button" onClick={handleResetWorkspace} className="button-ghost w-full text-xs justify-center">
+                    Reset workspace
+                  </button>
                   {assistantModeState?.isActive ? (
                     <div className="card-thumbnail-list max-h-96 overflow-y-auto">
                         {pages.filter(p => p.assistantProposalImage).map(page => (
@@ -803,7 +868,7 @@ export function Studio(): React.ReactElement {
               </aside>
             </div>
           </div>
-          {isSidebarOpen && <button type="button" className="sidebar-backdrop" aria-label={t('toggleSidebar')} onClick={() => setIsSidebarOpen(false)} />}
+          {isSidebarOpen && <button type="button" className="sidebar-backdrop" aria-label="Toggle sidebar" onClick={() => setIsSidebarOpen(false)} />}
           </>
         )}
       </div>
