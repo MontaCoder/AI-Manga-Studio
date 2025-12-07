@@ -25,7 +25,7 @@ export function Gallery(): React.ReactElement {
         <div className="section-header">
           <h2 className="heading-xl">{t('galleryTitle')}</h2>
         </div>
-        <div style={{ 
+        <div dir="ltr" style={{ 
           maxWidth: '600px', 
           margin: '0 auto', 
           overflow: 'hidden', 
