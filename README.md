@@ -1,6 +1,6 @@
 # 🎨 AI Manga Studio
 
-![AI Manga Studio preview](/public/images/demo/ai-manga-studio-preview.png)
+[![AI Manga Studio preview](/public/images/og.webp)](/public/video/Website_Hero_Background_Video_Generation.webm)
 
 > A powerful AI-driven tool for creating manga with intelligent script generation, dynamic storyboard layout, and precise character style control.
 
