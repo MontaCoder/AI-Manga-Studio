@@ -59,6 +59,12 @@ export const locales = {
     hideGuide: "隐藏指引",
     opacity: "透明度",
     applyLayout: "应用布局",
+    canvasTools: "画布工具",
+    history: "历史记录",
+    navigationTools: "导航工具",
+    creationTools: "创建工具",
+    bubbleStyles: "对话框样式",
+    canvasActions: "画布操作",
 
 
     // Pose Editor Modal
@@ -136,7 +142,7 @@ export const locales = {
     maskingModalTitle: "编辑区域蒙版",
     maskingModalDescription: "使用画笔涂抹需要修改的图像区域，编辑提示词仅作用于涂抹区域",
     saveMask: "保存蒙版",
-    
+
     // Character Modal
     createCharacter: "创建角色",
     createCharacterDesc: "上传参考图，生成角色表，然后用提示词精调",
@@ -225,7 +231,7 @@ export const locales = {
     panel: "画格",
     description: "描述",
     dialogue: "对白",
-    
+
     // Video Producer
     importWebtoon: "用网漫制作视频",
     importWebtoonDesc: "上传网漫页面并调整顺序，生成故事板，AI会将黑白图像转化为彩色视频场景",
@@ -364,6 +370,12 @@ export const locales = {
     hideGuide: "Hide Guide",
     opacity: "Opacity",
     applyLayout: "Apply Layout",
+    canvasTools: "Canvas Tools",
+    history: "History",
+    navigationTools: "Navigation Tools",
+    creationTools: "Creation Tools",
+    bubbleStyles: "Bubble Styles",
+    canvasActions: "Canvas Actions",
 
     // Pose Editor Modal
     editCharacterPose: "Edit Character Pose",
@@ -494,7 +506,7 @@ export const locales = {
     zipArchive: "ZIP archive",
     noGeneratedPages: "No generated pages to export",
     exporting: "Exporting...",
-    
+
     // Worldview Modal
     worldview: "Worldview",
     worldviewModalTitle: "Worldview Settings",
@@ -668,6 +680,12 @@ export const locales = {
     hideGuide: "ガイドを非表示",
     opacity: "不透明度",
     applyLayout: "レイアウトを適用",
+    canvasTools: "キャンバスツール",
+    history: "履歴",
+    navigationTools: "ナビゲーションツール",
+    creationTools: "作成ツール",
+    bubbleStyles: "吹き出しスタイル",
+    canvasActions: "キャンバスアクション",
 
     // Pose Editor Modal
     editCharacterPose: "キャラクターポーズの編集",
@@ -778,7 +796,7 @@ export const locales = {
 
     // Comparison Viewer
     compareResult: "結果を比較",
-    
+
     // Manga Viewer
     mangaViewerTitle: "漫画ビューア",
     downloadAll: "すべてダウンロード",
@@ -833,7 +851,7 @@ export const locales = {
     panel: "パネル",
     description: "説明",
     dialogue: "セリフ",
-    
+
     // Video Producer
     importWebtoon: "ウェブトゥーンで動画を作成",
     importWebtoonDesc: "ウェブトゥーンのページをアップロードして順序を調整し、ストーリーボードを生成します。AIはモノクロ画像をもとにカラーの動画シーンを生成します。",
@@ -972,6 +990,12 @@ export const locales = {
     hideGuide: "إخفاء الدليل",
     opacity: "الشفافية",
     applyLayout: "تطبيق التخطيط",
+    canvasTools: "أدوات اللوحة",
+    history: "السجل",
+    navigationTools: "أدوات التنقل",
+    creationTools: "أدوات الإنشاء",
+    bubbleStyles: "أنماط الفقاعات",
+    canvasActions: "إجراءات اللوحة",
 
     // Pose Editor Modal
     editCharacterPose: "تحرير وضعية الشخصية",
@@ -1176,45 +1200,45 @@ export const locales = {
     saving: "جاري الحفظ...",
     setApiKey: "تعيين مفتاح API",
 
-// Landing Page
-landingHero: "إنشاء مانجا رائعة بالذكاء الاصطناعي",
-landingSubtitle: "استوديو إنشاء المانجا المدعوم بالذكاء الاصطناعي — أنشئ السيناريوهات، صمم الشخصيات، نظم القصص المصورة، صدّر بسهولة",
-getStarted: "البدء",
-learnMore: "تعلم المزيد",
-featuresTitle: "ميزات قوية",
-featuresHeading: "أدوات إبداعية قوية",
-featuresDescription: "كل ما تحتاجه لجلب قصص المانجا إلى الحياة بمساعدة مدعومة بالذكاء الاصطناعي",
-featureScriptTitle: "إنشاء السيناريو بالذكاء الاصطناعي",
-featureScriptDesc: "أنشئ سيناريوهات مانجا كاملة باللغة الطبيعية، بما في ذلك القصة والحوار والسرد",
-featureCharacterTitle: "تصميم وإدارة الشخصيات",
-featureCharacterDesc: "ارفع صور مرجعية وأنشئ أوراق الشخصيات للحفاظ على الاتساق في قصتك بأكملها",
-featurePanelTitle: "تخطيط اللوحات والقصص المصورة",
-featurePanelDesc: "تخطيط القصص المصورة المدعوم بالذكاء الاصطناعي مع فقاعات الكلام الذكية وتقطعات الكاميرا والإطار",
-featureExportTitle: "تنسيقات تصدير متعددة",
-featureExportDesc: "صدّر عملك بصيغة PNG وPDF والمزيد للطباعة أو النشر الإلكتروني",
-featureLanguageTitle: "دعم متعدد اللغات",
-featureLanguageDesc: "واجهة متاحة بالصينية والإنجليزية اليابانية والمزيد من اللغات",
-featureVideoTitle: "إنتاج الفيديو",
-featureVideoDesc: "ميزة تجريبية: تحويل صفحات المانجا إلى مشاهد فيديو ديناميكية",
-howItWorksTitle: "كيف يعمل",
-stepDefineTitle: "حدد قصتك والشخصيات",
-stepDefineDesc: "أنشئ ملفات الشخصيات وأدخل عالمك وأفكار القصة",
-stepGenerateTitle: "إنشاء تخطيطات وإطارات بالذكاء الاصطناعي",
-stepGenerateDesc: "الذكاء الاصطناعي ينشئ تلقائياً تخطيطات قصص مصورة احترافية بناءً على أوصافك",
-stepRefineTitle: "تحسين وتلوين",
-stepRefineDesc: "اضبط التفاصيل وأضف لون إلى مانجا الأبيض والأسود",
-stepExportTitle: "صدّر مانجا",
-stepExportDesc: "صدّر بتنسيقات متعددة وشارك إبداعك في أي وقت",
-galleryTitle: "معرض العرض",
-finalCtaTitle: "مستعد لإنشاء مانجا؟",
-finalCtaSubtitle: "انضم إلى استوديو المانجا بالذكاء الاصطناعي وحقق أفكارك",
-startCreating: "ابدأ الإنشاء الآن",
-footerMadeWith: "صُنع بـ",
-footerMadeBy: "بواسطة",
-footerLicense: "رخصة Apache 2.0",
-footerGithub: "GitHub",
-footerDocs: "التوثيق",
-skipToContent: "تخطي إلى المحتوى الرئيسي"
+    // Landing Page
+    landingHero: "إنشاء مانجا رائعة بالذكاء الاصطناعي",
+    landingSubtitle: "استوديو إنشاء المانجا المدعوم بالذكاء الاصطناعي — أنشئ السيناريوهات، صمم الشخصيات، نظم القصص المصورة، صدّر بسهولة",
+    getStarted: "البدء",
+    learnMore: "تعلم المزيد",
+    featuresTitle: "ميزات قوية",
+    featuresHeading: "أدوات إبداعية قوية",
+    featuresDescription: "كل ما تحتاجه لجلب قصص المانجا إلى الحياة بمساعدة مدعومة بالذكاء الاصطناعي",
+    featureScriptTitle: "إنشاء السيناريو بالذكاء الاصطناعي",
+    featureScriptDesc: "أنشئ سيناريوهات مانجا كاملة باللغة الطبيعية، بما في ذلك القصة والحوار والسرد",
+    featureCharacterTitle: "تصميم وإدارة الشخصيات",
+    featureCharacterDesc: "ارفع صور مرجعية وأنشئ أوراق الشخصيات للحفاظ على الاتساق في قصتك بأكملها",
+    featurePanelTitle: "تخطيط اللوحات والقصص المصورة",
+    featurePanelDesc: "تخطيط القصص المصورة المدعوم بالذكاء الاصطناعي مع فقاعات الكلام الذكية وتقطعات الكاميرا والإطار",
+    featureExportTitle: "تنسيقات تصدير متعددة",
+    featureExportDesc: "صدّر عملك بصيغة PNG وPDF والمزيد للطباعة أو النشر الإلكتروني",
+    featureLanguageTitle: "دعم متعدد اللغات",
+    featureLanguageDesc: "واجهة متاحة بالصينية والإنجليزية اليابانية والمزيد من اللغات",
+    featureVideoTitle: "إنتاج الفيديو",
+    featureVideoDesc: "ميزة تجريبية: تحويل صفحات المانجا إلى مشاهد فيديو ديناميكية",
+    howItWorksTitle: "كيف يعمل",
+    stepDefineTitle: "حدد قصتك والشخصيات",
+    stepDefineDesc: "أنشئ ملفات الشخصيات وأدخل عالمك وأفكار القصة",
+    stepGenerateTitle: "إنشاء تخطيطات وإطارات بالذكاء الاصطناعي",
+    stepGenerateDesc: "الذكاء الاصطناعي ينشئ تلقائياً تخطيطات قصص مصورة احترافية بناءً على أوصافك",
+    stepRefineTitle: "تحسين وتلوين",
+    stepRefineDesc: "اضبط التفاصيل وأضف لون إلى مانجا الأبيض والأسود",
+    stepExportTitle: "صدّر مانجا",
+    stepExportDesc: "صدّر بتنسيقات متعددة وشارك إبداعك في أي وقت",
+    galleryTitle: "معرض العرض",
+    finalCtaTitle: "مستعد لإنشاء مانجا؟",
+    finalCtaSubtitle: "انضم إلى استوديو المانجا بالذكاء الاصطناعي وحقق أفكارك",
+    startCreating: "ابدأ الإنشاء الآن",
+    footerMadeWith: "صُنع بـ",
+    footerMadeBy: "بواسطة",
+    footerLicense: "رخصة Apache 2.0",
+    footerGithub: "GitHub",
+    footerDocs: "التوثيق",
+    skipToContent: "تخطي إلى المحتوى الرئيسي"
   },
 };
 
