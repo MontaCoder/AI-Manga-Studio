@@ -14,7 +14,7 @@ interface UsePanelCanvasResult {
   svgRef: RefObject<SVGSVGElement>;
   canvasConfig: { w: number; h: number };
   fitAndCenterCanvas: () => void;
-  handleWheel: (event: WheelEvent<SVGSVGElement>) => void;
+  handleWheel: (event: WheelEvent<HTMLElement>) => void;
   zoomIn: () => void;
   zoomOut: () => void;
   clientToCanvasPoint: (clientX: number, clientY: number) => { x: number; y: number };
@@ -104,7 +104,7 @@ export function usePanelCanvas({
   }, [canvasConfig, setViewTransform]);
 
   const handleWheel = useCallback(
-    (event: WheelEvent<SVGSVGElement>) => {
+    (event: WheelEvent<HTMLElement>) => {
       event.preventDefault();
       const svg = svgRef.current;
       if (!svg) return;
