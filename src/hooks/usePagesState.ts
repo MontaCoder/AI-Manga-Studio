@@ -59,7 +59,7 @@ export function usePagesState({
   persistKey = STORAGE_KEY,
   persistDebounceMs = SAVE_DEBOUNCE_MS,
 }: UsePagesStateParams) {
-  const initialPageRef = useRef<Page>();
+  const initialPageRef = useRef<Page | undefined>(undefined);
   if (!initialPageRef.current) {
     initialPageRef.current = createPage(createPageName(1), initialAspectRatio);
   }
