@@ -16,7 +16,7 @@
     "jszip": "^3.10.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "react-router-dom": "^7.11.0"
+    "react-router-dom": "^7.12.0"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
