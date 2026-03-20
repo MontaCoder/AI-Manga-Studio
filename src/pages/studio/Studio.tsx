@@ -1,28 +1,26 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useCallback, useRef, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { ApiKeyModal } from '@/components/modals/ApiKeyModal';
-import { ExportModal } from '@/components/modals/ExportModal';
-import { PanelEditor } from '@/features/panel-editor/PanelEditor';
-import { GenerationControls } from './components/GenerationControls';
-import { ResultDisplay } from './components/ResultDisplay';
-import { MaskingModal } from '@/components/modals/MaskingModal';
-import { CharacterGenerationModal } from '@/features/character-management/components/CharacterGenerationModal';
-import { ComparisonViewer } from './components/ComparisonViewer';
-import { MangaViewerModal } from '@/features/story-generation/components/MangaViewerModal';
-import { WorldviewModal } from '@/features/story-generation/components/WorldviewModal';
-import { StorySuggestionModal } from '@/features/story-generation/components/StorySuggestionModal';
-import { VideoProducer } from '@/features/video-producer/VideoProducer';
 import { generateMangaPage, colorizeMangaPage, editMangaPage, generateDetailedStorySuggestion, generateLayoutProposal, analyzeAndSuggestCorrections } from '@/services/geminiService';
 import type { Character, Page, StorySuggestion, ImageShape, AnalysisResult } from '@/types';
-import { AddUserIcon, TrashIcon, LinkIcon, XIcon } from '@/components/icons/icons';
+import { StudioSidebar } from './components/StudioSidebar';
+import { StudioCanvasPane } from './components/StudioCanvasPane';
+import { StudioUtilityPane } from './components/StudioUtilityPane';
 
 import { useLocalization } from '@/hooks/useLocalization';
 import { useApiKey } from '@/hooks/useApiKey';
 import { usePagesState, createPage } from '@/hooks/usePagesState';
 import { ASPECT_RATIOS, type AspectRatioKey } from '@/constants/aspectRatios';
-import type { LocaleKeys } from '@/i18n/locales';
 
 const STUDIO_STORAGE_KEY = 'aims_studio_state_v1';
+
+const CharacterGenerationModal = lazy(() => import('@/features/character-management/components/CharacterGenerationModal').then(module => ({ default: module.CharacterGenerationModal })));
+const ExportModal = lazy(() => import('@/components/modals/ExportModal').then(module => ({ default: module.ExportModal })));
+const MangaViewerModal = lazy(() => import('@/features/story-generation/components/MangaViewerModal').then(module => ({ default: module.MangaViewerModal })));
+const MaskingModal = lazy(() => import('@/components/modals/MaskingModal').then(module => ({ default: module.MaskingModal })));
+const StorySuggestionModal = lazy(() => import('@/features/story-generation/components/StorySuggestionModal').then(module => ({ default: module.StorySuggestionModal })));
+const VideoProducer = lazy(() => import('@/features/video-producer/VideoProducer').then(module => ({ default: module.VideoProducer })));
+const WorldviewModal = lazy(() => import('@/features/story-generation/components/WorldviewModal').then(module => ({ default: module.WorldviewModal })));
 
 interface PersistedStudioState {
   pagesState?: {
@@ -40,7 +38,7 @@ interface PersistedStudioState {
 
 export function Studio(): React.ReactElement {
   const { t, language, setLanguage } = useLocalization();
-  const { apiKey, isApiKeyModalOpen, setIsApiKeyModalOpen, saveApiKey, clearApiKey, hasApiKey } = useApiKey();
+  const { isApiKeyModalOpen, setIsApiKeyModalOpen, saveApiKey, hasApiKey } = useApiKey();
 
   const createPageName = useCallback((index: number) => `${t('pages')} ${index}`, [t]);
 
@@ -71,13 +69,11 @@ export function Studio(): React.ReactElement {
     handleShapesChange,
     handleUndo,
     handleRedo,
-    canUndo,
-    canRedo,
     handleAddPage,
     handleDeletePage,
     handleToggleReferencePrevious,
     clearSavedDraft,
-  } = usePagesState({ createPageName, initialState: persistedState?.pagesState });
+  } = usePagesState({ createPageName, initialState: persistedState?.pagesState, persistKey: null });
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(() => persistedState?.isSidebarOpen ?? true);
   const [characters, setCharacters] = useState<Character[]>(() => persistedState?.characters ?? []);
   const [showCharacterModal, setShowCharacterModal] = useState<boolean>(false);
@@ -159,7 +155,7 @@ export function Studio(): React.ReactElement {
     }
 
     elem.requestFullscreen().catch(err => {
-      alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+      setError(`Failed to toggle fullscreen: ${err.message} (${err.name})`);
     });
   }, []);
 
@@ -209,7 +205,7 @@ export function Studio(): React.ReactElement {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isSidebarOpen]);
-  const panelEditorRef = useRef<{ getLayoutAsImage: (includeCharacters: boolean, characters: Character[]) => Promise<string> }>(null);
+  const panelEditorRef = useRef<{ getLayoutAsImage: (includeCharacters: boolean, characters: Character[]) => Promise<string> } | null>(null);
 
   useEffect(() => {
     setViewMode(currentPage.generatedImage ? 'result' : 'editor');
@@ -289,7 +285,6 @@ export function Studio(): React.ReactElement {
         const result = await generateMangaPage(relevantCharacters, panelLayoutImage, currentPage.sceneDescription, colorMode, previousPageData, generateEmptyBubbles);
         if (currentPageIdRef.current !== targetPageId) return;
         pageUpdates.generatedImage = result.image;
-        pageUpdates.generatedText = result.text;
         pageUpdates.generatedColorMode = colorMode;
 
         handleUpdateCurrentPage(pageUpdates);
@@ -379,7 +374,7 @@ export function Studio(): React.ReactElement {
         const targetPageId = currentPageId;
         setIsSuggestingLayout(true);
         setError(null);
-        handleUpdateCurrentPage({ proposedShapes: null, assistantProposalImage: null });
+        handleUpdateCurrentPage({ assistantProposalImage: null });
 
         let canvasImageForProposal: string;
         const hasShapes = currentPage.shapes.length > 0;
@@ -425,7 +420,7 @@ export function Studio(): React.ReactElement {
                 canvasImageForProposal
             );
             if (currentPageIdRef.current !== targetPageId) return;
-            handleUpdateCurrentPage({ assistantProposalImage: proposalImage, proposedShapes: null });
+            handleUpdateCurrentPage({ assistantProposalImage: proposalImage });
         } catch (e) {
             setError(e instanceof Error ? `Layout proposal failed: ${e.message}` : "An unknown error occurred.");
         } finally {
@@ -501,31 +496,28 @@ export function Studio(): React.ReactElement {
           const sceneDescription = story.panels.map(p => `Panel ${p.panel}: ${p.description}${p.dialogue ? `\n${p.dialogue}` : ''}`).join('\n\n');
           
           pageObject = { ...pageObject, sceneDescription };
-          currentLocalPages[pageIndex] = pageObject;
-          setPages([...currentLocalPages]);
-          
-          if (stopAutoGenerationRef.current) break;
 
-          setAssistantModeState({ isActive: true, totalPages: numPages, currentPageNumber: i, statusMessage: t('autoGenLayout', { current: i, total: numPages }) });
-          const { proposalImage } = await generateLayoutProposal(sceneDescription, characters, pageObject.aspectRatio, previousPageLayout);
-          
-          previousPageLayout = { proposalImage, sceneDescription };
-          
-          pageObject = { 
-            ...pageObject, 
-            assistantProposalImage: proposalImage,
-            proposedShapes: null,
-          };
+          if (!stopAutoGenerationRef.current) {
+            setAssistantModeState({ isActive: true, totalPages: numPages, currentPageNumber: i, statusMessage: t('autoGenLayout', { current: i, total: numPages }) });
+            const { proposalImage } = await generateLayoutProposal(sceneDescription, characters, pageObject.aspectRatio, previousPageLayout);
+
+            previousPageLayout = { proposalImage, sceneDescription };
+            pageObject = {
+              ...pageObject,
+              assistantProposalImage: proposalImage,
+            };
+          }
+
           currentLocalPages[pageIndex] = pageObject;
-          setPages([...currentLocalPages]);
           
           if (i < numPages) {
               const newPage = createPage(createPageName(currentLocalPages.length + 1), pageObject.aspectRatio);
               currentLocalPages.push(newPage);
               localCurrentPageId = newPage.id;
-              setPages(currentLocalPages);
               setCurrentPageId(localCurrentPageId);
           }
+
+          setPages([...currentLocalPages]);
         }
       } catch (e: any) {
           const failedPageNumber = assistantModeState?.currentPageNumber || startFromPage;
@@ -613,9 +605,6 @@ export function Studio(): React.ReactElement {
   const handleOpenExport = useCallback(() => {
     setShowExportModal(true);
   }, []);
-
-
-  const isReadyToGenerate = !!currentPage.sceneDescription;
   const isMonochromeResult = currentPage.generatedImage !== null && currentPage.generatedColorMode === 'monochrome';
   const anyLoading = isLoading || isColoring || isSuggestingLayout || isSuggestingStory || assistantModeState?.isActive || isAnalyzing;
 
@@ -647,225 +636,111 @@ export function Studio(): React.ReactElement {
         onSave={(key) => saveApiKey(key)}
       />
       {persistError && <div className="status-card status-card--error mx-4 my-3" role="alert">{persistError}</div>}
-      {showCharacterModal && <CharacterGenerationModal onClose={() => setShowCharacterModal(false)} onSave={handleCharacterSave} characters={characters} />}
-      {showWorldviewModal && <WorldviewModal initialWorldview={worldview} onSave={(v) => { setWorldview(v); setShowWorldviewModal(false); }} onClose={() => setShowWorldviewModal(false)} onAutoGenerate={handleStartAutoGeneration} isGenerating={!!assistantModeState?.isActive} characters={characters} />}
-      {showStorySuggestionModal && <StorySuggestionModal onClose={() => { setShowStorySuggestionModal(false); setStorySuggestion(null); setError(null); }} onGenerate={handleGenerateDetailedStory} isLoading={isSuggestingStory} suggestion={storySuggestion} onApply={(script) => { handleUpdateCurrentPage({ sceneDescription: script }); setShowStorySuggestionModal(false); setStorySuggestion(null); }} />}
-      {showMangaViewer && <MangaViewerModal pages={pages} onClose={() => setShowMangaViewer(false)} />}
-      {showExportModal && <ExportModal isOpen={showExportModal} onClose={() => setShowExportModal(false)} pages={pages} />}
-      {isMasking && currentPage.generatedImage && <MaskingModal baseImage={currentPage.generatedImage} onClose={() => setIsMasking(false)} onSave={(maskDataUrl) => { setCurrentMask(maskDataUrl); setIsMasking(false); }} />}
+      <Suspense fallback={null}>
+        {showCharacterModal && <CharacterGenerationModal onClose={() => setShowCharacterModal(false)} onSave={handleCharacterSave} characters={characters} />}
+        {showWorldviewModal && <WorldviewModal initialWorldview={worldview} onSave={(v) => { setWorldview(v); setShowWorldviewModal(false); }} onClose={() => setShowWorldviewModal(false)} onAutoGenerate={handleStartAutoGeneration} isGenerating={!!assistantModeState?.isActive} characters={characters} />}
+        {showStorySuggestionModal && <StorySuggestionModal onClose={() => { setShowStorySuggestionModal(false); setStorySuggestion(null); setError(null); }} onGenerate={handleGenerateDetailedStory} isLoading={isSuggestingStory} suggestion={storySuggestion} onApply={(script) => { handleUpdateCurrentPage({ sceneDescription: script }); setShowStorySuggestionModal(false); setStorySuggestion(null); }} />}
+        {showMangaViewer && <MangaViewerModal pages={pages} onClose={() => setShowMangaViewer(false)} />}
+        {showExportModal && <ExportModal isOpen={showExportModal} onClose={() => setShowExportModal(false)} pages={pages} />}
+        {isMasking && currentPage.generatedImage && <MaskingModal baseImage={currentPage.generatedImage} onClose={() => setIsMasking(false)} onSave={(maskDataUrl) => { setCurrentMask(maskDataUrl); setIsMasking(false); }} />}
+      </Suspense>
       <div className="layout-main" id="main-content" tabIndex={-1}>
         {currentView === 'video-producer' ? (
           <div className="shell-scroll">
-            <VideoProducer characters={characters} pages={pages} />
+            <Suspense fallback={<div className="status-card">Loading...</div>}>
+              <VideoProducer characters={characters} pages={pages} />
+            </Suspense>
           </div>
         ) : (
           <>
           <div className="workspace-pane">
-            <aside
-              ref={sidebarRef}
-              className={`sidebar-pane ${isSidebarOpen ? 'is-visible' : 'is-hidden'}`}
-              aria-label={t('pages')}
-            >
-              <section className="sidebar-pane__section">
-                <div className="sidebar-pane__section-header">
-                  <div className="sidebar-pane__section-meta">
-                    <span className="heading-eyebrow">{t('pages')}</span>
-                    <span className="badge-inline">{pages.length} {t('pages')}</span>
-                  </div>
-                  <button
-                    type="button"
-                    className="icon-button sidebar-pane__close"
-                    aria-label="Toggle sidebar"
-                    ref={sidebarCloseButtonRef}
-                    onClick={() => setIsSidebarOpen(false)}
-                  >
-                    <XIcon className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="stagger-grid">
-                  <div className="relative">
-                    <label htmlFor="aspect-ratio-select" className="input-help">{t('aspectRatio')}</label>
-                    <button onClick={() => setIsAspectRatioOpen(p => !p)} className="button-secondary w-full justify-between">
-                        <span>{t(ASPECT_RATIOS[currentPage.aspectRatio].name as LocaleKeys)} ({ASPECT_RATIOS[currentPage.aspectRatio].value})</span>
-                        <svg className={`w-4 h-4 transition-transform ${isAspectRatioOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                    </button>
-                    {isAspectRatioOpen && (
-                        <div className="language-menu__list mt-3">
-                            {Object.entries(ASPECT_RATIOS).map(([key, {name, value}]) => (
-                                <button key={key} onClick={() => { handleUpdateCurrentPage({ aspectRatio: key as AspectRatioKey }); setIsAspectRatioOpen(false); }} className="language-menu__item text-left">
-                                    {t(name as LocaleKeys)} ({value})
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                  </div>
-                  <button type="button" onClick={handleResetWorkspace} className="button-ghost w-full text-xs justify-center">
-                    Reset workspace
-                  </button>
-                  {assistantModeState?.isActive ? (
-                    <div className="card-thumbnail-list max-h-96 overflow-y-auto">
-                        {pages.filter(p => p.assistantProposalImage).map(page => (
-                            <div key={`thumb-${page.id}`} onClick={() => setCurrentPageId(page.id)} className={`surface-card cursor-pointer overflow-hidden ${currentPageId === page.id ? 'border-[var(--color-border-strong)]' : ''}`}>
-                                <img src={page.assistantProposalImage!} alt={page.name} className="w-full h-full object-cover" />
-                                <div className="absolute inset-x-0 bottom-0 bg-black/45 text-white text-xs font-semibold text-center py-1">{page.name}</div>
-                            </div>
-                        ))}
-                    </div>
-                  ) : (
-                    <div className="sidebar-pane__cards">
-                      {pages.map((page, index) => (
-                          <div key={page.id} className={`page-card ${currentPageId === page.id ? 'is-active' : ''}`}>
-                              <span onClick={() => setCurrentPageId(page.id)} className="page-card__name cursor-pointer">{page.name}</span>
-                              <div className="page-card__actions">
-                                  {index > 0 && <button onClick={() => handleToggleReferencePrevious(page.id)} className={`icon-button ${page.shouldReferencePrevious ? 'is-active' : ''}`} title={t('referencePreviousPage')}><LinkIcon className="w-4 h-4" /></button>}
-                                  <button onClick={() => handleDeletePage(page.id)} className="icon-button is-critical" title={t('delete')} disabled={pages.length <= 1}><TrashIcon className="w-4 h-4" /></button>
-                              </div>
-                          </div>
-                      ))}
-                      <button onClick={() => handleAddPage()} className="button-secondary justify-center text-sm"><AddUserIcon className="w-4 h-4" />{t('addPage')}</button>
-                    </div>
-                  )}
-                </div>
-              </section>
-
-              <section className="sidebar-pane__section">
-                <div className="sidebar-pane__section-header">
-                  <span className="heading-eyebrow">{t('characters')}</span>
-                  {characters.length > 0 && <span className="badge-inline">{characters.length}</span>}
-                </div>
-                <div className="sidebar-pane__cards">
-                    {characters.length === 0 && <p className="empty-state__description">{t('createCharacterPrompt')}</p>}
-                    {characters.map(char => (
-                        <div key={char.id} className="character-card group">
-                            <div className="character-card__meta cursor-grab" draggable onDragStart={(e) => { e.dataTransfer.setData('characterId', char.id); setIsDraggingCharacter(true); }} onDragEnd={() => setIsDraggingCharacter(false)}>
-                                <img src={char.sheetImage} alt={char.name} className="w-12 h-12 rounded-md object-cover" />
-                                <span>{char.name}</span>
-                            </div>
-                            <button onClick={() => handleDeleteCharacter(char.id)} className="icon-button is-critical opacity-0 group-hover:opacity-100" title={t('delete')}><TrashIcon className="w-4 h-4" /></button>
-                        </div>
-                    ))}
-                </div>
-                <button onClick={() => setShowCharacterModal(true)} className="button-secondary justify-center"><AddUserIcon className="w-4 h-4" />{t('addCharacter')}</button>
-              </section>
-            </aside>
+            <StudioSidebar
+              sidebarRef={sidebarRef}
+              sidebarCloseButtonRef={sidebarCloseButtonRef}
+              isSidebarOpen={isSidebarOpen}
+              currentPage={currentPage}
+              pages={pages}
+              currentPageId={currentPageId}
+              assistantModeState={assistantModeState}
+              isAspectRatioOpen={isAspectRatioOpen}
+              characters={characters}
+              onCloseSidebar={() => setIsSidebarOpen(false)}
+              onToggleAspectRatio={() => setIsAspectRatioOpen(prev => !prev)}
+              onSelectAspectRatio={(aspectRatio: AspectRatioKey) => {
+                handleUpdateCurrentPage({ aspectRatio });
+                setIsAspectRatioOpen(false);
+              }}
+              onResetWorkspace={handleResetWorkspace}
+              onSelectPage={setCurrentPageId}
+              onToggleReferencePrevious={handleToggleReferencePrevious}
+              onDeletePage={handleDeletePage}
+              onAddPage={handleAddPage}
+              onDeleteCharacter={handleDeleteCharacter}
+              onOpenCharacterModal={() => setShowCharacterModal(true)}
+              onCharacterDragStart={(event, characterId) => {
+                event.dataTransfer.setData('characterId', characterId);
+                setIsDraggingCharacter(true);
+              }}
+              onCharacterDragEnd={() => setIsDraggingCharacter(false)}
+            />
 
             <div className="workspace-pane__body">
-              <section ref={workspaceCanvasRef} className="workspace-canvas">
-                <div className="workspace-pane__header">
-                  <span className="floating-pill">{currentPage.name}</span>
-                  {currentPage.generatedImage && (
-                    <button
-                      className="button-ghost"
-                      onClick={() => setViewMode(viewMode === 'result' ? 'editor' : 'result')}
-                      aria-label={viewMode === 'result' ? t('backToEditor') : t('viewResult')}
-                    >
-                      {viewMode === 'result' ? t('backToEditor') : t('viewResult')}
-                    </button>
-                  )}
-                </div>
-                <div className="workspace-canvas__scroll">
-                  <div className={`canvas-stage ${viewMode === 'result' ? 'canvas-stage--result' : 'canvas-stage--editor'}`}>
-                    {viewMode === 'result' && currentPage.generatedImage && currentPage.panelLayoutImage ? (
-                      <ComparisonViewer 
-                          beforeImage={currentPage.panelLayoutImage}
-                          afterImage={currentPage.generatedImage}
-                          isMonochromeResult={isMonochromeResult}
-                          onColorize={handleColorize}
-                          isColoring={isColoring}
-                      />
-                    ) : (
-                      <PanelEditor 
-                          ref={panelEditorRef}
-                          key={currentPage.id}
-                          shapes={currentPage.shapes}
-                          onShapesChange={handleShapesChange}
-                          characters={characters}
-                          aspectRatio={currentPage.aspectRatio}
-                          viewTransform={currentPage.viewTransform}
-                          onViewTransformChange={handleViewTransformChange}
-                          isDraggingCharacter={isDraggingCharacter}
-                          onUndo={handleUndo}
-                          onRedo={handleRedo}
-                          canUndo={currentPage.shapesHistoryIndex > 0}
-                          canRedo={currentPage.shapesHistoryIndex < currentPage.shapesHistory.length - 1}
-                          proposalImage={currentPage.assistantProposalImage}
-                          proposalOpacity={currentPage.proposalOpacity}
-                          isProposalVisible={currentPage.isProposalVisible}
-                          onProposalSettingsChange={(updates) => handleUpdateCurrentPage(updates)}
-                          onApplyLayout={handleApplyLayout}
-                          isFullscreen={isFullscreen}
-                          onToggleFullscreen={toggleFullscreen}
-                      />
-                    )}
-                  </div>
-                </div>
-              </section>
+              <StudioCanvasPane
+                workspaceCanvasRef={workspaceCanvasRef}
+                panelEditorRef={panelEditorRef}
+                currentPage={currentPage}
+                viewMode={viewMode}
+                characters={characters}
+                isDraggingCharacter={isDraggingCharacter}
+                isColoring={isColoring}
+                isMonochromeResult={isMonochromeResult}
+                isFullscreen={isFullscreen}
+                onToggleViewMode={() => setViewMode(prev => prev === 'result' ? 'editor' : 'result')}
+                onColorize={handleColorize}
+                onShapesChange={handleShapesChange}
+                onViewTransformChange={handleViewTransformChange}
+                onUndo={handleUndo}
+                onRedo={handleRedo}
+                onProposalSettingsChange={handleUpdateCurrentPage}
+                onApplyLayout={handleApplyLayout}
+                onToggleFullscreen={toggleFullscreen}
+              />
 
-              <aside className="utility-pane">
-                {viewMode === 'result' && currentPage.generatedImage && !error ? (
-                  <ResultDisplay
-                    isLoading={isLoading}
-                    isColoring={isColoring}
-                    generatedContent={{ image: currentPage.generatedImage, text: currentPage.generatedText }}
-                    error={error}
-                    isMonochromeResult={isMonochromeResult}
-                    onColorize={handleColorize}
-                    onRegenerate={handleGenerateImage}
-                    onEdit={handleEditImage}
-                    onStartMasking={() => setIsMasking(true)}
-                    mask={currentMask}
-                    onClearMask={() => setCurrentMask(null)}
-                    onReturnToEditor={() => setViewMode('editor')}
-                    isAnalyzing={isAnalyzing}
-                    analysisResult={analysisResult}
-                    onAnalyze={handleAnalyzeResult}
-                    onApplyCorrection={handleApplyCorrection}
-                    onClearAnalysis={() => setAnalysisResult(null)}
-                    characters={characters}
-                  />
-                ) : (
-                  <div className="result-shell">
-                    {!anyLoading && <h2 className="utility-pane__group-title">{t('generateYourManga')}</h2>}
-                    {anyLoading ? (
-                      <div className="status-card">
-                          {assistantModeState?.hasError ? (
-                              <>
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-10 w-10 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
-                                  <p className="status-card__title">{assistantModeState.statusMessage}</p>
-                                  <button onClick={() => handleStartAutoGeneration(assistantModeState.totalPages, assistantModeState.failedPageNumber)} className="button-primary justify-center text-sm">{t('retryGeneration')}</button>
-                              </>
-                          ) : (
-                              <>
-                                  <div className="loader-ring" aria-hidden />
-                                  <p className="status-card__body">{assistantModeState?.isActive ? assistantModeState.statusMessage : isAnalyzing ? t('analyzing') : isSuggestingStory ? t('storySuggesting') : isSuggestingLayout ? t('layoutSuggesting') : isColoring ? t('coloringPage') : t('generating')}</p>
-                                  {assistantModeState?.isActive && !assistantModeState?.hasError && <button onClick={handleStopAutoGeneration} className="button-secondary justify-center text-sm">{t('stopGeneration')}</button>}
-                              </>
-                          )}
-                      </div>
-                     ) : (
-                      <GenerationControls
-                        onGenerateImage={handleGenerateImage}
-                        isLoading={isLoading}
-                        colorMode={colorMode}
-                        setColorMode={setColorMode}
-                        isReadyToGenerate={isReadyToGenerate}
-                        sceneDescription={currentPage.sceneDescription}
-                        onSceneDescriptionChange={(desc) => handleUpdateCurrentPage({ sceneDescription: desc })}
-                        onSuggestLayout={handleGenerateLayoutProposal}
-                        isSuggestingLayout={isSuggestingLayout}
-                        onSuggestStory={() => setShowStorySuggestionModal(true)}
-                        characters={characters}
-                        hasGeneratedResult={!!currentPage.generatedImage}
-                        onViewResult={() => setViewMode('result')}
-                        generateEmptyBubbles={generateEmptyBubbles}
-                        setGenerateEmptyBubbles={setGenerateEmptyBubbles}
-                        assistantModeState={assistantModeState}
-                      />
-                    )}
-                     {error && <div className="status-card status-card--error">{error}</div>}
-                  </div>
-                )}
-              </aside>
+              <StudioUtilityPane
+                currentPage={currentPage}
+                viewMode={viewMode}
+                error={error}
+                isLoading={isLoading}
+                isColoring={isColoring}
+                isAnalyzing={isAnalyzing}
+                isSuggestingLayout={isSuggestingLayout}
+                isSuggestingStory={isSuggestingStory}
+                anyLoading={anyLoading}
+                isMonochromeResult={isMonochromeResult}
+                analysisResult={analysisResult}
+                assistantModeState={assistantModeState}
+                colorMode={colorMode}
+                generateEmptyBubbles={generateEmptyBubbles}
+                characters={characters}
+                currentMask={currentMask}
+                onColorize={handleColorize}
+                onGenerateImage={handleGenerateImage}
+                onEditImage={handleEditImage}
+                onStartMasking={() => setIsMasking(true)}
+                onClearMask={() => setCurrentMask(null)}
+                onReturnToEditor={() => setViewMode('editor')}
+                onAnalyze={handleAnalyzeResult}
+                onApplyCorrection={handleApplyCorrection}
+                onClearAnalysis={() => setAnalysisResult(null)}
+                onStopAutoGeneration={handleStopAutoGeneration}
+                onRetryAutoGeneration={handleStartAutoGeneration}
+                onSceneDescriptionChange={(sceneDescription) => handleUpdateCurrentPage({ sceneDescription })}
+                onSuggestLayout={handleGenerateLayoutProposal}
+                onSuggestStory={() => setShowStorySuggestionModal(true)}
+                onSetColorMode={setColorMode}
+                onSetGenerateEmptyBubbles={setGenerateEmptyBubbles}
+                onViewResult={() => setViewMode('result')}
+              />
             </div>
           </div>
           {isSidebarOpen && <button type="button" className="sidebar-backdrop" aria-label="Toggle sidebar" onClick={() => setIsSidebarOpen(false)} />}
