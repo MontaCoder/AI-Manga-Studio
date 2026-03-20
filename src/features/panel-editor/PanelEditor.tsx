@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useImperativeHandle, useEffect, forwardRef, useMemo } from 'react';
-import type { CanvasShape, BubbleShape, PanelShape, Character, ImageShape, TextShape, ViewTransform, Pose, SkeletonData, DrawingShape, SkeletonPose, ArrowShape } from '@/types';
-import { PolygonIcon, TextToolIcon, BubbleToolIcon, TrashIcon, SelectIcon, CircleIcon, SquareIcon, XIcon, BrushIcon, ExpandIcon, ShrinkIcon, HandIcon, PlusIcon, EditPoseIcon, MinusIcon, UploadIcon, RedoIcon, UndoIcon, EyeIcon, EyeOffIcon, ArrowIcon } from '@/components/icons/icons';
+import type { CanvasShape, BubbleShape, PanelShape, Character, ImageShape, TextShape, ViewTransform, Pose, SkeletonData, SkeletonPose, ArrowShape } from '@/types';
+import { PolygonIcon, TextToolIcon, BubbleToolIcon, TrashIcon, SelectIcon, CircleIcon, SquareIcon, BrushIcon, ExpandIcon, ShrinkIcon, HandIcon, PlusIcon, EditPoseIcon, MinusIcon, UploadIcon, RedoIcon, UndoIcon, EyeIcon, EyeOffIcon, ArrowIcon } from '@/components/icons/icons';
 import { useLocalization } from '@/hooks/useLocalization';
 import type { LocaleKeys } from '@/i18n/locales';
 import { PoseEditorModal } from '@/features/character-management/components/PoseEditorModal';
@@ -41,6 +41,69 @@ type Action =
     | { type: 'draggingTail'; shapeId: string }
     | { type: 'editingPanelVertex'; shapeId: string, vertexIndex: number }
     | { type: 'draggingArrowHandle'; shapeId: string; handleIndex: 0 | 1 };
+
+const clonePoint = (point: { x: number; y: number }) => ({ ...point });
+const clonePointList = (points: { x: number; y: number }[]) => points.map(clonePoint);
+const cloneDrawingPoints = (points: { x: number; y: number }[][]) => points.map(clonePointList);
+
+const clonePose = (pose: Pose | undefined): Pose | undefined => {
+    if (!pose) return undefined;
+
+    switch (pose.type) {
+        case 'image':
+            return { ...pose };
+        case 'drawing':
+            return { ...pose, points: cloneDrawingPoints(pose.points) };
+        case 'skeleton':
+            return {
+                ...pose,
+                data: Object.fromEntries(
+                    Object.entries(pose.data).map(([key, point]) => [key, clonePoint(point)])
+                ),
+            };
+        default:
+            return pose;
+    }
+};
+
+const cloneShape = (shape: CanvasShape, id: string, offset = { x: 0, y: 0 }): CanvasShape => {
+    const withOffset = (point: { x: number; y: number }) => ({ x: point.x + offset.x, y: point.y + offset.y });
+
+    switch (shape.type) {
+        case 'panel':
+            return { ...shape, id, x: shape.x + offset.x, y: shape.y + offset.y, points: shape.points.map(withOffset) };
+        case 'drawing':
+            return { ...shape, id, x: shape.x + offset.x, y: shape.y + offset.y, points: shape.points.map(stroke => stroke.map(withOffset)) };
+        case 'bubble':
+            return {
+                ...shape,
+                id,
+                x: shape.x + offset.x,
+                y: shape.y + offset.y,
+                tail: shape.tail ? withOffset(shape.tail) : undefined,
+            };
+        case 'arrow':
+            return {
+                ...shape,
+                id,
+                x: shape.x + offset.x,
+                y: shape.y + offset.y,
+                points: shape.points.map(withOffset) as ArrowShape['points'],
+            };
+        case 'image':
+            return {
+                ...shape,
+                id,
+                x: shape.x + offset.x,
+                y: shape.y + offset.y,
+                pose: clonePose(shape.pose),
+            };
+        case 'text':
+            return { ...shape, id, x: shape.x + offset.x, y: shape.y + offset.y };
+        default:
+            return shape;
+    }
+};
 
 const getBubblePath = (shape: BubbleShape): string => {
     const { x, y, width, height, tail, bubbleType } = shape;
@@ -255,6 +318,12 @@ export const PanelEditor = forwardRef<
     const [cursorPreview, setCursorPreview] = useState<{ x: number; y: number } | null>(null);
     const [drawingGuideRect, setDrawingGuideRect] = useState<{ x: number, y: number, width: number, height: number } | null>(null);
     const [guides, setGuides] = useState<{ type: 'h' | 'v', pos: number }[]>([]);
+    const shapeById = useMemo(() => new Map(shapes.map(shape => [shape.id, shape])), [shapes]);
+    const characterById = useMemo(() => new Map(characters.map(character => [character.id, character])), [characters]);
+    const panels = useMemo(() => shapes.filter((shape): shape is PanelShape => shape.type === 'panel'), [shapes]);
+    const panelIndexById = useMemo(() => new Map(panels.map((panel, index) => [panel.id, index])), [panels]);
+    const selectedShape = selectedShapeId ? shapeById.get(selectedShapeId) ?? null : null;
+    const editingShape = editingShapeId ? shapeById.get(editingShapeId) ?? null : null;
 
     const isSpacePressed = useRef(false);
     const lastTouchDist = useRef<number | null>(null);
@@ -337,16 +406,11 @@ export const PanelEditor = forwardRef<
             if (e.metaKey || e.ctrlKey) {
                 if (key === 'z') { e.preventDefault(); e.shiftKey ? (canRedo && onRedo()) : (canUndo && onUndo()); }
                 if (key === 'y') { e.preventDefault(); canRedo && onRedo(); }
-                if (key === 'd' && selectedShapeId) {
+                if (key === 'd' && selectedShape) {
                     e.preventDefault();
-                    const shape = shapes.find(s => s.id === selectedShapeId);
-                    if (shape) {
-                        const clone = { ...JSON.parse(JSON.stringify(shape)), id: Date.now().toString() };
-                        if ('x' in clone) { clone.x += 20; clone.y += 20; }
-                        if (clone.type === 'panel') clone.points = clone.points.map((p: { x: number, y: number }) => ({ x: p.x + 20, y: p.y + 20 }));
-                        onShapesChange([...shapes, clone]);
-                        setSelectedShapeId(clone.id);
-                    }
+                    const clone = cloneShape(selectedShape, Date.now().toString(), { x: 20, y: 20 });
+                    onShapesChange([...shapes, clone]);
+                    setSelectedShapeId(clone.id);
                 }
                 return;
             }
@@ -398,7 +462,7 @@ export const PanelEditor = forwardRef<
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup', handleKeyUp);
         };
-    }, [selectedShapeId, editingShapeId, posingCharacter, onUndo, onRedo, canUndo, canRedo, shapes, onShapesChange, zoomIn, zoomOut, fitAndCenterCanvas]);
+    }, [selectedShape, selectedShapeId, editingShapeId, posingCharacter, onUndo, onRedo, canUndo, canRedo, shapes, onShapesChange, zoomIn, zoomOut, fitAndCenterCanvas]);
 
     const getMousePos = useCallback((e: React.MouseEvent | MouseEvent | TouchEvent) => {
         const clientX = 'touches' in e ? e.touches[0]?.clientX ?? 0 : (e as MouseEvent).clientX;
@@ -510,7 +574,7 @@ export const PanelEditor = forwardRef<
                 const newCurrentStroke = [...action.currentStroke, pos];
                 newShapes = shapes.map(s => {
                     if (s.id === action.shapeId && s.type === 'drawing') {
-                        const pointsCopy: { x: number; y: number }[][] = JSON.parse(JSON.stringify(s.points));
+                        const pointsCopy = [...s.points];
                         pointsCopy[pointsCopy.length - 1] = newCurrentStroke;
                         return { ...s, points: pointsCopy };
                     }
@@ -520,7 +584,7 @@ export const PanelEditor = forwardRef<
                 break;
             }
             case 'dragging': {
-                const draggedShape = shapes.find(s => s.id === action.shapeId);
+                const draggedShape = shapeById.get(action.shapeId);
                 if (draggedShape) {
                     const newX = pos.x - action.startOffset.x;
                     const newY = pos.y - action.startOffset.y;
@@ -663,7 +727,8 @@ export const PanelEditor = forwardRef<
             setSelectedShapeId(action.shape.id);
         }
         if (action.type === 'creating' || action.type === 'dragging' || action.type === 'resizing' || action.type === 'draggingTail' || action.type === 'editingPanelVertex' || action.type === 'drawing' || action.type === 'draggingArrowHandle') {
-            const shape = shapes.find(s => s.id === (action as any).shapeId || s.id === (action as any).shape?.id);
+            const shapeId = 'shapeId' in action ? action.shapeId : action.type === 'creating' ? action.shape.id : null;
+            const shape = shapeId ? shapeById.get(shapeId) : undefined;
             if (shape && (shape.type === 'bubble' || shape.type === 'panel') && (shape.width < 10 || shape.height < 10)) {
                 onShapesChange(shapes.filter(s => s.id !== shape.id), true);
             } else {
@@ -1051,12 +1116,11 @@ export const PanelEditor = forwardRef<
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
         const characterId = e.dataTransfer.getData('characterId');
-        const character = characters.find(c => c.id === characterId);
+        const character = characterById.get(characterId);
         if (!character) return;
 
         const dropPointWorld = getMousePos(e);
 
-        const panels = shapes.filter(s => s.type === 'panel') as PanelShape[];
         let droppedOnPanelIndex = -1;
 
         for (let i = panels.length - 1; i >= 0; i--) {
@@ -1199,7 +1263,6 @@ export const PanelEditor = forwardRef<
     };
 
 
-    const editingShape = shapes.find(s => s.id === editingShapeId);
     const editingShapeSVGPos = svgRef.current && editingShape ? (() => {
         const bbox = getShapeBBox(editingShape);
         const CTM = svgRef.current.getScreenCTM();
@@ -1218,8 +1281,6 @@ export const PanelEditor = forwardRef<
             fontSize
         }
     })() : null;
-
-    const panels = shapes.filter(s => s.type === 'panel');
 
     const handleTooltipShow = (e: React.MouseEvent<HTMLButtonElement>, text: string) => {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -1552,8 +1613,10 @@ export const PanelEditor = forwardRef<
                             )}
                             {sortedShapes.map((shape) => {
                                 const isSelected = selectedShapeId === shape.id;
-                                const panelIndex = shape.type === 'panel' ? panels.findIndex(p => p.id === shape.id) : -1;
+                                const panelIndex = shape.type === 'panel' ? panelIndexById.get(shape.id) ?? -1 : -1;
                                 const bbox = getShapeBBox(shape);
+                                const panelCentroid = shape.type === 'panel' ? getPolygonCentroid(shape.points) : null;
+                                const character = shape.type === 'image' ? characterById.get(shape.characterId) : null;
                                 const isDrawingToolActive = activeTool === 'panel' || activeTool === 'bubble' || activeTool === 'draw' || activeTool === 'arrow';
 
                                 return (
@@ -1584,7 +1647,7 @@ export const PanelEditor = forwardRef<
                                                     </>
                                                 )}
                                                 {panelIndex !== -1 && (
-                                                    <text x={getPolygonCentroid(shape.points).x} y={getPolygonCentroid(shape.points).y} fontSize={60 / viewTransform.scale} fontWeight="bold" fill="rgba(0,0,0,0.1)" textAnchor="middle" dominantBaseline="central" pointerEvents="none">{panelIndex + 1}</text>
+                                                    <text x={panelCentroid!.x} y={panelCentroid!.y} fontSize={60 / viewTransform.scale} fontWeight="bold" fill="rgba(0,0,0,0.1)" textAnchor="middle" dominantBaseline="central" pointerEvents="none">{panelIndex + 1}</text>
                                                 )}
                                             </>
                                         )}
@@ -1686,29 +1749,25 @@ export const PanelEditor = forwardRef<
                                             <>
                                                 <image href={shape.href} x={shape.x} y={shape.y} width={shape.width} height={shape.height} style={{ imageRendering: 'pixelated' }} />
                                                 {renderPose(shape)}
-                                                {(() => {
-                                                    const character = characters.find(c => c.id === shape.characterId);
-                                                    if (!character) return null;
-                                                    return (
-                                                        <g pointerEvents="none">
-                                                            <text
-                                                                x={bbox.x + bbox.width / 2}
-                                                                y={bbox.y + bbox.height / 2}
-                                                                fontSize={20 / viewTransform.scale}
-                                                                fontWeight="bold"
-                                                                fill="white"
-                                                                stroke="black"
-                                                                strokeWidth={1 / viewTransform.scale}
-                                                                paintOrder="stroke"
-                                                                textAnchor="middle"
-                                                                dominantBaseline="central"
-                                                                style={{ userSelect: 'none' }}
-                                                            >
-                                                                {character.name}
-                                                            </text>
-                                                        </g>
-                                                    );
-                                                })()}
+                                                {character && (
+                                                    <g pointerEvents="none">
+                                                        <text
+                                                            x={bbox.x + bbox.width / 2}
+                                                            y={bbox.y + bbox.height / 2}
+                                                            fontSize={20 / viewTransform.scale}
+                                                            fontWeight="bold"
+                                                            fill="white"
+                                                            stroke="black"
+                                                            strokeWidth={1 / viewTransform.scale}
+                                                            paintOrder="stroke"
+                                                            textAnchor="middle"
+                                                            dominantBaseline="central"
+                                                            style={{ userSelect: 'none' }}
+                                                        >
+                                                            {character.name}
+                                                        </text>
+                                                    </g>
+                                                )}
                                                 {isSelected && (
                                                     <>
                                                         <rect x={bbox.x} y={bbox.y} width={bbox.width} height={bbox.height} fill="none" stroke="rgba(128, 90, 213, 1)" strokeWidth={2 / viewTransform.scale} strokeDasharray={`${4 / viewTransform.scale}`} />

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import type { Character, VideoScene, Page, VideoModelId } from '@/types';
 import { useLocalization } from '@/hooks/useLocalization';
-import { UploadIcon, PlusIcon, XIcon, FilmIcon, TrashIcon, CheckCircleIcon, DownloadIcon, CopyIcon, RedoAltIcon, CameraIcon, PlayIcon, WandIcon } from '@/components/icons/icons';
+import { UploadIcon, PlusIcon, XIcon, FilmIcon, TrashIcon, CheckCircleIcon, DownloadIcon, CopyIcon, RedoAltIcon, PlayIcon, WandIcon } from '@/components/icons/icons';
 import {
     generateStoryboardFromPages,
     generateVideoFrame,
@@ -10,6 +10,8 @@ import {
     regenerateVideoFrame,
     generateVeoVideo
 } from '@/services/videoGeminiService';
+import { getDataUrlMimeType } from '@/services/geminiClient';
+import { mapWithConcurrency } from '@/utils/asyncUtils';
 
 
 const ImportSourceModal = ({ 
@@ -59,7 +61,7 @@ const ImportSourceModal = ({
             const pagesToGenerate = generatedEditorPages
                 .filter(p => selectedEditorPageIds.has(p.id))
                 .map(p => {
-                    const mimeType = p.generatedImage!.match(/data:(image\/.*?);/)?.[1] || 'image/png';
+                    const mimeType = getDataUrlMimeType(p.generatedImage!, 'image/png');
                     return { data: p.generatedImage!, mimeType };
                 });
             onGenerate(pagesToGenerate);
@@ -139,6 +141,8 @@ const videoModels = {
     kling: { name: "Kling", startOnly: false },
 };
 
+const SCENE_FRAME_CONCURRENCY = 2;
+
 const RegenerationModal = ({
     sceneId,
     frameType,
@@ -183,8 +187,8 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
     const [isGenerating, setIsGenerating] = useState(false);
     const [scenes, setScenes] = useState<VideoScene[]>([]);
     const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
-    const [importedPages, setImportedPages] = useState<{data: string, mimeType: string}[]>([]);
     const [copyStatus, setCopyStatus] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
     const [selectedModels, setSelectedModels] = useState<Record<VideoModelId, boolean>>({
         seedance: true,
         hailuo: true,
@@ -197,10 +201,10 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
 
     const handleGenerateStoryboard = async (pagesToImport: {data: string, mimeType: string}[]) => {
         if (pagesToImport.length === 0) return;
-        setImportedPages(pagesToImport);
         setShowImportModal(false);
         setIsGenerating(true);
-        setScenes([]); // Clear previous scenes immediately
+        setError(null);
+        setScenes([]);
         setSelectedSceneId(null);
         
         try {
@@ -219,17 +223,16 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
                 videoGenerationStatus: 'idle',
             }));
             setScenes(placeholderScenes);
+            if (placeholderScenes.length > 0) {
+                setSelectedSceneId(placeholderScenes[0].id);
+            }
 
-            for (let i = 0; i < initialSceneData.length; i++) {
-                const panel = initialSceneData[i];
+            await mapWithConcurrency(initialSceneData, SCENE_FRAME_CONCURRENCY, async (panel, i) => {
                 const placeholderScene = placeholderScenes[i];
                 const sourceImage = pagesToImport[panel.sourcePageIndex];
                 
-                const [startFrame, allPrompts] = await Promise.all([
-                    generateVideoFrame(panel.sceneDescription, sourceImage),
-                    generateAllModelPrompts(panel, characters),
-                ]);
-
+                const startFrame = await generateVideoFrame(panel.sceneDescription, sourceImage);
+                const allPrompts = generateAllModelPrompts(panel, characters);
                 const endFrame = await generateWebtoonEndFrame(startFrame, panel.narrative, panel.duration);
                 
                 setScenes(prevScenes => prevScenes.map(s => 
@@ -237,16 +240,12 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
                     ? { ...s, startFrame, endFrame, prompts: allPrompts, isLoading: false } 
                     : s
                 ));
-            }
-            
-            if (placeholderScenes.length > 0) {
-                setSelectedSceneId(placeholderScenes[0].id);
-            }
+            });
 
         } catch (error) {
             console.error("Storyboard generation failed", error);
-            alert(`${t('storyboardGenerationFailed')}: ${error instanceof Error ? error.message : 'Unknown Error'}`);
-            setScenes([]); // Clear scenes on failure
+            setError(`${t('storyboardGenerationFailed')}: ${error instanceof Error ? error.message : 'Unknown Error'}`);
+            setScenes([]);
         } finally {
             setIsGenerating(false);
         }
@@ -275,7 +274,7 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
                 return s;
             }));
         } catch (error) {
-            alert(`Frame regeneration failed: ${error instanceof Error ? error.message : 'Unknown Error'}`);
+            setError(`Frame regeneration failed: ${error instanceof Error ? error.message : 'Unknown Error'}`);
         } finally {
             setRegeneratingFrame(null);
         }
@@ -288,10 +287,9 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
         setScenes(prev => prev.map(s => s.id === scene.id ? { ...s, videoGenerationStatus: 'pending', videoGenerationProgress: 'Initializing...' } : s));
     
         try {
-            const mimeType = scene.startFrame.match(/data:(image\/.*?);/)?.[1] || 'image/png';
             const startFrameData = {
                 data: scene.startFrame,
-                mimeType: mimeType,
+                mimeType: getDataUrlMimeType(scene.startFrame),
             };
 
             const videoUrl = await generateVeoVideo(
@@ -376,6 +374,7 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
 
             <main className="video-producer-board order-2 xl:order-none flex-1 bg-white border border-gray-200 rounded-xl xl:rounded-none shadow-sm xl:shadow-none p-4 xl:p-6 flex flex-col gap-4 overflow-visible xl:overflow-y-auto min-h-0">
                 <h3 className="font-bold text-sm text-gray-500 tracking-wider uppercase">{t('storyboard')}</h3>
+                {error && <div className="status-card status-card--error">{error}</div>}
                 <div className="flex flex-col gap-2">
                     {scenes.length > 0 ? (
                         scenes.map((scene, index) => (
@@ -493,15 +492,6 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
                             </div>
                         </div>
 
-                        <div className="border-t border-gray-200 pt-4 mt-auto">
-                            <h3 className="font-bold text-sm text-gray-500 tracking-wider uppercase mb-2">{t('sceneActions')}</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                                <button onClick={() => alert('Regenerate Scene: Not implemented')} className="p-2 bg-gray-100 text-gray-700 font-semibold rounded-md hover:bg-gray-200">{t('regenerateScene')}</button>
-                                <button onClick={() => alert('Extend Scene: Not implemented')} className="p-2 bg-gray-100 text-gray-700 font-semibold rounded-md hover:bg-gray-200">{t('extendScene')}</button>
-                                <button onClick={() => alert('Add Related Scene: Not implemented')} className="p-2 bg-gray-100 text-gray-700 font-semibold rounded-md hover:bg-gray-200">{t('addRelatedScene')}</button>
-                                <button onClick={() => alert('Add New Scene: Not implemented')} className="p-2 bg-gray-100 text-gray-700 font-semibold rounded-md hover:bg-gray-200">{t('addNewScene')}</button>
-                            </div>
-                        </div>
                      </>
                  ) : (
                     <div className="flex items-center justify-center h-full text-center text-gray-500 p-8">
