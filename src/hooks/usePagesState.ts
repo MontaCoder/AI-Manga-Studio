@@ -11,9 +11,7 @@ const basePageState: Omit<Page, 'id' | 'name'> = {
   shapesHistoryIndex: 0,
   panelLayoutImage: null,
   sceneDescription: '',
-  panelCharacterMap: {},
   generatedImage: null,
-  generatedText: null,
   generatedColorMode: null,
   aspectRatio: DEFAULT_ASPECT_RATIO,
   viewTransform: { scale: 1, x: 0, y: 0 },
@@ -21,7 +19,6 @@ const basePageState: Omit<Page, 'id' | 'name'> = {
   assistantProposalImage: null,
   proposalOpacity: 0.5,
   isProposalVisible: true,
-  proposedShapes: null,
 };
 
 export const createPage = (name: string, aspectRatio: AspectRatioKey = DEFAULT_ASPECT_RATIO): Page => ({
@@ -47,9 +44,16 @@ const normalizeAspectRatio = (aspectRatio: string | undefined): AspectRatioKey =
 
 const reindexPages = (pages: Page[], createPageName: (index: number) => string) =>
   pages.map((page, index) => ({
+    ...basePageState,
     ...page,
     name: createPageName(index + 1),
     aspectRatio: normalizeAspectRatio(page.aspectRatio),
+    shapes: page.shapes ?? [],
+    shapesHistory: page.shapesHistory?.length ? page.shapesHistory : [page.shapes ?? []],
+    shapesHistoryIndex: typeof page.shapesHistoryIndex === 'number' ? page.shapesHistoryIndex : 0,
+    viewTransform: page.viewTransform ?? basePageState.viewTransform,
+    proposalOpacity: typeof page.proposalOpacity === 'number' ? page.proposalOpacity : basePageState.proposalOpacity,
+    isProposalVisible: typeof page.isProposalVisible === 'boolean' ? page.isProposalVisible : basePageState.isProposalVisible,
   }));
 
 export function usePagesState({
@@ -225,9 +229,6 @@ export function usePagesState({
     [applyPages],
   );
 
-  const canUndo = currentPage.shapesHistoryIndex > 0;
-  const canRedo = currentPage.shapesHistoryIndex < currentPage.shapesHistory.length - 1;
-
   useEffect(() => {
     if (pages.length === 0) return;
     if (!pages.some(p => p.id === currentPageId)) {
@@ -273,26 +274,9 @@ export function usePagesState({
     handleShapesChange,
     handleUndo,
     handleRedo,
-    canUndo,
-    canRedo,
     handleAddPage,
     handleDeletePage,
     handleToggleReferencePrevious,
     clearSavedDraft,
   };
-}
-
-export function loadSavedDraft(storageKey: string = STORAGE_KEY): { pages: Page[]; currentPageId: string; savedAt: number } | null {
-  try {
-    const saved = typeof window !== 'undefined' ? window.localStorage.getItem(storageKey) : null;
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.pages && Array.isArray(parsed.pages) && parsed.pages.length > 0) {
-        return parsed;
-      }
-    }
-  } catch (error) {
-    console.warn('Failed to load saved draft:', error);
-  }
-  return null;
 }
