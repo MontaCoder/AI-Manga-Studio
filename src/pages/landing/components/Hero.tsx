@@ -8,9 +8,8 @@ export function Hero(): React.ReactElement {
 
   return (
     <section className="hero">
-      <video className="hero__video" autoPlay muted loop playsInline preload="auto">
+      <video className="hero__video" autoPlay muted loop playsInline preload="metadata">
         <source src="/video/Website_Hero_Background_Video_Generation.webm" type="video/webm" />
-        <source src="/video/Website_Hero_Background_Video_Generation.mp4" type="video/mp4" />
       </video>
       <div className="hero__pattern" />
       <div className="hero__overlay" />

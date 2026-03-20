@@ -112,9 +112,7 @@ export interface Page {
   shapesHistoryIndex: number;
   panelLayoutImage: string | null;
   sceneDescription: string; // AI-generated, user-editable script. No longer nullable.
-  panelCharacterMap: { [panelIndex: number]: string }; // Kept for reference, but image shapes are primary
   generatedImage: string | null;
-  generatedText: string | null;
   generatedColorMode: 'color' | 'monochrome' | null;
   aspectRatio: AspectRatioKey;
   viewTransform: ViewTransform;
@@ -122,7 +120,6 @@ export interface Page {
   assistantProposalImage: string | null;
   proposalOpacity: number;
   isProposalVisible: boolean;
-  proposedShapes: CanvasShape[] | null;
 }
 
 export interface StorySuggestion {
@@ -185,15 +182,3 @@ export interface InitialSceneData {
 }
 
 // Intermediate type from the first Gemini call in the storyboard generation process
-export interface SceneAnalysis {
-    sceneDescription: string;
-    duration: number;
-    startFramePrompt: string;
-    endFramePrompt: string;
-    aiSuggestions: AISuggestions;
-    finalPrompt: string;
-    sourcePageIndex: number;
-    charactersInScene: string[];
-    // FIX: Added missing 'narrative' property to align with the schema used in videoGeminiService.
-    narrative: string;
-}
