@@ -2,7 +2,27 @@ import { Modality, Type } from "@google/genai";
 import { ASPECT_RATIOS, type AspectRatioKey } from '@/constants/aspectRatios';
 import type { GeneratedContent, Character, Page, StorySuggestion, PanelShape, ImageShape, CanvasShape, Pose, AnalysisResult } from '@/types';
 import { SkeletonPose, SkeletonData } from '@/types';
-import { getAiClient, base64ToGeminiPart } from '@/services/geminiClient';
+import {
+    dataUrlToGeminiPart,
+    extractImageFromResponse,
+    extractTextAndImage,
+    getAiClient,
+    parseJsonResponse,
+} from '@/services/geminiClient';
+
+const isStorySuggestion = (value: unknown): value is StorySuggestion => {
+    if (!value || typeof value !== 'object') return false;
+    const suggestion = value as StorySuggestion;
+    return typeof suggestion.summary === 'string' && Array.isArray(suggestion.panels);
+};
+
+const isAnalysisResult = (value: unknown): value is AnalysisResult => {
+    if (!value || typeof value !== 'object') return false;
+    const result = value as AnalysisResult;
+    return typeof result.analysis === 'string'
+        && typeof result.has_discrepancies === 'boolean'
+        && typeof result.correction_prompt === 'string';
+};
 
 export async function generateWorldview(characters: Character[]): Promise<string> {
     let prompt = `你是一位富有创意的世界观构建者和故事讲述者。根据以下角色列表，为漫画创作一个引人入胜且充满想象力的世界观或背景设定。
@@ -56,8 +76,7 @@ export async function generateDetailedStorySuggestion(
         previousPages.forEach((page, index) => {
             if (page.generatedImage && page.sceneDescription) {
                 contextPrompt += `\n\n**[前一页 ${index + 1}]**\n*脚本：* ${page.sceneDescription}\n*图像：* [图像 ${index + 1} 已附加]`;
-                const mimeType = page.generatedImage.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-                previousPagesContent.push(base64ToGeminiPart(page.generatedImage, mimeType));
+                previousPagesContent.push(dataUrlToGeminiPart(page.generatedImage));
             }
         });
     }
@@ -115,18 +134,7 @@ export async function generateDetailedStorySuggestion(
         }
     });
 
-    try {
-        const jsonText = response.text;
-        const suggestion = JSON.parse(jsonText) as StorySuggestion;
-        // Basic validation
-        if (suggestion && suggestion.summary && Array.isArray(suggestion.panels)) {
-            return suggestion;
-        }
-        throw new Error("Parsed JSON does not match the expected structure.");
-    } catch (e) {
-        console.error("Failed to parse story suggestion JSON:", e);
-        throw new Error("The AI returned an invalid story structure. Please try again.");
-    }
+    return parseJsonResponse(response, "The AI returned an invalid story structure. Please try again.", isStorySuggestion);
 }
 
 export async function generateLayoutProposal(
@@ -141,10 +149,7 @@ export async function generateLayoutProposal(
     const hasCharacters = characters.length > 0;
 
     const characterParts = hasCharacters
-      ? characters.map(char => {
-          const mimeType = char.sheetImage.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-          return base64ToGeminiPart(char.sheetImage, mimeType);
-        })
+      ? characters.map(char => dataUrlToGeminiPart(char.sheetImage))
       : [];
     
     const prompt = `
@@ -186,13 +191,11 @@ export async function generateLayoutProposal(
     const parts: ({ text: string; } | { inlineData: { data: string; mimeType: string; }})[] = [{ text: prompt }];
     
     if (currentCanvasImage) {
-        const mimeType = currentCanvasImage.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-        parts.push(base64ToGeminiPart(currentCanvasImage, mimeType));
+        parts.push(dataUrlToGeminiPart(currentCanvasImage));
     }
 
     if (previousPage?.proposalImage) {
-        const mimeType = previousPage.proposalImage.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-        parts.push(base64ToGeminiPart(previousPage.proposalImage, mimeType));
+        parts.push(dataUrlToGeminiPart(previousPage.proposalImage));
     }
     parts.push(...characterParts);
 
@@ -206,23 +209,9 @@ export async function generateLayoutProposal(
         },
     });
 
-    if (!response.candidates?.length) {
-        throw new Error("The AI did not return a valid response for the layout proposal.");
-    }
-    
-    const imagePartResponse = response.candidates[0].content.parts.find(part => part.inlineData);
-    const textPartResponse = response.candidates[0].content.parts.find(part => part.text);
-
-    if (!imagePartResponse?.inlineData) {
-        if (textPartResponse?.text) {
-            throw new Error(`The AI did not return an image. Response: "${textPartResponse.text}"`);
-        }
-        throw new Error("The AI did not return an image for the layout proposal.");
-    }
-
-    const proposalImage = `data:${imagePartResponse.inlineData.mimeType};base64,${imagePartResponse.inlineData.data}`;
-    
-    return { proposalImage };
+    return {
+        proposalImage: extractImageFromResponse(response, "The AI did not return an image for the layout proposal."),
+    };
 }
 
 
@@ -231,10 +220,7 @@ export async function generateCharacterSheet(
     characterName: string,
     colorMode: 'color' | 'monochrome'
 ): Promise<string> {
-    const imageParts = referenceImagesBase64.map(base64 => {
-        const mimeType = base64.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-        return base64ToGeminiPart(base64, mimeType);
-    });
+    const imageParts = referenceImagesBase64.map(image => dataUrlToGeminiPart(image));
 
     const prompt = `
         你是一位专业的漫画艺术家。你的任务是为名为"${characterName}"的角色创建角色参考表。
@@ -260,24 +246,7 @@ export async function generateCharacterSheet(
         },
     });
 
-     if (!response.candidates?.length) {
-        throw new Error("The AI did not return a valid response for the character sheet. It may have been blocked.");
-    }
-    
-    const imagePartResponse = response.candidates[0].content.parts.find(part => part.inlineData);
-
-    if (imagePartResponse?.inlineData) {
-        const base64ImageBytes: string = imagePartResponse.inlineData.data;
-        const responseMimeType = imagePartResponse.inlineData.mimeType;
-        return `data:${responseMimeType};base64,${base64ImageBytes}`;
-    }
-
-    const textPartResponse = response.candidates[0].content.parts.find(part => part.text);
-    if(textPartResponse?.text) {
-        throw new Error(`The AI did not return an image. Response: "${textPartResponse.text}"`);
-    }
-
-    throw new Error("The AI did not return an image for the character sheet.");
+    return extractImageFromResponse(response, "The AI did not return an image for the character sheet.");
 }
 
 export async function generateCharacterFromReference(
@@ -286,10 +255,7 @@ export async function generateCharacterFromReference(
     characterConcept: string,
     colorMode: 'color' | 'monochrome'
 ): Promise<string> {
-    const imageParts = referenceSheetImagesBase64.map(base64 => {
-        const mimeType = base64.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-        return base64ToGeminiPart(base64, mimeType);
-    });
+    const imageParts = referenceSheetImagesBase64.map(image => dataUrlToGeminiPart(image));
 
     const prompt = `
         你是一位专业的漫画艺术家。你的任务是使用现有角色表纯粹作为**艺术风格参考**来创建一个**全新的原创角色**。
@@ -317,24 +283,7 @@ export async function generateCharacterFromReference(
         },
     });
 
-     if (!response.candidates?.length) {
-        throw new Error("The AI did not return a valid response for the character sheet. It may have been blocked.");
-    }
-    
-    const imagePartResponse = response.candidates[0].content.parts.find(part => part.inlineData);
-
-    if (imagePartResponse?.inlineData) {
-        const base64ImageBytes: string = imagePartResponse.inlineData.data;
-        const responseMimeType = imagePartResponse.inlineData.mimeType;
-        return `data:${responseMimeType};base64,${base64ImageBytes}`;
-    }
-
-    const textPartResponse = response.candidates[0].content.parts.find(part => part.text);
-    if(textPartResponse?.text) {
-        throw new Error(`The AI did not return an image. Response: "${textPartResponse.text}"`);
-    }
-
-    throw new Error("The AI did not return an image for the character sheet.");
+    return extractImageFromResponse(response, "The AI did not return an image for the character sheet.");
 }
 
 
@@ -343,8 +292,7 @@ export async function editCharacterSheet(
     characterName: string,
     editPrompt: string
 ): Promise<string> {
-    const mimeType = sheetImageBase64.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-    const imagePart = base64ToGeminiPart(sheetImageBase64, mimeType);
+    const imagePart = dataUrlToGeminiPart(sheetImageBase64);
 
     const prompt = `
         你是一位专业的漫画艺术家。你的任务是编辑名为"${characterName}"的角色的角色参考表。
@@ -368,16 +316,7 @@ export async function editCharacterSheet(
         },
     });
 
-    if (!response.candidates?.length) {
-        throw new Error("The AI did not return a valid response for the character sheet edit.");
-    }
-    
-    const imagePartResponse = response.candidates[0].content.parts.find(part => part.inlineData);
-    if (imagePartResponse?.inlineData) {
-        return `data:${imagePartResponse.inlineData.mimeType};base64,${imagePartResponse.inlineData.data}`;
-    }
-
-    throw new Error("The AI did not return an updated image for the character sheet.");
+    return extractImageFromResponse(response, "The AI did not return an updated image for the character sheet.");
 }
 
 export async function generateMangaPage(
@@ -388,15 +327,11 @@ export async function generateMangaPage(
   previousPage: Pick<Page, 'generatedImage' | 'sceneDescription'> | undefined,
   generateEmptyBubbles: boolean
 ): Promise<GeneratedContent> {
-  const panelMimeType = panelLayoutImageBase64.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-  const panelLayoutPart = base64ToGeminiPart(panelLayoutImageBase64, panelMimeType);
+  const panelLayoutPart = dataUrlToGeminiPart(panelLayoutImageBase64);
   
   const charactersInScene = characters;
   
-  const characterParts = charactersInScene.map(char => {
-    const mimeType = char.sheetImage.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-    return base64ToGeminiPart(char.sheetImage, mimeType);
-  });
+  const characterParts = charactersInScene.map(char => dataUrlToGeminiPart(char.sheetImage));
 
   const characterReferencePrompt = charactersInScene.map((char, index) => 
     `- **${char.name}:** Use the character sheet provided as "Character Reference ${index + 1}".`
@@ -451,8 +386,7 @@ ${previousPage.sceneDescription}
   
   const parts: ({ text: string; } | { inlineData: { data: string; mimeType: string; }})[] = [{ text: prompt }];
   if (hasPreviousPage) {
-    const prevPageMimeType = previousPage.generatedImage.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-    parts.push(base64ToGeminiPart(previousPage.generatedImage, prevPageMimeType));
+    parts.push(dataUrlToGeminiPart(previousPage.generatedImage));
   }
   parts.push(...characterParts, panelLayoutPart);
 
@@ -466,21 +400,7 @@ ${previousPage.sceneDescription}
     }
   });
   
-  let result: GeneratedContent = { image: null, text: null };
-
-  if (!response.candidates?.length) {
-    throw new Error("The AI did not return a valid response. It may have been blocked. " + (response.text || ""));
-  }
-
-  for (const part of response.candidates[0].content.parts) {
-      if (part.inlineData) {
-        const base64ImageBytes: string = part.inlineData.data;
-        const mimeType = part.inlineData.mimeType;
-        result.image = `data:${mimeType};base64,${base64ImageBytes}`;
-      } else if (part.text) {
-        result.text = part.text;
-      }
-  }
+  const result: GeneratedContent = extractTextAndImage(response);
 
   if (!result.image) {
       throw new Error("The AI did not return an image. It might have refused the request. " + (result.text || ""));
@@ -493,17 +413,14 @@ export async function colorizeMangaPage(
     monochromePageBase64: string,
     characters: Character[]
 ): Promise<string> {
-    const pageMimeType = monochromePageBase64.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-    const pagePart = base64ToGeminiPart(monochromePageBase64, pageMimeType);
+    const pagePart = dataUrlToGeminiPart(monochromePageBase64);
 
     const characterParts: { inlineData: { data: string; mimeType: string; } }[] = [];
     const characterReferencePrompt = characters.map(char => {
         char.referenceImages.forEach(refImg => {
-            const mimeType = refImg.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-            characterParts.push(base64ToGeminiPart(refImg, mimeType));
+            characterParts.push(dataUrlToGeminiPart(refImg));
         });
-        const sheetMimeType = char.sheetImage.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-        characterParts.push(base64ToGeminiPart(char.sheetImage, sheetMimeType));
+        characterParts.push(dataUrlToGeminiPart(char.sheetImage));
         
         return `- **${char.name}:** Use the provided full-color reference images for ACCURATE color information (hair, eyes, clothing, etc.). Use the black-and-white sheet to understand the character's design and line art.`
     }).join('\n');
@@ -538,16 +455,7 @@ export async function colorizeMangaPage(
         },
     });
 
-    if (!response.candidates?.length) {
-        throw new Error("The AI did not return a valid response for colorization.");
-    }
-    
-    const imagePartResponse = response.candidates[0].content.parts.find(part => part.inlineData);
-    if (imagePartResponse?.inlineData) {
-        return `data:${imagePartResponse.inlineData.mimeType};base64,${imagePartResponse.inlineData.data}`;
-    }
-
-    throw new Error("The AI did not return a colored image.");
+    return extractImageFromResponse(response, "The AI did not return a colored image.");
 }
 
 export async function editMangaPage(
@@ -556,8 +464,7 @@ export async function editMangaPage(
     maskImageBase64?: string,
     referenceImagesBase64?: string[]
 ): Promise<string> {
-    const originalMimeType = originalImageBase64.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-    const originalImagePart = base64ToGeminiPart(originalImageBase64, originalMimeType);
+    const originalImagePart = dataUrlToGeminiPart(originalImageBase64);
 
     let fullPrompt = `你是一位专业的漫画艺术家和专家数字编辑。你的任务是基于用户指示编辑提供的漫画页面图像。`;
 
@@ -598,13 +505,11 @@ export async function editMangaPage(
     ];
 
     if (maskImageBase64) {
-        const maskMimeType = maskImageBase64.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-        parts.push(base64ToGeminiPart(maskImageBase64, maskMimeType));
+        parts.push(dataUrlToGeminiPart(maskImageBase64));
     }
     if (referenceImagesBase64) {
         referenceImagesBase64.forEach(refImg => {
-            const refMimeType = refImg.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-            parts.push(base64ToGeminiPart(refImg, refMimeType));
+            parts.push(dataUrlToGeminiPart(refImg));
         });
     }
     
@@ -618,21 +523,7 @@ export async function editMangaPage(
         },
     });
 
-    if (!response.candidates?.length) {
-        throw new Error("The AI did not return a valid response for the image edit.");
-    }
-    
-    const imagePartResponse = response.candidates[0].content.parts.find(part => part.inlineData);
-    if (imagePartResponse?.inlineData) {
-        return `data:${imagePartResponse.inlineData.mimeType};base64,${imagePartResponse.inlineData.data}`;
-    }
-
-    const textPartResponse = response.candidates[0].content.parts.find(part => part.text);
-    if (textPartResponse?.text) {
-      throw new Error(`The AI did not return an image. Response: "${textPartResponse.text}"`);
-    }
-
-    throw new Error("The AI did not return an edited image.");
+    return extractImageFromResponse(response, "The AI did not return an edited image.");
 }
 
 
@@ -642,10 +533,8 @@ export async function analyzeAndSuggestCorrections(
     sceneDescription: string,
     characters: Character[]
 ): Promise<AnalysisResult> {
-    const layoutMimeType = panelLayoutImage.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-    const layoutPart = base64ToGeminiPart(panelLayoutImage, layoutMimeType);
-    const generatedMimeType = generatedImage.match(/data:(image\/.*?);/)?.[1] || 'image/png';
-    const generatedPart = base64ToGeminiPart(generatedImage, generatedMimeType);
+    const layoutPart = dataUrlToGeminiPart(panelLayoutImage);
+    const generatedPart = dataUrlToGeminiPart(generatedImage);
 
     const characterInfo = characters.map(c => `- ${c.name}`).join('\n');
 
@@ -707,12 +596,5 @@ ${characterInfo}
         }
     });
     
-    try {
-        const jsonText = response.text;
-        const result = JSON.parse(jsonText) as AnalysisResult;
-        return result;
-    } catch (e) {
-        console.error("Failed to parse analysis JSON:", e);
-        throw new Error("The AI returned an invalid analysis structure.");
-    }
+    return parseJsonResponse(response, "The AI returned an invalid analysis structure.", isAnalysisResult);
 }
