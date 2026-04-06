@@ -1,7 +1,7 @@
 import React from 'react';
+import { SparklesIcon, UserGroupIcon, RectangleStackIcon, ArrowDownTrayIcon, LanguageIcon, VideoCameraIcon } from '@/components/icons/icons';
 import { useLocalization } from '@/hooks/useLocalization';
 import { useInView } from '@/hooks/useInView';
-import { SparklesIcon, UserGroupIcon, RectangleStackIcon, ArrowDownTrayIcon, LanguageIcon, VideoCameraIcon } from '@/components/icons/icons';
 
 export function Features(): React.ReactElement {
   const { t } = useLocalization();
@@ -19,24 +19,30 @@ export function Features(): React.ReactElement {
   return (
     <section id="features" ref={sectionRef} className="section section--muted">
       <div className="container">
-        <div className="section-header">
-          <span className="heading-eyebrow">{t('featuresTitle') || 'Features'}</span>
-          <h2 className="heading-xl">{t('featuresHeading')}</h2>
-          <p className="text-lead" style={{ maxWidth: '600px', margin: '0 auto' }}>{t('featuresDescription')}</p>
+        <div className="section-header section-header--split">
+          <div>
+            <span className="heading-eyebrow">{t('featuresTitle') || 'Features'}</span>
+            <h2 className="heading-xl">{t('featuresHeading')}</h2>
+          </div>
+          <p className="text-lead">{t('featuresDescription')}</p>
         </div>
+
         <div className="features-grid">
-          {features.map((f, i) => (
-            <div key={i} className="feature-card surface-card animate-fade-up" style={{ animationDelay: `${i * 0.1}s` }}>
-              <div className="feature-card__icon">{f.icon}</div>
-              <div className="feature-card__content">
-                <h3 className="feature-card__title">{f.title}</h3>
-                <p className="feature-card__description">{f.desc}</p>
+          {features.map((feature, index) => (
+            <article key={feature.title} className="feature-card surface-card animate-fade-up">
+              <div className="feature-card__top">
+                <span className="feature-card__index">{String(index + 1).padStart(2, '0')}</span>
+                <div className="feature-card__icon">{feature.icon}</div>
               </div>
-            </div>
+
+              <div className="feature-card__content">
+                <h3 className="feature-card__title">{feature.title}</h3>
+                <p className="feature-card__description">{feature.desc}</p>
+              </div>
+            </article>
           ))}
         </div>
       </div>
     </section>
   );
 }
-

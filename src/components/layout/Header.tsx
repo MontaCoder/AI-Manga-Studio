@@ -33,6 +33,7 @@ export function Header({ variant = 'app', isTransparentOnTop, isSidebarOpen, onT
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const isApp = variant === 'app';
+  const isMarketing = variant === 'marketing';
 
   useEffect(() => {
     if (!isTransparentOnTop) return;
@@ -61,6 +62,14 @@ export function Header({ variant = 'app', isTransparentOnTop, isSidebarOpen, onT
           </button>
           <span className="header-title__primary">{isApp && currentView === 'video-producer' ? t('aiVideoProducer') : t('AIMangaStudio')}</span>
         </div>
+
+        {isMarketing && (
+          <nav className="header-nav" aria-label="Primary">
+            <a href="#features">{t('featuresTitle')}</a>
+            <a href="#how-it-works">{t('howItWorksTitle')}</a>
+            <a href="#gallery">{t('galleryTitle')}</a>
+          </nav>
+        )}
 
         <div className="header-actions">
           {isApp && currentView === 'manga-editor' && (

@@ -84,7 +84,7 @@ export function StudioSidebar({
                             <svg className={`w-4 h-4 transition-transform ${isAspectRatioOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         {isAspectRatioOpen && (
-                            <div className="language-menu__list mt-3">
+                        <div className="language-menu__list mt-3">
                                 {Object.entries(ASPECT_RATIOS).map(([key, { name, value }]) => (
                                     <button key={key} onClick={() => onSelectAspectRatio(key as AspectRatioKey)} className="language-menu__item text-left">
                                         {t(name as LocaleKeys)} ({value})
@@ -97,11 +97,11 @@ export function StudioSidebar({
                         Reset workspace
                     </button>
                     {assistantModeState?.isActive ? (
-                        <div className="card-thumbnail-list max-h-96 overflow-y-auto">
+                        <div className="card-thumbnail-list sidebar-thumbnail-list max-h-96 overflow-y-auto">
                             {pages.filter(p => p.assistantProposalImage).map(page => (
-                                <div key={`thumb-${page.id}`} onClick={() => onSelectPage(page.id)} className={`surface-card cursor-pointer overflow-hidden ${currentPageId === page.id ? 'border-[var(--color-border-strong)]' : ''}`}>
-                                    <img src={page.assistantProposalImage!} alt={page.name} className="w-full h-full object-cover" />
-                                    <div className="absolute inset-x-0 bottom-0 bg-black/45 text-white text-xs font-semibold text-center py-1">{page.name}</div>
+                                <div key={`thumb-${page.id}`} onClick={() => onSelectPage(page.id)} className={`surface-card sidebar-thumbnail-card cursor-pointer overflow-hidden ${currentPageId === page.id ? 'is-active' : ''}`}>
+                                    <img src={page.assistantProposalImage!} alt={page.name} className="sidebar-thumbnail-card__image" />
+                                    <div className="sidebar-thumbnail-card__label">{page.name}</div>
                                 </div>
                             ))}
                         </div>

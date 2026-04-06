@@ -208,6 +208,11 @@ const getSmartGuides = (movingBBox: { x: number, y: number, width: number, heigh
     return [...new Map(guides.map(g => [`${g.type}-${g.pos}`, g])).values()];
 };
 
+const SELECTION_COLOR = 'rgba(59, 130, 246, 1)';
+const SELECTION_COLOR_SOFT = 'rgba(59, 130, 246, 0.5)';
+const SELECTION_FILL = 'rgba(59, 130, 246, 0.1)';
+const GUIDE_COLOR = '#3b82f6';
+
 const getPolygonCentroid = (points: { x: number; y: number }[]) => {
     const getBBoxCenter = () => {
         if (points.length === 0) return { x: 0, y: 0 };
@@ -1554,7 +1559,7 @@ export const PanelEditor = forwardRef<
                                 <path d="M 0 0 L 10 5 L 0 10 z" fill="#FF0000" />
                             </marker>
                             <marker id="arrowhead-selected" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                                <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(128, 90, 213, 1)" />
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill={SELECTION_COLOR} />
                             </marker>
                             {/* Subtle grid pattern for workspace */}
                             <pattern id="workspace-grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -1605,7 +1610,7 @@ export const PanelEditor = forwardRef<
                                     width={drawingGuideRect.width}
                                     height={drawingGuideRect.height}
                                     fill="none"
-                                    stroke="rgba(128, 90, 213, 0.5)"
+                                    stroke={SELECTION_COLOR_SOFT}
                                     strokeWidth={2 / viewTransform.scale}
                                     strokeDasharray={`${4 / viewTransform.scale}`}
                                     pointerEvents="none"
@@ -1632,17 +1637,17 @@ export const PanelEditor = forwardRef<
                                     >
                                         {shape.type === 'panel' && (
                                             <>
-                                                <polygon points={shape.points.map(p => `${p.x},${p.y}`).join(' ')} fill="rgba(128, 90, 213, 0.1)" stroke="rgba(128, 90, 213, 0.8)" strokeWidth={isSelected ? 4 / viewTransform.scale : 2 / viewTransform.scale} onMouseDown={(e) => handleShapeInteraction(e, shape, 'shape')} />
+                                                <polygon points={shape.points.map(p => `${p.x},${p.y}`).join(' ')} fill={SELECTION_FILL} stroke={SELECTION_COLOR} strokeWidth={isSelected ? 4 / viewTransform.scale : 2 / viewTransform.scale} onMouseDown={(e) => handleShapeInteraction(e, shape, 'shape')} />
                                                 {isSelected && activeTool === 'select' && (
                                                     <>
                                                         {shape.points.map((p, i) => (
-                                                            <circle key={i} cx={p.x} cy={p.y} r={6 / viewTransform.scale} fill="white" stroke="rgba(128, 90, 213, 1)" strokeWidth={2 / viewTransform.scale} cursor="move" onMouseDown={(e) => handleShapeInteraction(e, shape, 'panelVertex', i)} />
+                                                            <circle key={i} cx={p.x} cy={p.y} r={6 / viewTransform.scale} fill="white" stroke={SELECTION_COLOR} strokeWidth={2 / viewTransform.scale} cursor="move" onMouseDown={(e) => handleShapeInteraction(e, shape, 'panelVertex', i)} />
                                                         ))}
                                                         {shape.points.map((p1, i) => {
                                                             const p2 = shape.points[(i + 1) % shape.points.length];
                                                             const midX = (p1.x + p2.x) / 2;
                                                             const midY = (p1.y + p2.y) / 2;
-                                                            return <circle key={`edge-${i}`} cx={midX} cy={midY} r={5 / viewTransform.scale} fill="rgba(128, 90, 213, 1)" cursor="copy" onMouseDown={(e) => handleAddPanelVertex(e, shape, i)} />
+                                                            return <circle key={`edge-${i}`} cx={midX} cy={midY} r={5 / viewTransform.scale} fill={SELECTION_COLOR} cursor="copy" onMouseDown={(e) => handleAddPanelVertex(e, shape, i)} />
                                                         })}
                                                     </>
                                                 )}
@@ -1673,16 +1678,16 @@ export const PanelEditor = forwardRef<
                                                 </text>
                                                 {isSelected && (
                                                     <>
-                                                        <rect x={bbox.x} y={bbox.y} width={bbox.width} height={bbox.height} fill="none" stroke="rgba(128, 90, 213, 1)" strokeWidth={1 / viewTransform.scale} strokeDasharray={`${4 / viewTransform.scale}`} pointerEvents="none" />
+                                                        <rect x={bbox.x} y={bbox.y} width={bbox.width} height={bbox.height} fill="none" stroke={SELECTION_COLOR} strokeWidth={1 / viewTransform.scale} strokeDasharray={`${4 / viewTransform.scale}`} pointerEvents="none" />
                                                         <g transform={`translate(${bbox.x + bbox.width}, ${bbox.y + bbox.height})`}>
-                                                            <rect x={-5 / viewTransform.scale} y={-5 / viewTransform.scale} width={10 / viewTransform.scale} height={10 / viewTransform.scale} fill="white" stroke="rgba(128, 90, 213, 1)" strokeWidth={1.5 / viewTransform.scale} cursor="se-resize" onMouseDown={(e) => handleShapeInteraction(e, shape, 'resize', 'bottom-right')} />
+                                                            <rect x={-5 / viewTransform.scale} y={-5 / viewTransform.scale} width={10 / viewTransform.scale} height={10 / viewTransform.scale} fill="white" stroke={SELECTION_COLOR} strokeWidth={1.5 / viewTransform.scale} cursor="se-resize" onMouseDown={(e) => handleShapeInteraction(e, shape, 'resize', 'bottom-right')} />
                                                         </g>
                                                         <foreignObject x={bbox.x - 30 / viewTransform.scale} y={bbox.y + bbox.height / 2 - 25 / viewTransform.scale} width={25 / viewTransform.scale} height={50 / viewTransform.scale}>
                                                             <div className="flex flex-col h-full justify-around items-center">
-                                                                <button onMouseDown={(e) => e.stopPropagation()} onClick={() => changeFontSize(shape.id, 2)} className="p-0.5 bg-white rounded-full shadow border hover:bg-gray-100 flex items-center justify-center">
+                                                                <button onMouseDown={(e) => e.stopPropagation()} onClick={() => changeFontSize(shape.id, 2)} className="editor-inline-action">
                                                                     <PlusIcon className="w-4 h-4" />
                                                                 </button>
-                                                                <button onMouseDown={(e) => e.stopPropagation()} onClick={() => changeFontSize(shape.id, -2)} className="p-0.5 bg-white rounded-full shadow border hover:bg-gray-100 flex items-center justify-center">
+                                                                <button onMouseDown={(e) => e.stopPropagation()} onClick={() => changeFontSize(shape.id, -2)} className="editor-inline-action">
                                                                     <MinusIcon className="w-4 h-4" />
                                                                 </button>
                                                             </div>
@@ -1701,21 +1706,21 @@ export const PanelEditor = forwardRef<
                                                 </foreignObject>
                                                 {isSelected && (
                                                     <>
-                                                        <rect x={bbox.x} y={bbox.y} width={bbox.width} height={bbox.height} fill="none" stroke="rgba(128, 90, 213, 1)" strokeWidth={1 / viewTransform.scale} strokeDasharray={`${4 / viewTransform.scale}`} />
+                                                        <rect x={bbox.x} y={bbox.y} width={bbox.width} height={bbox.height} fill="none" stroke={SELECTION_COLOR} strokeWidth={1 / viewTransform.scale} strokeDasharray={`${4 / viewTransform.scale}`} />
                                                         {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map(handle => {
                                                             const x = handle.includes('right') ? bbox.x + bbox.width : bbox.x;
                                                             const y = handle.includes('bottom') ? bbox.y + bbox.height : bbox.y;
-                                                            return <rect key={handle} x={x - 5 / viewTransform.scale} y={y - 5 / viewTransform.scale} width={10 / viewTransform.scale} height={10 / viewTransform.scale} fill="white" stroke="rgba(128, 90, 213, 1)" strokeWidth={1.5 / viewTransform.scale} cursor={`${handle.split('-')[1].startsWith('e') ? 'ew' : 'ns'}-resize`} onMouseDown={(e) => handleShapeInteraction(e, shape, 'resize', handle)} />
+                                                            return <rect key={handle} x={x - 5 / viewTransform.scale} y={y - 5 / viewTransform.scale} width={10 / viewTransform.scale} height={10 / viewTransform.scale} fill="white" stroke={SELECTION_COLOR} strokeWidth={1.5 / viewTransform.scale} cursor={`${handle.split('-')[1].startsWith('e') ? 'ew' : 'ns'}-resize`} onMouseDown={(e) => handleShapeInteraction(e, shape, 'resize', handle)} />
                                                         })}
                                                         {shape.tail && (
-                                                            <circle cx={shape.tail.x} cy={shape.tail.y} r={6 / viewTransform.scale} fill="white" stroke="rgba(128, 90, 213, 1)" strokeWidth={2 / viewTransform.scale} cursor="move" onMouseDown={(e) => handleShapeInteraction(e, shape, 'tail')} />
+                                                            <circle cx={shape.tail.x} cy={shape.tail.y} r={6 / viewTransform.scale} fill="white" stroke={SELECTION_COLOR} strokeWidth={2 / viewTransform.scale} cursor="move" onMouseDown={(e) => handleShapeInteraction(e, shape, 'tail')} />
                                                         )}
                                                         <foreignObject x={bbox.x + bbox.width / 2 - 50 / viewTransform.scale} y={bbox.y - 30 / viewTransform.scale} width={100 / viewTransform.scale} height={25 / viewTransform.scale}>
                                                             <div className="flex justify-center items-center gap-1">
-                                                                <button onClick={() => shape.tail ? removeBubbleTail(shape.id) : addBubbleTail(shape.id)} className="p-1 bg-white rounded-md shadow border hover:bg-gray-100">
+                                                                <button onClick={() => shape.tail ? removeBubbleTail(shape.id) : addBubbleTail(shape.id)} className="editor-inline-action">
                                                                     <BubbleToolIcon className="w-4 h-4" />
                                                                 </button>
-                                                                <button onClick={() => deleteShape(shape.id)} className="p-1 bg-white rounded-md shadow border hover:bg-gray-100">
+                                                                <button onClick={() => deleteShape(shape.id)} className="editor-inline-action is-danger">
                                                                     <TrashIcon className="w-4 h-4 text-red-500" />
                                                                 </button>
                                                             </div>
@@ -1732,15 +1737,15 @@ export const PanelEditor = forwardRef<
                                                 <line
                                                     x1={shape.points[0].x} y1={shape.points[0].y}
                                                     x2={shape.points[1].x} y2={shape.points[1].y}
-                                                    stroke={isSelected ? 'rgba(128, 90, 213, 1)' : shape.strokeColor}
+                                                    stroke={isSelected ? SELECTION_COLOR : shape.strokeColor}
                                                     strokeWidth={(isSelected ? Math.max(shape.strokeWidth, 4) : shape.strokeWidth) / viewTransform.scale}
                                                     strokeLinecap="round"
                                                     markerEnd={isSelected ? "url(#arrowhead-selected)" : "url(#arrowhead)"}
                                                 />
                                                 {isSelected && (
                                                     <>
-                                                        <circle cx={shape.points[0].x} cy={shape.points[0].y} r={8 / viewTransform.scale} fill="white" stroke="rgba(128, 90, 213, 1)" strokeWidth={2 / viewTransform.scale} cursor="move" onMouseDown={(e) => handleShapeInteraction(e, shape, 'arrowHandle', 0)} />
-                                                        <circle cx={shape.points[1].x} cy={shape.points[1].y} r={8 / viewTransform.scale} fill="white" stroke="rgba(128, 90, 213, 1)" strokeWidth={2 / viewTransform.scale} cursor="move" onMouseDown={(e) => handleShapeInteraction(e, shape, 'arrowHandle', 1)} />
+                                                        <circle cx={shape.points[0].x} cy={shape.points[0].y} r={8 / viewTransform.scale} fill="white" stroke={SELECTION_COLOR} strokeWidth={2 / viewTransform.scale} cursor="move" onMouseDown={(e) => handleShapeInteraction(e, shape, 'arrowHandle', 0)} />
+                                                        <circle cx={shape.points[1].x} cy={shape.points[1].y} r={8 / viewTransform.scale} fill="white" stroke={SELECTION_COLOR} strokeWidth={2 / viewTransform.scale} cursor="move" onMouseDown={(e) => handleShapeInteraction(e, shape, 'arrowHandle', 1)} />
                                                     </>
                                                 )}
                                             </>
@@ -1770,18 +1775,18 @@ export const PanelEditor = forwardRef<
                                                 )}
                                                 {isSelected && (
                                                     <>
-                                                        <rect x={bbox.x} y={bbox.y} width={bbox.width} height={bbox.height} fill="none" stroke="rgba(128, 90, 213, 1)" strokeWidth={2 / viewTransform.scale} strokeDasharray={`${4 / viewTransform.scale}`} />
+                                                        <rect x={bbox.x} y={bbox.y} width={bbox.width} height={bbox.height} fill="none" stroke={SELECTION_COLOR} strokeWidth={2 / viewTransform.scale} strokeDasharray={`${4 / viewTransform.scale}`} />
                                                         {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map(handle => {
                                                             const x = handle.includes('right') ? bbox.x + bbox.width : bbox.x;
                                                             const y = handle.includes('bottom') ? bbox.y + bbox.height : bbox.y;
-                                                            return <rect key={handle} x={x - 5 / viewTransform.scale} y={y - 5 / viewTransform.scale} width={10 / viewTransform.scale} height={10 / viewTransform.scale} fill="white" stroke="rgba(128, 90, 213, 1)" strokeWidth={1.5 / viewTransform.scale} cursor={`${handle.startsWith('top') || handle.startsWith('bottom') ? 'ns' : 'ew'}-resize`} onMouseDown={(e) => handleShapeInteraction(e, shape, 'resize', handle)} />
+                                                            return <rect key={handle} x={x - 5 / viewTransform.scale} y={y - 5 / viewTransform.scale} width={10 / viewTransform.scale} height={10 / viewTransform.scale} fill="white" stroke={SELECTION_COLOR} strokeWidth={1.5 / viewTransform.scale} cursor={`${handle.startsWith('top') || handle.startsWith('bottom') ? 'ns' : 'ew'}-resize`} onMouseDown={(e) => handleShapeInteraction(e, shape, 'resize', handle)} />
                                                         })}
                                                         <foreignObject x={bbox.x + bbox.width / 2 - 50 / viewTransform.scale} y={bbox.y - 30 / viewTransform.scale} width={100 / viewTransform.scale} height={25 / viewTransform.scale}>
                                                             <div className="flex justify-center items-center gap-1">
-                                                                <button onClick={() => openPoseEditor(shape)} className="p-1 bg-white rounded-md shadow border hover:bg-gray-100">
+                                                                <button onClick={() => openPoseEditor(shape)} className="editor-inline-action">
                                                                     <EditPoseIcon className="w-4 h-4" />
                                                                 </button>
-                                                                <button onClick={() => deleteShape(shape.id)} className="p-1 bg-white rounded-md shadow border hover:bg-gray-100">
+                                                                <button onClick={() => deleteShape(shape.id)} className="editor-inline-action is-danger">
                                                                     <TrashIcon className="w-4 h-4 text-red-500" />
                                                                 </button>
                                                             </div>
@@ -1801,7 +1806,7 @@ export const PanelEditor = forwardRef<
                                 y1={g.type === 'h' ? g.pos * viewTransform.scale + viewTransform.y : 0}
                                 x2={g.type === 'v' ? g.pos * viewTransform.scale + viewTransform.x : '100%'}
                                 y2={g.type === 'h' ? g.pos * viewTransform.scale + viewTransform.y : '100%'}
-                                stroke="#3B82F6" strokeWidth="1" strokeDasharray="4 4" pointerEvents="none"
+                                stroke={GUIDE_COLOR} strokeWidth="1" strokeDasharray="4 4" pointerEvents="none"
                             />
                         ))}
                         {cursorPreview && (activeTool === 'draw' || activeTool === 'arrow') && (

@@ -49,34 +49,35 @@ export function ComparisonViewer({ beforeImage, afterImage, isMonochromeResult, 
   }, [handleMouseMove, handleMouseUp, handleTouchMove]);
 
   return (
-    <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm h-full flex flex-col items-center justify-center">
-        <div className="w-full flex justify-between items-center mb-4 px-2">
-            <h2 className="text-lg font-semibold text-gray-700">{t('compareResult')}</h2>
+    <div className="comparison-viewer">
+        <div className="comparison-viewer__header">
+            <h2 className="heading-md">{t('compareResult')}</h2>
             {isMonochromeResult && (
                 <button
                     onClick={onColorize}
                     disabled={isColoring}
-                    className="bg-teal-500 text-white font-bold py-2 px-5 rounded-lg hover:bg-teal-600 transition-colors disabled:bg-gray-400"
+                    className="button-primary"
+                    type="button"
                 >
                     {isColoring ? t('colorizing') : t('colorizePage')}
                 </button>
             )}
         </div>
-        <div className="flex-grow w-full h-full flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden p-4">
+        <div className="comparison-viewer__stage">
             <div 
                 ref={containerRef}
-                className="relative w-full max-w-[600px] max-h-full rounded-lg overflow-hidden select-none shadow-lg border border-gray-300"
+                className="comparison-viewer__frame"
             >
                 <img src={beforeImage} alt="Before - Panel Layout" className="block w-full h-auto object-contain pointer-events-none" draggable={false}/>
                 <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none" style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)`}}>
                     <img src={afterImage} alt="After - Generated Manga" className="absolute inset-0 w-full h-full object-contain" draggable={false}/>
                 </div>
                 <div
-                    className="absolute top-0 bottom-0 w-1 bg-white/70 cursor-ew-resize backdrop-blur-sm" style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
+                    className="comparison-viewer__slider" style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
                     onMouseDown={handleMouseDown} onTouchStart={handleMouseDown}
                 >
-                    <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 bg-white rounded-full p-1.5 shadow-lg border-2 border-indigo-500">
-                        <div className="flex items-center text-indigo-600">
+                    <div className="comparison-viewer__handle">
+                        <div className="comparison-viewer__handle-icons">
                             <ChevronLeftIcon className="w-5 h-5" />
                             <ChevronRightIcon className="w-5 h-5" />
                         </div>

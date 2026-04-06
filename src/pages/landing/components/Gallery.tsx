@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocalization } from '@/hooks/useLocalization';
 import { useInView } from '@/hooks/useInView';
 
@@ -14,73 +14,61 @@ export function Gallery(): React.ReactElement {
   const [sectionRef] = useInView({ threshold: 0.1 });
   const [idx, setIdx] = useState(0);
 
+  const galleryItems = [
+    { src: IMAGES[0], title: t('featureScriptTitle'), desc: t('featureScriptDesc') },
+    { src: IMAGES[1], title: t('featureCharacterTitle'), desc: t('featureCharacterDesc') },
+    { src: IMAGES[2], title: t('featurePanelTitle'), desc: t('featurePanelDesc') },
+    { src: IMAGES[3], title: t('featureVideoTitle'), desc: t('featureVideoDesc') },
+  ];
+
   useEffect(() => {
-    const timer = setInterval(() => setIdx(i => (i + 1) % IMAGES.length), 3000);
+    const timer = setInterval(() => setIdx((i) => (i + 1) % galleryItems.length), 3200);
     return () => clearInterval(timer);
-  }, []);
+  }, [galleryItems.length]);
 
   return (
     <section id="gallery" ref={sectionRef} className="section section--muted">
       <div className="container">
-        <div className="section-header">
-          <h2 className="heading-xl">{t('galleryTitle')}</h2>
-        </div>
-        <div dir="ltr" style={{ 
-          maxWidth: '600px', 
-          margin: '0 auto', 
-          overflow: 'hidden', 
-          borderRadius: '1rem',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
-          border: '1px solid var(--border)'
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)', 
-            transform: `translateX(-${idx * 100}%)` 
-          }}>
-            {IMAGES.map((src, i) => (
-              <img 
-                key={i} 
-                src={src} 
-                alt={`Demo ${i + 1}`} 
-                loading="lazy" 
-                style={{ 
-                  minWidth: '100%', 
-                  aspectRatio: '4/5', 
-                  objectFit: 'cover',
-                  transition: 'transform 0.4s ease',
-                  transform: idx === i ? 'scale(1)' : 'scale(0.98)'
-                }} 
-              />
-            ))}
+        <div className="section-header section-header--split">
+          <div>
+            <span className="heading-eyebrow">{t('galleryTitle')}</span>
+            <h2 className="heading-xl">{t('galleryTitle')}</h2>
           </div>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            gap: '0.75rem', 
-            marginTop: '1.5rem' 
-          }}>
-            {IMAGES.map((_, i) => (
-              <button 
-                key={i} 
-                onClick={() => setIdx(i)} 
-                aria-label={`Go to slide ${i + 1}`}
-                style={{ 
-                  width: idx === i ? 24 : 10, 
-                  height: 10, 
-                  borderRadius: '5px', 
-                  border: 'none', 
-                  background: idx === i ? 'var(--accent)' : 'var(--border)', 
-                  cursor: 'pointer', 
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  boxShadow: idx === i ? '0 0 12px rgba(59, 130, 246, 0.4)' : 'none'
-                }} 
-              />
-            ))}
+          <p className="text-lead">{galleryItems[idx].desc}</p>
+        </div>
+
+        <div className="gallery-shell">
+          <div className="gallery-copy surface-card animate-fade-up">
+            <h3 className="gallery-copy__title">{galleryItems[idx].title}</h3>
+            <p className="gallery-copy__description">{galleryItems[idx].desc}</p>
+
+            <div className="gallery-thumbs">
+              {galleryItems.map((item, itemIdx) => (
+                <button
+                  key={item.src}
+                  type="button"
+                  onClick={() => setIdx(itemIdx)}
+                  className={`gallery-thumb ${idx === itemIdx ? 'is-active' : ''}`}
+                  aria-label={`Show ${item.title}`}
+                >
+                  <img src={item.src} alt="" />
+                  <span>
+                    <strong>{item.title}</strong>
+                    <small>{item.desc}</small>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="gallery-stage animate-scale-in">
+            <div className="gallery-stage__frame">
+              <img src={galleryItems[idx].src} alt={galleryItems[idx].title} loading="lazy" />
+            </div>
+            <div className="gallery-stage__caption">{galleryItems[idx].title}</div>
           </div>
         </div>
       </div>
     </section>
   );
 }
-

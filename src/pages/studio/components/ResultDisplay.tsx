@@ -45,7 +45,7 @@ const LoadingMessage = () => {
         return () => clearInterval(intervalId);
     }, [messages]);
 
-    return <p className="text-gray-500 mt-4">{message}</p>
+    return <p className="studio-helper-note">{message}</p>
 };
 
 export function ResultDisplay({ 
@@ -154,7 +154,7 @@ export function ResultDisplay({
         ) : generatedContent?.image ? (
             <>
                 <figure className="result-shell__media">
-                     <img src={generatedContent.image} alt="Generated manga page" className="w-full object-contain rounded-md shadow-sm border border-[rgba(148,163,184,0.24)]" />
+                     <img src={generatedContent.image} alt="Generated manga page" className="result-panel__image" />
                      {mask && <div className="floating-status"><BrushIcon className="w-4 h-4" />{t('maskActive')}</div>}
                 </figure>
 
@@ -199,11 +199,11 @@ export function ResultDisplay({
                             <div className="grid grid-cols-4 gap-2">
                                 {editRefImages.map((img, index) => (
                                     <div key={index} className="relative group aspect-square">
-                                        <img src={img} alt={`Ref ${index + 1}`} className="w-full h-full object-cover rounded-md border border-[rgba(148,163,184,0.24)]" />
+                                        <img src={img} alt={`Ref ${index + 1}`} className="reference-thumb" />
                                         <button onClick={() => handleRemoveRefImage(index)} className="icon-button" type="button"><XIcon className="w-3 h-3" /></button>
                                     </div>
                                 ))}
-                                {editRefImages.length < 8 && <label htmlFor="edit-ref-upload" className="surface-card cursor-pointer aspect-square flex flex-col items-center justify-center text-subtle"><UploadIcon className="w-5 h-5" /><span className="text-caption">{t('uploadReference')}</span></label>}
+                                {editRefImages.length < 8 && <label htmlFor="edit-ref-upload" className="surface-card reference-upload-tile cursor-pointer aspect-square flex flex-col items-center justify-center text-subtle"><UploadIcon className="w-5 h-5" /><span className="text-caption">{t('uploadReference')}</span></label>}
                             </div>
                          </div>
                          <div className="result-shell__media">
@@ -211,8 +211,8 @@ export function ResultDisplay({
                             {characters.length > 0 ? (
                                 <div className="grid grid-cols-4 gap-2">
                                     {characters.map(char => (
-                                        <button key={char.id} onClick={() => toggleRefChar(char.id)} className="relative aspect-square surface-card" type="button">
-                                            <img src={char.sheetImage} alt={char.name} className={`w-full h-full object-cover rounded-md ${editRefCharacterIds.has(char.id) ? 'ring-2 ring-[var(--color-primary)]' : ''}`} />
+                                        <button key={char.id} onClick={() => toggleRefChar(char.id)} className={`relative aspect-square surface-card reference-character ${editRefCharacterIds.has(char.id) ? 'is-selected' : ''}`} type="button">
+                                            <img src={char.sheetImage} alt={char.name} className="reference-character__image" />
                                             {editRefCharacterIds.has(char.id) && <div className="floating-status pill-success absolute inset-0 flex items-center justify-center"><CheckCircleIcon className="w-6 h-6" /></div>}
                                         </button>
                                     ))}

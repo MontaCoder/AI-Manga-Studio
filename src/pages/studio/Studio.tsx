@@ -609,7 +609,7 @@ export function Studio(): React.ReactElement {
   const anyLoading = isLoading || isColoring || isSuggestingLayout || isSuggestingStory || assistantModeState?.isActive || isAnalyzing;
 
   return (
-    <div className="layout-shell">
+    <div className="layout-shell studio-page">
       <a className="skip-link" href="#main-content">{t('skipToContent') || 'Skip to main content'}</a>
       <Header 
         isSidebarOpen={isSidebarOpen} 
