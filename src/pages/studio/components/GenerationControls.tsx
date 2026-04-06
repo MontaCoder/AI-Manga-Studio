@@ -1,7 +1,6 @@
 import React from 'react';
 import { useLocalization } from '@/hooks/useLocalization';
 import { WandIcon, LightbulbIcon } from '@/components/icons/icons';
-import type { Character } from '@/types';
 
 interface GenerationControlsProps {
   onGenerateImage: () => void;
@@ -14,17 +13,10 @@ interface GenerationControlsProps {
   onSuggestLayout: () => void;
   isSuggestingLayout: boolean;
   onSuggestStory: () => void;
-  characters: Character[];
   hasGeneratedResult: boolean;
   onViewResult: () => void;
   generateEmptyBubbles: boolean;
   setGenerateEmptyBubbles: (value: boolean) => void;
-  assistantModeState: {
-    isActive: boolean;
-    totalPages: number;
-    currentPageNumber: number;
-    statusMessage: string;
-  } | null;
 }
 
 export function GenerationControls({ 
@@ -38,12 +30,10 @@ export function GenerationControls({
     onSuggestLayout,
     isSuggestingLayout,
     onSuggestStory,
-    characters,
     hasGeneratedResult,
     onViewResult,
     generateEmptyBubbles,
     setGenerateEmptyBubbles,
-    assistantModeState
 }: GenerationControlsProps): React.ReactElement {
   const { t } = useLocalization();
   

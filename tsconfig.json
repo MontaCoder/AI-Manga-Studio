@@ -25,6 +25,8 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
 
     /* Recommended Type Checking (safe additions) */
     "noFallthroughCasesInSwitch": true,

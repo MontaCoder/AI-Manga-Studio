@@ -1,7 +1,6 @@
 import { Modality, Type } from "@google/genai";
 import { ASPECT_RATIOS, type AspectRatioKey } from '@/constants/aspectRatios';
-import type { GeneratedContent, Character, Page, StorySuggestion, PanelShape, ImageShape, CanvasShape, Pose, AnalysisResult } from '@/types';
-import { SkeletonPose, SkeletonData } from '@/types';
+import type { GeneratedContent, Character, Page, StorySuggestion, AnalysisResult } from '@/types';
 import {
     dataUrlToGeminiPart,
     extractImageFromResponse,
@@ -362,7 +361,7 @@ ${previousPage.sceneDescription}
 
     **提供的素材：**
     ${hasPreviousPage ? '1.  **上一页图像：**前一页的内容，用于故事背景。' : ''}
-    ${assetsPrompt.replace(/^\s*(\d+)/gm, (match, n) => `    ${hasPreviousPage ? parseInt(n) + 1 : n}`)}
+    ${assetsPrompt.replace(/^\s*(\d+)/gm, (_match, n) => `    ${hasPreviousPage ? parseInt(n) + 1 : n}`)}
 
     **角色参考：**
     ${characterReferencePrompt}

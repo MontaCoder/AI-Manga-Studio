@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import type { Page } from '@/types';
 import { useLocalization } from '@/hooks/useLocalization';
 import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, XIcon } from '@/components/icons/icons';

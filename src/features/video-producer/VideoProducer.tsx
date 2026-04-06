@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import type { Character, VideoScene, Page, VideoModelId } from '@/types';
 import { useLocalization } from '@/hooks/useLocalization';
-import { UploadIcon, PlusIcon, XIcon, FilmIcon, TrashIcon, CheckCircleIcon, DownloadIcon, CopyIcon, RedoAltIcon, PlayIcon, WandIcon } from '@/components/icons/icons';
+import { PlusIcon, XIcon, FilmIcon, TrashIcon, CheckCircleIcon, DownloadIcon, CopyIcon, RedoAltIcon, PlayIcon, WandIcon } from '@/components/icons/icons';
 import {
     generateStoryboardFromPages,
     generateVideoFrame,
@@ -154,7 +154,6 @@ const RegenerationModal = ({
     onClose: () => void,
     onConfirm: (sceneId: string, frameType: 'start' | 'end', prompt: string) => void,
 }) => {
-    const { t } = useLocalization();
     const [prompt, setPrompt] = useState('');
 
     return (

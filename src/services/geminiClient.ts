@@ -5,19 +5,19 @@ const DATA_URL_PREFIX_SEPARATOR = ',';
 
 type GeminiResponsePart = {
     inlineData?: {
-        data: string;
-        mimeType: string;
-    };
+        data?: string | null;
+        mimeType?: string | null;
+    } | null;
     text?: string | null;
 };
 
 type GeminiResponseLike = {
-    text?: string;
+    text?: string | null;
     candidates?: Array<{
         content?: {
-            parts?: GeminiResponsePart[];
-        };
-    }>;
+            parts?: Array<GeminiResponsePart | null> | null;
+        } | null;
+    } | null>;
 };
 
 let cachedApiKey: string | null = null;
@@ -92,7 +92,7 @@ export function dataUrlToGeminiPart(dataUrl: string, fallbackMimeType: string = 
 }
 
 function getResponseParts(response: GeminiResponseLike): GeminiResponsePart[] {
-    return response.candidates?.[0]?.content?.parts ?? [];
+    return (response.candidates?.[0]?.content?.parts ?? []).filter((part): part is GeminiResponsePart => Boolean(part));
 }
 
 export function extractImageFromResponse(
@@ -100,8 +100,8 @@ export function extractImageFromResponse(
     errorMessage: string,
 ): string {
     const parts = getResponseParts(response);
-    const imagePart = parts.find(part => part.inlineData);
-    if (imagePart?.inlineData) {
+    const imagePart = parts.find(part => part.inlineData?.data && part.inlineData?.mimeType);
+    if (imagePart?.inlineData?.data && imagePart.inlineData.mimeType) {
         return `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
     }
 
@@ -118,7 +118,7 @@ export function extractTextAndImage(response: GeminiResponseLike): { image: stri
     let text: string | null = null;
 
     for (const part of getResponseParts(response)) {
-        if (part.inlineData) {
+        if (part.inlineData?.data && part.inlineData?.mimeType) {
             image = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
         } else if (part.text) {
             text = part.text;

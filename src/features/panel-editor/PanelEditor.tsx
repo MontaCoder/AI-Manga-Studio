@@ -2,7 +2,6 @@ import React, { useState, useRef, useCallback, useImperativeHandle, useEffect, f
 import type { CanvasShape, BubbleShape, PanelShape, Character, ImageShape, TextShape, ViewTransform, Pose, SkeletonData, SkeletonPose, ArrowShape } from '@/types';
 import { PolygonIcon, TextToolIcon, BubbleToolIcon, TrashIcon, SelectIcon, CircleIcon, SquareIcon, BrushIcon, ExpandIcon, ShrinkIcon, HandIcon, PlusIcon, EditPoseIcon, MinusIcon, UploadIcon, RedoIcon, UndoIcon, EyeIcon, EyeOffIcon, ArrowIcon } from '@/components/icons/icons';
 import { useLocalization } from '@/hooks/useLocalization';
-import type { LocaleKeys } from '@/i18n/locales';
 import { PoseEditorModal } from '@/features/character-management/components/PoseEditorModal';
 import { usePanelCanvas } from '@/hooks/usePanelCanvas';
 import type { AspectRatioKey } from '@/constants/aspectRatios';
@@ -201,8 +200,12 @@ const getSmartGuides = (movingBBox: { x: number, y: number, width: number, heigh
         if (Math.abs(mc.x - t.cx) < SNAP_THRESHOLD) guides.push({ type: 'v', pos: t.cx });
         if (Math.abs(mc.y - t.cy) < SNAP_THRESHOLD) guides.push({ type: 'h', pos: t.cy });
         t.edges.forEach(e => {
-            if ('v' in e && (Math.abs(movingBBox.x - e.v) < SNAP_THRESHOLD || Math.abs(movingBBox.x + movingBBox.width - e.v) < SNAP_THRESHOLD)) guides.push({ type: 'v', pos: e.v });
-            if ('h' in e && (Math.abs(movingBBox.y - e.h) < SNAP_THRESHOLD || Math.abs(movingBBox.y + movingBBox.height - e.h) < SNAP_THRESHOLD)) guides.push({ type: 'h', pos: e.h });
+            if (e.v !== undefined && (Math.abs(movingBBox.x - e.v) < SNAP_THRESHOLD || Math.abs(movingBBox.x + movingBBox.width - e.v) < SNAP_THRESHOLD)) {
+                guides.push({ type: 'v', pos: e.v });
+            }
+            if (e.h !== undefined && (Math.abs(movingBBox.y - e.h) < SNAP_THRESHOLD || Math.abs(movingBBox.y + movingBBox.height - e.h) < SNAP_THRESHOLD)) {
+                guides.push({ type: 'h', pos: e.h });
+            }
         });
     });
     return [...new Map(guides.map(g => [`${g.type}-${g.pos}`, g])).values()];

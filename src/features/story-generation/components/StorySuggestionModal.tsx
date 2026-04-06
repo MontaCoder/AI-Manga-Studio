@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useLocalization } from '@/hooks/useLocalization';
 import { LightbulbIcon, XIcon } from '@/components/icons/icons';
 import type { StorySuggestion } from '@/types';

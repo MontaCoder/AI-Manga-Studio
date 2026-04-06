@@ -140,12 +140,10 @@ export function StudioUtilityPane({
                             onSuggestLayout={onSuggestLayout}
                             isSuggestingLayout={isSuggestingLayout}
                             onSuggestStory={onSuggestStory}
-                            characters={characters}
                             hasGeneratedResult={!!currentPage.generatedImage}
                             onViewResult={onViewResult}
                             generateEmptyBubbles={generateEmptyBubbles}
                             setGenerateEmptyBubbles={onSetGenerateEmptyBubbles}
-                            assistantModeState={assistantModeState}
                         />
                     )}
                     {error && <div className="status-card status-card--error">{error}</div>}
