@@ -1,8 +1,8 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MenuIcon, XIcon, BookOpenIcon, GlobeIcon, VideoIcon, ArrowLeftIcon, KeyIcon } from '@/components/icons/icons';
 import { useLocalization } from '@/hooks/useLocalization';
-import { Language } from '@/i18n/locales';
+import { Language, type LocaleKeys } from '@/i18n/locales';
 
 interface HeaderProps {
     variant?: 'app' | 'marketing';
@@ -20,11 +20,11 @@ interface HeaderProps {
     onExport?: () => void;
 }
 
-const LANGUAGES: { key: Language; label: string }[] = [
-  { key: 'zh', label: '中文' },
-  { key: 'en', label: 'English' },
-  { key: 'ja', label: '日本語' },
-  { key: 'ar', label: 'العربية' },
+const LANGUAGES: { key: Language; labelKey: LocaleKeys }[] = [
+  { key: 'zh', labelKey: 'chinese' },
+  { key: 'en', labelKey: 'english' },
+  { key: 'ja', labelKey: 'japanese' },
+  { key: 'ar', labelKey: 'arabic' },
 ];
 
 export function Header({ variant = 'app', isTransparentOnTop, isSidebarOpen, onToggleSidebar, language, setLanguage, onOpenApiKeyModal, hasApiKey, onShowMangaViewer, onShowWorldview, currentView, onSetView, onExport }: HeaderProps): React.ReactElement {
@@ -32,6 +32,7 @@ export function Header({ variant = 'app', isTransparentOnTop, isSidebarOpen, onT
   const navigate = useNavigate();
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const languageMenuRef = useRef<HTMLDivElement>(null);
   const isApp = variant === 'app';
   const isMarketing = variant === 'marketing';
 
@@ -41,6 +42,30 @@ export function Header({ variant = 'app', isTransparentOnTop, isSidebarOpen, onT
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, [isTransparentOnTop]);
+
+  useEffect(() => {
+    if (!isLangOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!languageMenuRef.current?.contains(event.target as Node)) {
+        setIsLangOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsLangOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isLangOpen]);
 
   const selectLanguage = useCallback((lang: Language) => { setLanguage(lang); setIsLangOpen(false); }, [setLanguage]);
 
@@ -80,15 +105,15 @@ export function Header({ variant = 'app', isTransparentOnTop, isSidebarOpen, onT
             </>
           )}
 
-          <div className="language-menu">
-            <button onClick={() => setIsLangOpen(p => !p)} className="button-ghost" title={t('language')}>
+          <div ref={languageMenuRef} className="language-menu">
+            <button onClick={() => setIsLangOpen(p => !p)} className="button-ghost" title={t('language')} aria-expanded={isLangOpen} aria-haspopup="menu">
               <GlobeIcon className="w-5 h-5" />
-              <span>{LANGUAGES.find(l => l.key === language)?.label}</span>
+              <span>{t(LANGUAGES.find(l => l.key === language)?.labelKey ?? 'english')}</span>
             </button>
             {isLangOpen && (
-              <div className="language-menu__list">
-                {LANGUAGES.map(({ key, label }) => (
-                  <button key={key} onClick={() => selectLanguage(key)} className={`language-menu__item ${language === key ? 'is-active' : ''}`}>{label}</button>
+              <div className="language-menu__list" role="menu" aria-label={t('language')}>
+                {LANGUAGES.map(({ key, labelKey }) => (
+                  <button key={key} onClick={() => selectLanguage(key)} className={`language-menu__item ${language === key ? 'is-active' : ''}`} role="menuitemradio" aria-checked={language === key}>{t(labelKey)}</button>
                 ))}
               </div>
             )}
