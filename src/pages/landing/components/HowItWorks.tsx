@@ -26,8 +26,9 @@ export function HowItWorks(): React.ReactElement {
 
         <div className="process-grid">
           {steps.map((step, index) => (
-            <article key={step.title} className="process-card surface-card animate-fade-up">
+            <article key={step.title} className={`process-card surface-card animate-fade-up ${index === 1 ? 'process-card--featured' : ''}`}>
               <span className="process-card__number">{String(index + 1).padStart(2, '0')}</span>
+              <span className="process-card__eyebrow">{t('howItWorksTitle')}</span>
               <h3 className="process-card__title">{step.title}</h3>
               <p className="process-card__description">{step.desc}</p>
             </article>

@@ -29,7 +29,7 @@ export function Features(): React.ReactElement {
 
         <div className="features-grid">
           {features.map((feature, index) => (
-            <article key={feature.title} className="feature-card surface-card animate-fade-up">
+            <article key={feature.title} className={`feature-card surface-card animate-fade-up ${index === 0 ? 'feature-card--spotlight' : ''}`}>
               <div className="feature-card__top">
                 <span className="feature-card__index">{String(index + 1).padStart(2, '0')}</span>
                 <div className="feature-card__icon">{feature.icon}</div>
@@ -38,6 +38,11 @@ export function Features(): React.ReactElement {
               <div className="feature-card__content">
                 <h3 className="feature-card__title">{feature.title}</h3>
                 <p className="feature-card__description">{feature.desc}</p>
+              </div>
+
+              <div className="feature-card__footer">
+                <span className="text-caption">{t('AIMangaStudio')}</span>
+                <span className="feature-card__footer-mark">/{String(index + 1).padStart(2, '0')}</span>
               </div>
             </article>
           ))}

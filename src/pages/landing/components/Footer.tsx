@@ -1,12 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocalization } from '@/hooks/useLocalization';
+import type { Language, LocaleKeys } from '@/i18n/locales';
 
-const LANGS = [
-  { key: 'en' as const, label: 'English' },
-  { key: 'zh' as const, label: 'Chinese' },
-  { key: 'ja' as const, label: 'Japanese' },
-  { key: 'ar' as const, label: 'Arabic' },
+const LANGS: { key: Language; labelKey: LocaleKeys }[] = [
+  { key: 'en', labelKey: 'english' },
+  { key: 'zh', labelKey: 'chinese' },
+  { key: 'ja', labelKey: 'japanese' },
+  { key: 'ar', labelKey: 'arabic' },
 ];
 
 export function Footer(): React.ReactElement {
@@ -20,7 +21,7 @@ export function Footer(): React.ReactElement {
           <div className="landing-footer__main">
             <div className="landing-footer__brand">
               <span className="heading-eyebrow">{t('AIMangaStudio')}</span>
-              <h3>AI Manga Studio</h3>
+              <h3>{t('AIMangaStudio')}</h3>
               <p>{t('landingSubtitle')}</p>
               <button onClick={() => navigate('/studio')} className="button-primary">{t('startCreating')}</button>
             </div>
@@ -35,7 +36,7 @@ export function Footer(): React.ReactElement {
                     onClick={() => setLanguage(langOption.key)}
                     className={`landing-footer__language ${language === langOption.key ? 'is-active' : ''}`}
                   >
-                    {langOption.label}
+                    {t(langOption.labelKey)}
                   </button>
                 ))}
               </div>
