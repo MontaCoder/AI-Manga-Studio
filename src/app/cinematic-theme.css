@@ -706,7 +706,7 @@ body::before {
 
 .landing-page .feature-card__index,
 .landing-page .process-card__number {
-  color: rgba(37, 99, 235, 0.72);
+  color: #f8fbff;
   font: 800 0.78rem var(--font-sans);
   letter-spacing: 0.16em;
 }
