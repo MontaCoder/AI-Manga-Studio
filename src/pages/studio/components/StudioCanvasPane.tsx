@@ -50,16 +50,25 @@ export function StudioCanvasPane({
     return (
         <section ref={workspaceCanvasRef} className="workspace-canvas">
             <div className="workspace-pane__header">
-                <span className="floating-pill">{currentPage.name}</span>
-                {currentPage.generatedImage && (
-                    <button
-                        className="button-ghost"
-                        onClick={onToggleViewMode}
-                        aria-label={viewMode === 'result' ? t('backToEditor') : t('viewResult')}
-                    >
-                        {viewMode === 'result' ? t('backToEditor') : t('viewResult')}
-                    </button>
-                )}
+                <div className="workspace-pane__heading">
+                    <span className="floating-pill">{currentPage.name}</span>
+                    <span className="workspace-pane__meta">{viewMode === 'result' ? t('compareResult') : t('createVisualLayout')}</span>
+                    <div className="workspace-pane__status">
+                        <span className="badge-inline">{viewMode === 'result' ? t('result') : t('sceneScript')}</span>
+                        {currentPage.assistantProposalImage && <span className="badge-inline">{t('assistantGuide')}</span>}
+                    </div>
+                </div>
+                <div className="workspace-pane__actions">
+                    {currentPage.generatedImage && (
+                        <button
+                            className="button-ghost"
+                            onClick={onToggleViewMode}
+                            aria-label={viewMode === 'result' ? t('backToEditor') : t('viewResult')}
+                        >
+                            {viewMode === 'result' ? t('backToEditor') : t('viewResult')}
+                        </button>
+                    )}
+                </div>
             </div>
             <div className="workspace-canvas__scroll">
                 <div className={`canvas-stage ${viewMode === 'result' ? 'canvas-stage--result' : 'canvas-stage--editor'}`}>

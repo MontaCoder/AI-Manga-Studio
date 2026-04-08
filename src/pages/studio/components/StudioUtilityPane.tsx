@@ -111,7 +111,12 @@ export function StudioUtilityPane({
                 />
             ) : (
                 <div className="result-shell">
-                    {!anyLoading && <h2 className="utility-pane__group-title">{t('generateYourManga')}</h2>}
+                    {!anyLoading && (
+                        <div className="utility-pane__intro">
+                            <span className="badge-inline">{viewMode === 'result' ? t('result') : t('sceneScript')}</span>
+                            <h2 className="utility-pane__group-title">{t('generateYourManga')}</h2>
+                        </div>
+                    )}
                     {anyLoading ? (
                         <div className="status-card">
                             {assistantModeState?.hasError ? (

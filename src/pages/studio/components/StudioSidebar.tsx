@@ -60,6 +60,15 @@ export function StudioSidebar({
             className={`sidebar-pane ${isSidebarOpen ? 'is-visible' : 'is-hidden'}`}
             aria-label={t('pages')}
         >
+            <div className="sidebar-pane__overview surface-card">
+                <span className="text-caption">{t('AIMangaStudio')}</span>
+                <strong className="sidebar-pane__overview-title">{currentPage.name}</strong>
+                <div className="sidebar-pane__overview-stats">
+                    <span>{pages.length} {t('pages')}</span>
+                    <span>{characters.length} {t('characters')}</span>
+                </div>
+            </div>
+
             <section className="sidebar-pane__section">
                 <div className="sidebar-pane__section-header">
                     <div className="sidebar-pane__section-meta">
@@ -109,7 +118,10 @@ export function StudioSidebar({
                         <div className="sidebar-pane__cards">
                             {pages.map((page, index) => (
                                 <div key={page.id} className={`page-card ${currentPageId === page.id ? 'is-active' : ''}`}>
-                                    <span onClick={() => onSelectPage(page.id)} className="page-card__name cursor-pointer">{page.name}</span>
+                                    <button type="button" onClick={() => onSelectPage(page.id)} className="page-card__name cursor-pointer">
+                                        <span className="page-card__index">{String(index + 1).padStart(2, '0')}</span>
+                                        <span>{page.name}</span>
+                                    </button>
                                     <div className="page-card__actions">
                                         {index > 0 && <button onClick={() => onToggleReferencePrevious(page.id)} className={`icon-button ${page.shouldReferencePrevious ? 'is-active' : ''}`} title={t('referencePreviousPage')}><LinkIcon className="w-4 h-4" /></button>}
                                         <button onClick={() => onDeletePage(page.id)} className="icon-button is-critical" title={t('delete')} disabled={pages.length <= 1}><TrashIcon className="w-4 h-4" /></button>
