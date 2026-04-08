@@ -5,6 +5,7 @@ import App from './App';
 import { LocalizationProvider } from '@/contexts/LocalizationContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import './index.css';
+import './cinematic-theme.css';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
