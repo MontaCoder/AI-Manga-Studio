@@ -190,7 +190,7 @@ body::before {
   background: radial-gradient(circle, rgba(56, 189, 248, 0.16) 0%, transparent 72%);
 }
 
-.landing-page > * {
+.landing-page > :not(.header-bar) {
   position: relative;
   z-index: 1;
 }
