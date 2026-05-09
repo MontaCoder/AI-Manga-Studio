@@ -22,5 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
+.agents/*
+.claude/*
 .github/*
+/.impeccable/*
