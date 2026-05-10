@@ -24,5 +24,7 @@ dist-ssr
 *.sw?
 .agents/*
 .claude/*
+.devin/*
 .github/*
 /.impeccable/*
+skills-lock.json
