@@ -1,7 +1,6 @@
 import React from 'react';
 import { ComparisonViewer } from './ComparisonViewer';
 import { PanelEditor } from '@/features/panel-editor/PanelEditor';
-import { useLocalization } from '@/hooks/useLocalization';
 import type { Character, Page } from '@/types';
 
 interface StudioCanvasPaneProps {
@@ -45,66 +44,44 @@ export function StudioCanvasPane({
     onApplyLayout,
     onToggleFullscreen,
 }: StudioCanvasPaneProps): React.ReactElement {
-    const { t } = useLocalization();
-
     return (
         <section ref={workspaceCanvasRef} className="workspace-canvas">
-            <div className="workspace-pane__header">
-                <div className="workspace-pane__heading">
-                    <span className="floating-pill">{currentPage.name}</span>
-                    <span className="workspace-pane__meta">{viewMode === 'result' ? t('compareResult') : t('createVisualLayout')}</span>
-                    <div className="workspace-pane__status">
-                        <span className="badge-inline">{viewMode === 'result' ? t('result') : t('sceneScript')}</span>
-                        {currentPage.assistantProposalImage && <span className="badge-inline">{t('assistantGuide')}</span>}
-                    </div>
-                </div>
-                <div className="workspace-pane__actions">
-                    {currentPage.generatedImage && (
-                        <button
-                            className="button-ghost"
-                            onClick={onToggleViewMode}
-                            aria-label={viewMode === 'result' ? t('backToEditor') : t('viewResult')}
-                        >
-                            {viewMode === 'result' ? t('backToEditor') : t('viewResult')}
-                        </button>
-                    )}
-                </div>
-            </div>
-            <div className="workspace-canvas__scroll">
-                <div className={`canvas-stage ${viewMode === 'result' ? 'canvas-stage--result' : 'canvas-stage--editor'}`}>
-                    {viewMode === 'result' && currentPage.generatedImage && currentPage.panelLayoutImage ? (
-                        <ComparisonViewer
-                            beforeImage={currentPage.panelLayoutImage}
-                            afterImage={currentPage.generatedImage}
-                            isMonochromeResult={isMonochromeResult}
-                            onColorize={onColorize}
-                            isColoring={isColoring}
-                        />
-                    ) : (
-                        <PanelEditor
-                            ref={panelEditorRef}
-                            key={currentPage.id}
-                            shapes={currentPage.shapes}
-                            onShapesChange={onShapesChange}
-                            characters={characters}
-                            aspectRatio={currentPage.aspectRatio}
-                            viewTransform={currentPage.viewTransform}
-                            onViewTransformChange={onViewTransformChange}
-                            isDraggingCharacter={isDraggingCharacter}
-                            onUndo={onUndo}
-                            onRedo={onRedo}
-                            canUndo={currentPage.shapesHistoryIndex > 0}
-                            canRedo={currentPage.shapesHistoryIndex < currentPage.shapesHistory.length - 1}
-                            proposalImage={currentPage.assistantProposalImage}
-                            proposalOpacity={currentPage.proposalOpacity}
-                            isProposalVisible={currentPage.isProposalVisible}
-                            onProposalSettingsChange={onProposalSettingsChange}
-                            onApplyLayout={onApplyLayout}
-                            isFullscreen={isFullscreen}
-                            onToggleFullscreen={onToggleFullscreen}
-                        />
-                    )}
-                </div>
+            <div className={`canvas-stage ${viewMode === 'result' ? 'canvas-stage--result' : 'canvas-stage--editor'}`}>
+                {viewMode === 'result' && currentPage.generatedImage && currentPage.panelLayoutImage ? (
+                    <ComparisonViewer
+                        beforeImage={currentPage.panelLayoutImage}
+                        afterImage={currentPage.generatedImage}
+                        isMonochromeResult={isMonochromeResult}
+                        onColorize={onColorize}
+                        isColoring={isColoring}
+                    />
+                ) : (
+                    <PanelEditor
+                        ref={panelEditorRef}
+                        key={currentPage.id}
+                            currentPage={currentPage}
+                            viewMode={viewMode}
+                        shapes={currentPage.shapes}
+                        onShapesChange={onShapesChange}
+                        characters={characters}
+                        aspectRatio={currentPage.aspectRatio}
+                        viewTransform={currentPage.viewTransform}
+                        onViewTransformChange={onViewTransformChange}
+                        isDraggingCharacter={isDraggingCharacter}
+                        onUndo={onUndo}
+                        onRedo={onRedo}
+                        canUndo={currentPage.shapesHistoryIndex > 0}
+                        canRedo={currentPage.shapesHistoryIndex < currentPage.shapesHistory.length - 1}
+                        proposalImage={currentPage.assistantProposalImage}
+                        proposalOpacity={currentPage.proposalOpacity}
+                        isProposalVisible={currentPage.isProposalVisible}
+                        onProposalSettingsChange={onProposalSettingsChange}
+                        onApplyLayout={onApplyLayout}
+                        isFullscreen={isFullscreen}
+                        onToggleFullscreen={onToggleFullscreen}
+                            onToggleViewMode={onToggleViewMode}
+                    />
+                )}
             </div>
         </section>
     );
