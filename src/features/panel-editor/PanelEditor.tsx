@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useImperativeHandle, useEffect, forwardRef, useMemo } from 'react';
-import type { CanvasShape, BubbleShape, PanelShape, Character, ImageShape, TextShape, ViewTransform, Pose, SkeletonData, SkeletonPose, ArrowShape } from '@/types';
+import type { CanvasShape, BubbleShape, PanelShape, Character, ImageShape, TextShape, ViewTransform, Pose, SkeletonData, SkeletonPose, ArrowShape, Page } from '@/types';
 import { PolygonIcon, TextToolIcon, BubbleToolIcon, TrashIcon, SelectIcon, CircleIcon, SquareIcon, BrushIcon, ExpandIcon, ShrinkIcon, HandIcon, PlusIcon, EditPoseIcon, MinusIcon, UploadIcon, RedoIcon, UndoIcon, EyeIcon, EyeOffIcon, ArrowIcon } from '@/components/icons/icons';
 import { useLocalization } from '@/hooks/useLocalization';
 import { PoseEditorModal } from '@/features/character-management/components/PoseEditorModal';
@@ -7,6 +7,9 @@ import { usePanelCanvas } from '@/hooks/usePanelCanvas';
 import type { AspectRatioKey } from '@/constants/aspectRatios';
 
 interface PanelEditorProps {
+    currentPage: Page;
+    viewMode: 'editor' | 'result';
+    onToggleViewMode: () => void;
     shapes: CanvasShape[];
     onShapesChange: (shapes: CanvasShape[], recordHistory?: boolean) => void;
     characters: Character[];
@@ -312,7 +315,7 @@ const skeletonConnections = [
 export const PanelEditor = forwardRef<
     { getLayoutAsImage: (includeCharacters: boolean, characters: Character[]) => Promise<string> },
     PanelEditorProps
->(({ shapes, onShapesChange, characters, aspectRatio, viewTransform, onViewTransformChange, isDraggingCharacter, onUndo, onRedo, canUndo, canRedo, proposalImage, proposalOpacity, isProposalVisible, onProposalSettingsChange, onApplyLayout, isFullscreen, onToggleFullscreen }, ref) => {
+>(({ currentPage, viewMode, onToggleViewMode, shapes, onShapesChange, characters, aspectRatio, viewTransform, onViewTransformChange, isDraggingCharacter, onUndo, onRedo, canUndo, canRedo, proposalImage, proposalOpacity, isProposalVisible, onProposalSettingsChange, onApplyLayout, isFullscreen, onToggleFullscreen }, ref) => {
     const { t } = useLocalization();
     const [activeTool, setActiveTool] = useState<Tool>('select');
     const [activeBubbleType, setActiveBubbleType] = useState<BubbleType>('rounded');
@@ -1314,7 +1317,7 @@ export const PanelEditor = forwardRef<
     const sortedShapes = useMemo(() => [...shapes].sort((a, b) => (shapeOrder[a.type] || 99) - (shapeOrder[b.type] || 99)), [shapes, shapeOrder]);
 
     return (
-        <div className="surface-card editor-shell" onDragOver={handleDragOver} onDrop={handleDrop}>
+        <div className="editor-shell" onDragOver={handleDragOver} onDrop={handleDrop}>
             <input type="file" ref={imageUploadRef} onChange={handleImageFileSelect} accept="image/png, image/jpeg, image/webp" className="hidden" />
             {tooltip && (
                 <div style={{ position: 'fixed', left: tooltip.x, top: tooltip.y, zIndex: 100 }} className="editor-tooltip">
@@ -1339,17 +1342,35 @@ export const PanelEditor = forwardRef<
                 />
             )}
             <div className="editor-shell__header">
-                <h2 className="heading-md">{t('createVisualLayout')}</h2>
-                <button
-                    type="button"
-                    className="button-ghost"
-                    onClick={onToggleFullscreen}
-                    aria-label={isFullscreen ? t('fullscreenExit') : t('fullscreenEnter')}
-                    onMouseEnter={(e) => handleTooltipShow(e, isFullscreen ? t('fullscreenExit') : t('fullscreenEnter'))}
-                    onMouseLeave={handleTooltipHide}
-                >
-                    {isFullscreen ? <ShrinkIcon className="w-5 h-5" /> : <ExpandIcon className="w-5 h-5" />}
-                </button>
+                <div className="workspace-pane__heading">
+                    <span className="floating-pill">{currentPage.name}</span>
+                    <span className="workspace-pane__meta">{viewMode === 'result' ? t('compareResult') : t('createVisualLayout')}</span>
+                    <div className="workspace-pane__status">
+                        <span className="badge-inline">{viewMode === 'result' ? t('result') : t('sceneScript')}</span>
+                        {currentPage.assistantProposalImage && <span className="badge-inline">{t('assistantGuide')}</span>}
+                    </div>
+                </div>
+                <div className="workspace-pane__actions">
+                    {currentPage.generatedImage && (
+                        <button
+                            className="button-ghost"
+                            onClick={onToggleViewMode}
+                            aria-label={viewMode === 'result' ? t('backToEditor') : t('viewResult')}
+                        >
+                            {viewMode === 'result' ? t('backToEditor') : t('viewResult')}
+                        </button>
+                    )}
+                    <button
+                        type="button"
+                        className="button-ghost"
+                        onClick={onToggleFullscreen}
+                        aria-label={isFullscreen ? t('fullscreenExit') : t('fullscreenEnter')}
+                        onMouseEnter={(e) => handleTooltipShow(e, isFullscreen ? t('fullscreenExit') : t('fullscreenEnter'))}
+                        onMouseLeave={handleTooltipHide}
+                    >
+                        {isFullscreen ? <ShrinkIcon className="w-5 h-5" /> : <ExpandIcon className="w-5 h-5" />}
+                    </button>
+                </div>
             </div>
             <div className="editor-shell__main">
                 <nav className="tool-rail" aria-label={t('canvasTools')} role="toolbar">
