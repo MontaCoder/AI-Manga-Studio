@@ -1106,10 +1106,11 @@ body::before {
 }
 
 .studio-page .workspace-pane__meta {
-  color: var(--text-soft);
-  font: 800 0.72rem var(--font-sans);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  color: var(--text);
+  font: 800 1.15rem var(--font-display);
+  letter-spacing: -0.03em;
+  line-height: normal;
+  text-transform: none;
 }
 
 .studio-page .workspace-pane__status {
@@ -1310,7 +1311,12 @@ body::before {
 }
 
 .studio-page .canvas-stage {
-  max-width: 1080px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: none;
 }
 
 .studio-page .utility-pane {
@@ -1398,7 +1404,15 @@ body::before {
 }
 
 .studio-page .editor-shell {
+  position: relative;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .studio-page .tool-rail {
@@ -1594,6 +1608,7 @@ body::before {
 @media (max-width: 1024px) {
   .studio-page .workspace-pane {
     padding: 0.9rem;
+    flex-direction: column;
   }
 
   .studio-page .sidebar-pane {
