@@ -60,7 +60,7 @@ export function StudioSidebar({
             className={`sidebar-pane ${isSidebarOpen ? 'is-visible' : 'is-hidden'}`}
             aria-label={t('pages')}
         >
-            <div className="sidebar-pane__overview surface-card">
+            <div className="sidebar-pane__overview">
                 <span className="text-caption">{t('AIMangaStudio')}</span>
                 <strong className="sidebar-pane__overview-title">{currentPage.name}</strong>
                 <div className="sidebar-pane__overview-stats">
@@ -108,7 +108,7 @@ export function StudioSidebar({
                     {assistantModeState?.isActive ? (
                         <div className="card-thumbnail-list sidebar-thumbnail-list max-h-96 overflow-y-auto">
                             {pages.filter(p => p.assistantProposalImage).map(page => (
-                                <div key={`thumb-${page.id}`} onClick={() => onSelectPage(page.id)} className={`surface-card sidebar-thumbnail-card cursor-pointer overflow-hidden ${currentPageId === page.id ? 'is-active' : ''}`}>
+                                <div key={`thumb-${page.id}`} onClick={() => onSelectPage(page.id)} className={`sidebar-thumbnail-card cursor-pointer ${currentPageId === page.id ? 'is-active' : ''}`}>
                                     <img src={page.assistantProposalImage!} alt={page.name} className="sidebar-thumbnail-card__image" />
                                     <div className="sidebar-thumbnail-card__label">{page.name}</div>
                                 </div>
