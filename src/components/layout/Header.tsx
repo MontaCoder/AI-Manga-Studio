@@ -38,8 +38,9 @@ export function Header({ variant = 'app', isTransparentOnTop, isSidebarOpen, onT
 
   useEffect(() => {
     if (!isTransparentOnTop) return;
-    const onScroll = () => setIsScrolled(window.scrollY > 100);
-    window.addEventListener('scroll', onScroll);
+    const onScroll = () => setIsScrolled(window.scrollY > 32);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [isTransparentOnTop]);
 
