@@ -103,7 +103,7 @@ export function StudioSidebar({
                         )}
                     </div>
                     <button type="button" onClick={onResetWorkspace} className="button-ghost w-full text-xs justify-center">
-                        Reset workspace
+                        {t('resetWorkspace')}
                     </button>
                     {assistantModeState?.isActive ? (
                         <div className="card-thumbnail-list sidebar-thumbnail-list max-h-96 overflow-y-auto">
@@ -123,8 +123,8 @@ export function StudioSidebar({
                                         <span>{page.name}</span>
                                     </button>
                                     <div className="page-card__actions">
-                                        {index > 0 && <button onClick={() => onToggleReferencePrevious(page.id)} className={`icon-button ${page.shouldReferencePrevious ? 'is-active' : ''}`} title={t('referencePreviousPage')}><LinkIcon className="w-4 h-4" /></button>}
-                                        <button onClick={() => onDeletePage(page.id)} className="icon-button is-critical" title={t('delete')} disabled={pages.length <= 1}><TrashIcon className="w-4 h-4" /></button>
+                                        {index > 0 && <button onClick={() => onToggleReferencePrevious(page.id)} className={`icon-button ${page.shouldReferencePrevious ? 'is-active' : ''}`} title={t('referencePreviousPage')} aria-label={t('referencePreviousPage')}><LinkIcon className="w-4 h-4" /></button>}
+                                        <button onClick={() => onDeletePage(page.id)} className="icon-button is-critical" title={t('delete')} aria-label={t('delete')} disabled={pages.length <= 1}><TrashIcon className="w-4 h-4" /></button>
                                     </div>
                                 </div>
                             ))}
@@ -152,7 +152,7 @@ export function StudioSidebar({
                                 <img src={char.sheetImage} alt={char.name} className="w-12 h-12 rounded-md object-cover" />
                                 <span>{char.name}</span>
                             </div>
-                            <button onClick={() => onDeleteCharacter(char.id)} className="icon-button is-critical opacity-0 group-hover:opacity-100" title={t('delete')}><TrashIcon className="w-4 h-4" /></button>
+                            <button onClick={() => onDeleteCharacter(char.id)} className="icon-button is-critical opacity-0 group-hover:opacity-100" title={t('delete')} aria-label={t('delete')}><TrashIcon className="w-4 h-4" /></button>
                         </div>
                     ))}
                 </div>
