@@ -126,7 +126,7 @@ export function ResultDisplay({
 
   if (isLoading || isColoring || isAnalyzing) {
     return (
-        <div className="surface-card result-panel h-full items-center justify-center text-center">
+        <div className="result-panel h-full items-center justify-center text-center">
             <div className="loader-ring" aria-hidden />
             <p className="heading-sm mt-4">{isAnalyzing ? t('analyzing') : (isColoring ? t('coloringPage') : t('processing'))}</p>
             {!isAnalyzing && !isColoring && <LoadingMessage />}
@@ -135,7 +135,7 @@ export function ResultDisplay({
   }
 
   return (
-    <div className="surface-card result-panel">
+    <div className="result-panel">
       <div className="result-panel__header">
         <h2 className="heading-md">{t('result')}</h2>
         <button 

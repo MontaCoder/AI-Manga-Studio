@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocalization } from '@/hooks/useLocalization';
-import { WandIcon, LightbulbIcon } from '@/components/icons/icons';
+import { RectangleStackIcon, BookOpenIcon } from '@/components/icons/icons';
 
 interface GenerationControlsProps {
   onGenerateImage: () => void;
@@ -40,7 +40,7 @@ export function GenerationControls({
   const canSuggestLayout = !!sceneDescription;
 
   return (
-    <div className="surface-card generation-panel">
+    <div className="generation-panel">
        <div className="generation-panel__header">
          <h2 className="heading-sm">{t('generateYourManga')}</h2>
          {hasGeneratedResult && (
@@ -58,7 +58,7 @@ export function GenerationControls({
                     className="button-accent"
                     type="button"
                 >
-                    <LightbulbIcon className="w-4 h-4" />
+                    <BookOpenIcon className="w-4 h-4" />
                     {t('getAiSuggestions')}
                 </button>
             </div>
@@ -78,7 +78,7 @@ export function GenerationControls({
                 className="button-primary is-full-width"
                 type="button"
             >
-                <WandIcon className="w-5 h-5" />
+                <RectangleStackIcon className="w-5 h-5" />
                 {isSuggestingLayout ? t('layoutSuggesting') : t('suggestLayout')}
             </button>
             <div className="generation-panel__meta">
