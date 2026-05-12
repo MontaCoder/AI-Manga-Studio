@@ -434,7 +434,7 @@ export function VideoProducer({ characters, pages }: { characters: Character[], 
                                 </div>
                             )}
                             {selectedScene.videoGenerationStatus === 'done' && selectedScene.generatedVideoUrl && (
-                                <div className="aspect-video bg-black rounded-lg">
+                                <div className="aspect-video bg-slate-900 rounded-lg">
                                     <video src={selectedScene.generatedVideoUrl} controls autoPlay loop className="w-full h-full rounded-lg"/>
                                 </div>
                             )}

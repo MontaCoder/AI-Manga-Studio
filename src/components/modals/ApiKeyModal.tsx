@@ -46,7 +46,7 @@ export function ApiKeyModal({ isOpen, onClose, onSave }: ApiKeyModalProps): Reac
         className="bg-white rounded-2xl p-8 w-full max-w-md mx-4"
         style={{
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
-          animation: 'modalSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          animation: 'modalSlideIn 0.3s cubic-bezier(0.22, 1, 0.36, 1)'
         }}
       >
         <h2 className="text-xl font-bold mb-5" style={{ color: 'var(--text)', letterSpacing: '-0.02em' }}>
