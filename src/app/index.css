@@ -59,7 +59,6 @@
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration: 200ms;
   --duration-fast: 150ms;
   --duration-slow: 300ms;
@@ -81,7 +80,7 @@
     --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);
     --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.35), 0 4px 6px -2px rgba(0,0,0,0.2);
     --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.4), 0 10px 10px -5px rgba(0,0,0,0.2);
-    --shadow-glow: 0 0 25px rgba(59,130,246,0.3);
+    --shadow-glow: 0 0 25px rgba(15,23,42,0.25);
     --shadow-inner: inset 0 2px 4px rgba(0,0,0,0.15);
   }
 }
@@ -152,7 +151,7 @@ body {
   border-radius: var(--radius-lg);
   border: none;
   cursor: pointer;
-  transition: all var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease);
   position: relative;
   overflow: hidden;
 }
@@ -231,7 +230,7 @@ body {
   border-radius: var(--radius-xl);
   padding: clamp(1.5rem, 3vw, 2rem);
   box-shadow: var(--shadow-sm);
-  transition: all var(--duration-slow) var(--ease);
+  transition: background var(--duration-slow) var(--ease), border-color var(--duration-slow) var(--ease), box-shadow var(--duration-slow) var(--ease);
   position: relative;
 }
 .card:hover, .surface-card:hover { 
@@ -249,7 +248,7 @@ input, textarea, select {
   border: 1.5px solid var(--border);
   border-radius: var(--radius-lg);
   color: var(--text);
-  transition: all var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease);
 }
 input:hover, textarea:hover, select:hover {
   border-color: var(--text-soft);
@@ -280,7 +279,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   background: var(--bg-muted);
   color: var(--text-muted);
   border: 1px solid var(--border);
-  transition: all var(--duration-fast) var(--ease);
+  transition: background var(--duration-fast) var(--ease), color var(--duration-fast) var(--ease), border-color var(--duration-fast) var(--ease), box-shadow var(--duration-fast) var(--ease), transform var(--duration-fast) var(--ease);
 }
 .badge:hover, .badge-inline:hover {
   background: var(--bg-subtle);
@@ -296,7 +295,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   border-bottom: 1px solid rgba(226, 232, 240, 0.6);
-  transition: all var(--duration-slow) var(--ease);
+  transition: background var(--duration-slow) var(--ease), color var(--duration-slow) var(--ease), border-color var(--duration-slow) var(--ease), box-shadow var(--duration-slow) var(--ease), transform var(--duration-slow) var(--ease);
 }
 .header-bar__inner { max-width: 1280px; margin: 0 auto; padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .header-brand { display: flex; align-items: center; gap: 0.75rem; }
@@ -307,7 +306,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   display: flex; 
   align-items: center; 
   justify-content: center;
-  transition: transform var(--duration) var(--ease-bounce);
+  transition: transform var(--duration) var(--ease-out);
 }
 .header-brand__logo:hover { transform: scale(1.08) rotate(-2deg); }
 .header-title { display: flex; flex-direction: column; }
@@ -349,7 +348,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease);
+  transition: background var(--duration-fast) var(--ease), color var(--duration-fast) var(--ease), border-color var(--duration-fast) var(--ease), box-shadow var(--duration-fast) var(--ease), transform var(--duration-fast) var(--ease);
 }
 .language-menu__item:hover { 
   background: var(--bg-muted); 
@@ -389,10 +388,10 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
 .hero__pattern {
   position: absolute;
   inset: 0;
-  background: 
-    radial-gradient(ellipse 80% 50% at 20% 80%, rgba(59,130,246,0.2) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(147,51,234,0.15) 0%, transparent 50%),
-    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(236,72,153,0.08) 0%, transparent 50%);
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 80%, rgba(79,106,245,0.1) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(148,163,184,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(191,219,254,0.05) 0%, transparent 50%);
   animation: float 25s ease-in-out infinite;
 }
 @keyframes float { 
@@ -415,10 +414,6 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   margin-bottom: 1.5rem;
   text-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 8px 48px rgba(0,0,0,0.2);
   animation: heroFadeUp 1s var(--ease-out) both;
-  background: linear-gradient(135deg, #fff 0%, rgba(248,250,252,0.9) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 .hero__subtitle {
   font: 500 clamp(1.125rem, 3vw, 1.5rem)/1.6 var(--font-sans);
@@ -438,18 +433,17 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
 }
 .hero__actions .button-primary {
   background: linear-gradient(135deg, #4F6AF5 0%, #1D4ED8 100%);
-  box-shadow: 0 8px 32px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+  box-shadow: 0 8px 32px rgba(15,23,42,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
   padding: 1rem 2.25rem;
   font-size: 1rem;
 }
-.hero__actions .button-primary:hover { 
-  box-shadow: 0 12px 40px rgba(59,130,246,0.5), 0 0 60px rgba(59,130,246,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+.hero__actions .button-primary:hover {
+  box-shadow: 0 12px 40px rgba(15,23,42,0.45), inset 0 1px 0 rgba(255,255,255,0.2);
   transform: translateY(-3px);
 }
 .hero__actions .button-secondary {
-  background: rgba(255,255,255,0.12);
+  background: rgba(15,23,42,0.45);
   color: #fff;
-  backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.2);
   padding: 1rem 2.25rem;
   font-size: 1rem;
@@ -476,7 +470,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   margin-bottom: clamp(3rem, 6vw, 5rem);
 }
 .section-header .h2, .section-header .heading-xl { margin: 0.5rem 0 1rem; }
-.heading-xl { font: 700 clamp(2rem, 4vw, 3rem)/1.15 var(--font-display); letter-spacing: -0.02em; background: linear-gradient(135deg, var(--text), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.heading-xl { font: 700 clamp(2rem, 4vw, 3rem)/1.15 var(--font-display); letter-spacing: -0.02em; color: var(--text); }
 
 /* Features Grid */
 .features-grid {
@@ -499,15 +493,13 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(139,92,246,0.08));
+  background: linear-gradient(135deg, rgba(79,106,245,0.1), rgba(148,163,184,0.12));
   color: var(--accent);
-  transition: all var(--duration-slow) var(--ease-bounce);
-  box-shadow: 0 4px 12px rgba(59,130,246,0.1);
+  transition: background var(--duration-slow) var(--ease-out), color var(--duration-slow) var(--ease-out), border-color var(--duration-slow) var(--ease-out), box-shadow var(--duration-slow) var(--ease-out), transform var(--duration-slow) var(--ease-out);
 }
-.feature-card:hover .feature-card__icon { 
-  transform: scale(1.15) rotate(-5deg); 
-  box-shadow: var(--shadow-glow-lg);
-  background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(139,92,246,0.12));
+.feature-card:hover .feature-card__icon {
+  transform: scale(1.15) rotate(-5deg);
+  background: linear-gradient(135deg, rgba(79,106,245,0.14), rgba(148,163,184,0.16));
 }
 .feature-card__title { 
   font: 600 1.25rem var(--font-sans); 
@@ -584,7 +576,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   justify-content: space-between;
   gap: var(--space-2);
   cursor: pointer;
-  transition: all var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease);
   background: var(--bg);
   position: relative;
 }
@@ -620,7 +612,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   padding: var(--space-3);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-lg);
-  transition: all var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease);
   background: var(--bg);
 }
 .character-card:hover {
@@ -776,7 +768,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   background: var(--bg);
   color: var(--text-muted);
   cursor: pointer;
-  transition: all var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease);
   position: relative;
 }
 .tool-button::after {
@@ -998,7 +990,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease);
   position: relative;
   z-index: 1;
 }
@@ -1019,7 +1011,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   cursor: pointer;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius);
-  transition: all var(--duration-fast) var(--ease);
+  transition: background var(--duration-fast) var(--ease), color var(--duration-fast) var(--ease), border-color var(--duration-fast) var(--ease), box-shadow var(--duration-fast) var(--ease), transform var(--duration-fast) var(--ease);
 }
 .checkbox-inline:hover { background: var(--bg-muted); color: var(--text); }
 .checkbox-inline input {
@@ -1046,7 +1038,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   background: var(--bg-muted);
   color: var(--text-muted);
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease);
+  transition: background var(--duration-fast) var(--ease), color var(--duration-fast) var(--ease), border-color var(--duration-fast) var(--ease), box-shadow var(--duration-fast) var(--ease), transform var(--duration-fast) var(--ease);
   flex-shrink: 0;
 }
 .icon-button svg { width: 1rem; height: 1rem; transition: transform var(--duration-fast) var(--ease); }
@@ -1130,7 +1122,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   border: 2px solid var(--border);
   padding: 0;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease);
+  transition: background var(--duration-fast) var(--ease), color var(--duration-fast) var(--ease), border-color var(--duration-fast) var(--ease), box-shadow var(--duration-fast) var(--ease), transform var(--duration-fast) var(--ease);
 }
 .control-flyout__color:hover { border-color: var(--accent); transform: scale(1.05); }
 .control-flyout__metric { display: flex; align-items: center; gap: var(--space-2); }
@@ -1166,7 +1158,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
 .stagger-grid { display: grid; gap: 1rem; }
 
 /* Empty State */
-.empty-state__description { font-size: 0.875rem; color: var(--text-muted); max-width: 16rem; }
+.empty-state__description { font-size: 0.875rem; color: var(--text); max-width: 16rem; }
 
 /* Input Help */
 .input-help { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.375rem; }
@@ -1250,7 +1242,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
 .animate-scale-in { 
   opacity: 0; 
   transform: scale(0.92); 
-  transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-bounce);
+  transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
 }
 .animate-scale-in.is-visible, .is-visible .animate-scale-in { opacity: 1; transform: scale(1); }
 
@@ -1402,7 +1394,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   border-radius: var(--radius-lg);
   border: none;
   cursor: pointer;
-  transition: all var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease);
 }
 
 .button-danger:hover:not(:disabled) {
@@ -1763,12 +1755,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   max-width: 11ch;
   font: 800 clamp(3.3rem, 8vw, 6.2rem)/0.92 var(--font-display);
   letter-spacing: -0.06em;
-  color: #fff8f0;
-  background: linear-gradient(135deg, #ffffff 0%, #dbeafe 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: none;
+  color: #ffffff;
 }
 
 .landing-page .hero__subtitle {
@@ -2054,7 +2041,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   background: rgba(255, 255, 255, 0.46);
   color: var(--landing-ink);
   text-align: left;
-  transition: all var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease);
 }
 
 .gallery-thumb:hover,
@@ -2387,8 +2374,8 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   --bg-subtle: rgba(226, 232, 240, 0.7);
   --border: rgba(148, 163, 184, 0.18);
   background:
-    radial-gradient(circle at top left, rgba(79, 106, 245, 0.1), transparent 22%),
-    radial-gradient(circle at 90% 10%, rgba(56, 189, 248, 0.12), transparent 20%),
+    radial-gradient(circle at top left, rgba(79, 106, 245, 0.08), transparent 22%),
+    radial-gradient(circle at 90% 10%, rgba(148, 163, 184, 0.08), transparent 20%),
     linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
 }
 
@@ -2437,7 +2424,6 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
 .studio-page .sidebar-pane,
 .studio-page .utility-pane,
 .studio-page .workspace-canvas,
-.studio-page .editor-shell,
 .studio-page .surface-card,
 .studio-page .comparison-viewer {
   background:
@@ -2445,6 +2431,13 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   border-color: rgba(148, 163, 184, 0.18);
   box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
   backdrop-filter: blur(12px);
+}
+
+.studio-page .editor-shell {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .studio-page .page-card,
@@ -2479,11 +2472,11 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   background: linear-gradient(135deg, var(--accent), var(--accent-hover));
   border-color: transparent;
   color: #fff;
-  box-shadow: 0 14px 30px rgba(61, 86, 217, 0.22);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18);
 }
 
 .studio-page .button-primary {
-  box-shadow: 0 16px 36px rgba(61, 86, 217, 0.22);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.18);
 }
 
 .studio-page .floating-status {
@@ -2506,7 +2499,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
 }
 
 .studio-page .zoom-cluster__label {
-  background: linear-gradient(135deg, rgba(79, 106, 245, 0.12), rgba(56, 189, 248, 0.14));
+  background: rgba(79, 106, 245, 0.1);
   color: var(--accent);
   font-weight: 700;
 }
@@ -2665,7 +2658,7 @@ textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
   border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--bg);
-  transition: all var(--duration) var(--ease);
+  transition: background var(--duration) var(--ease), border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
 }
 
 .reference-character:hover {
