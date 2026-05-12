@@ -137,6 +137,9 @@ export const locales = {
     applyCorrection: "应用修正",
     noCorrectionsNeeded: "无需修改",
     analysisError: "分析时发生错误",
+    clearAnalysis: "清除分析",
+    removeReference: "移除参考",
+    resetWorkspace: "重置工作区",
 
     // Masking Modal
     maskingModalTitle: "编辑区域蒙版",
@@ -449,6 +452,9 @@ export const locales = {
     applyCorrection: "Apply Correction",
     noCorrectionsNeeded: "No corrections needed.",
     analysisError: "Error during analysis.",
+    clearAnalysis: "Clear Analysis",
+    removeReference: "Remove Reference",
+    resetWorkspace: "Reset Workspace",
 
     // Masking Modal
     maskingModalTitle: "Mask Area to Edit",
@@ -759,6 +765,9 @@ export const locales = {
     applyCorrection: "修正案を適用",
     noCorrectionsNeeded: "修正は必要ありません。",
     analysisError: "分析中にエラーが発生しました",
+    clearAnalysis: "分析をクリア",
+    removeReference: "参照を削除",
+    resetWorkspace: "ワークスペースをリセット",
 
     // Masking Modal
     maskingModalTitle: "編集する領域をマスク",
@@ -1069,6 +1078,9 @@ export const locales = {
     applyCorrection: "تطبيق التصحيح",
     noCorrectionsNeeded: "لا حاجة للتصحيحات.",
     analysisError: "خطأ أثناء التحليل.",
+    clearAnalysis: "مسح التحليل",
+    removeReference: "إزالة المرجع",
+    resetWorkspace: "إعادة تعيين مساحة العمل",
 
     // Masking Modal
     maskingModalTitle: "منطقة القناع للتحرير",
