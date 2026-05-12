@@ -51,7 +51,7 @@ export function GenerationControls({
        </div>
         
         <div className="generation-panel__field">
-            <div className="generation-panel__header">
+            <div className="generation-panel__label-row">
                 <h3 className="heading-sm">{t('sceneScript')}</h3>
                  <button
                     onClick={onSuggestStory}
